@@ -1,0 +1,35 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@mdi/font": "7.0.96",
+        "apexcharts": "^3.41.1",
+        "axios": "^1.1.2",
+        "laravel-vite-plugin": "^0.7.2",
+        "pinia": "^2.0.23",
+        "register-service-worker": "^1.7.2",
+        "roboto-fontface": "*",
+        "vite": "^4.0.0",
+        "vue": "^3.2.0",
+        "vue-i18n": "^9.2.2",
+        "vue-router": "^4.0.0",
+        "vue3-apexcharts": "^1.4.4",
+        "vuetify": "^3.0.0",
+        "webfontloader": "^1.0.0"
+    },
+    "dependencies": {
+        "@vitejs/plugin-vue": "^4.2.1",
+        "@vue/cli-plugin-pwa": "~5.0.0",
+        "flag-icon-css": "^4.1.7",
+        "vite": "^4.2.0",
+        "vite-plugin-vuetify": "^1.0.0",
+        "vue": "^3.2.36",
+        "vue-loader": "^17.0.1",
+        "vue-sweetalert2": "^5.0.5",
+        "vuex": "^4.1.0",
+        "vuex-persistedstate": "^4.1.0"
+    }
+}
