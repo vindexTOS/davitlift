@@ -27,7 +27,7 @@
             </v-card>
           </v-menu>
         </v-card-title>
-
+        <!--  უზერის ინფორმაცია -->
         <v-card-text class="px-5">
           <div class="d-flex justify-space-between align-center">
             <v-list-item-title>
@@ -60,6 +60,7 @@
           <v-btn @click="showElevator = true">{{ $t('Add card') }}</v-btn>
         </v-card-title>
         <div>
+          <!--  დამატებითი კარტები  -->
           <v-card v-for="item in desserts" class="ma-4 pa-5" :key="item.name">
             <div>
               <div>
@@ -244,22 +245,27 @@
   <v-dialog v-model="showModal" max-width="600">
     <v-card>
       <v-card-title class="headline">{{ $t('Edit profile') }}</v-card-title>
-
+      <!--  უსერის დასააფდეითებელი ინფორმაცია  -->
       <v-card-text class="pl-3">
         <v-text-field
-          v-model="userUpdate.name"
+          v-model="user.name"
           :label="$t('Name')"
           required
         ></v-text-field>
         <v-text-field
-          v-model="userUpdate.email"
+          v-model="user.email"
           :label="$t('Email')"
           required
         ></v-text-field>
         <v-text-field
-          v-model="userUpdate.phone"
+          v-model="user.phone"
           :rules="phoneRules"
           :label="$t('Phone')"
+          required
+        ></v-text-field>
+        <v-text-field
+          v-model="user.balance"
+          :label="$t('Balance')"
           required
         ></v-text-field>
       </v-card-text>
@@ -471,11 +477,7 @@ export default {
       ],
       code: null,
       devices: [],
-      userUpdate: {
-        name: this.$store.state.auth.user.name,
-        phone: this.$store.state.auth.user.phone,
-        email: this.$store.state.auth.user.email,
-      },
+
       company: {},
       Manager: {},
       seriesB: [0, 0],
@@ -509,6 +511,7 @@ export default {
       amount: null,
     }
   },
+
   async created() {
     this.getCards()
     this.getUserDevice()
@@ -630,9 +633,8 @@ export default {
       this.cardEdit.id = item.id
     },
     updatePhone() {
-      axios.put(`/api/users/${this.user.id}`, this.userUpdate).then(() => {
-        this.signIn()
-        this.user = { ...this.user, ...this.userUpdate }
+      axios.put(`/api/updateUser`, this.user).then(() => {
+        this.user = { ...this.user }
         this.$swal.fire({
           icon: 'success',
           position: 'center',
@@ -685,6 +687,9 @@ export default {
     },
     detailDevice(id) {
       router.push({ name: `devicesDetail`, params: { id: id } })
+    },
+    onClick() {
+      console.log(this.user.balance)
     },
     async changePassword() {
       if (await this.$refs.form.validate()) {

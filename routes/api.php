@@ -13,78 +13,189 @@ use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Controllers\MqttController;
+use App\Http\Middleware\SuperAdminMiddleware;
 
-Route::middleware(['auth:api'])->group(function() {
+Route::middleware(['auth:api'])->group(function () {
     Route::apiResource('companies', CompanyController::class);
-    Route::get('/companies/manager/{id}',[CompanyController::class,'manager']);
-    Route::get('/companies/block/{id}',[CompanyController::class,'blockCompanies']);
-    Route::get('/companies/unblock/{id}',[CompanyController::class,'unblockCompanies']);
-    Route::get('/companies/block/manager/{id}',[CompanyController::class,'blockManager']);
-    Route::get('/companies/unblock/manager/{id}',[CompanyController::class,'unblockManager']);
-    Route::get('/companies/unhideStatistic/manager/{id}',[CompanyController::class,'unhideStatistic']);
-    Route::get('/companies/hideStatistic/manager/{id}',[CompanyController::class,'hideStatistic']);
+    Route::get('/companies/manager/{id}', [
+        CompanyController::class,
+        'manager',
+    ]);
+    Route::get('/companies/block/{id}', [
+        CompanyController::class,
+        'blockCompanies',
+    ]);
+    Route::get('/companies/unblock/{id}', [
+        CompanyController::class,
+        'unblockCompanies',
+    ]);
+    Route::get('/companies/block/manager/{id}', [
+        CompanyController::class,
+        'blockManager',
+    ]);
+    Route::get('/companies/unblock/manager/{id}', [
+        CompanyController::class,
+        'unblockManager',
+    ]);
+    Route::get('/companies/unhideStatistic/manager/{id}', [
+        CompanyController::class,
+        'unhideStatistic',
+    ]);
+    Route::get('/companies/hideStatistic/manager/{id}', [
+        CompanyController::class,
+        'hideStatistic',
+    ]);
 
     Route::apiResource('devices', DeviceController::class);
 
-    Route::get('/get/devices/user',[DeviceController::class,'userDevice']);
-    Route::get('/get/devices/user/{id}',[DeviceController::class,'userDeviceUser']);
-    Route::put('/devices/{device}/reset', [DeviceController::class,'resetDevice']);
-    Route::put('/devices/{device}/appconf', [DeviceController::class,'setAppConf']);
-    Route::put('/devices/{device}/extconf', [DeviceController::class,'setExtConf']);
-    Route::delete('/device/error/{id}', [DeviceController::class,'deleteError']);
+    Route::get('/get/devices/user', [DeviceController::class, 'userDevice']);
+    Route::get('/get/devices/user/{id}', [
+        DeviceController::class,
+        'userDeviceUser',
+    ]);
+    Route::put('/devices/{device}/reset', [
+        DeviceController::class,
+        'resetDevice',
+    ]);
+    Route::put('/devices/{device}/appconf', [
+        DeviceController::class,
+        'setAppConf',
+    ]);
+    Route::put('/devices/{device}/extconf', [
+        DeviceController::class,
+        'setExtConf',
+    ]);
+    Route::delete('/device/error/{id}', [
+        DeviceController::class,
+        'deleteError',
+    ]);
     Route::apiResource('cards', CardController::class);
-    Route::get('/user/cards/{id}', [CardController::class,'getUserCards']);
-    Route::post('/user/add/card', [CardController::class,'storeForUser']);
-    Route::get('/cards/generate/code', [CardController::class,'generateElevatorCode']);
-    Route::get('/cards/getLift/calltolift', [CardController::class,'calltolift']);
+    Route::get('/user/cards/{id}', [CardController::class, 'getUserCards']);
+    Route::post('/user/add/card', [CardController::class, 'storeForUser']);
+    Route::get('/cards/generate/code', [
+        CardController::class,
+        'generateElevatorCode',
+    ]);
+    Route::get('/cards/getLift/calltolift', [
+        CardController::class,
+        'calltolift',
+    ]);
 
     Route::apiResource('transactions', TransactionController::class);
-    Route::get('transactions/generate/order', [TransactionController::class,'makeOrderTransaction']);
+    Route::get('transactions/generate/order', [
+        TransactionController::class,
+        'makeOrderTransaction',
+    ]);
 
-    Route::get('/changeManager/{company_id}/{user_id}/{new_email}',[UserController::class,'changeManager']);
-    Route::get('/change/user/password/admin/{user_id}/{password}',[UserController::class,'changePassword']);
-
+    Route::get('/changeManager/{company_id}/{user_id}/{new_email}', [
+        UserController::class,
+        'changeManager',
+    ]);
+    Route::get('/change/user/password/admin/{user_id}/{password}', [
+        UserController::class,
+        'changePassword',
+    ]);
 
     Route::apiResource('users', UserController::class);
     Route::get('user', [AuthController::class, 'user']);
-    Route::get('/userToDevice/{user_search}/{device_id}',[UserController::class,'addToDevice']);
-    Route::post('/password/change',[UserController::class,'changeUserPassword']);
-    Route::delete('/userRemoveDevice/{user_id}/{device_id}',[UserController::class,'removeToDevice']);
+    Route::get('/userToDevice/{user_search}/{device_id}', [
+        UserController::class,
+        'addToDevice',
+    ]);
+    Route::post('/password/change', [
+        UserController::class,
+        'changeUserPassword',
+    ]);
+    //  updating user as admin
+    Route::put('/updateUser', [UserController::class, 'update'])->middleware(
+        'SuperAdminMiddleware'
+    );
+
+    Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
+        UserController::class,
+        'removeToDevice',
+    ]);
     Route::get('/files', [FileController::class, 'index']);
     Route::delete('/files/{id}', [FileController::class, 'delete']);
-    Route::get('/files/{name}/{version}', [FileController::class, 'deviceUpdate']);
-    Route::post('/send/update/to/selected/devices', [FileController::class, 'deviceUpdateByArray']);
+    Route::get('/files/{name}/{version}', [
+        FileController::class,
+        'deviceUpdate',
+    ]);
+    Route::post('/send/update/to/selected/devices', [
+        FileController::class,
+        'deviceUpdateByArray',
+    ]);
     Route::post('/upload', [FileController::class, 'upload']);
-    Route::get('/unregistered_device', [UnregisteredDeviceController::class, 'get']);
-    Route::delete('/unregistered_device', [UnregisteredDeviceController::class, 'delete']);
-    Route::get('/get/pay/cashback/{company_id}/{manager_id}/',[CompanyController::class,'payedCashback']);
-    Route::post('/pay/cashback',[CompanyController::class,'payCashback']);
-    Route::delete('/cashback/{id}',[CompanyController::class,'deleteCashback']);
-    Route::get('/cashback/{user_id}/{cashback}',[UserController::class,'cashback']);
+    Route::get('/unregistered_device', [
+        UnregisteredDeviceController::class,
+        'get',
+    ]);
+    Route::delete('/unregistered_device', [
+        UnregisteredDeviceController::class,
+        'delete',
+    ]);
+    Route::get('/get/pay/cashback/{company_id}/{manager_id}/', [
+        CompanyController::class,
+        'payedCashback',
+    ]);
+    Route::post('/pay/cashback', [CompanyController::class, 'payCashback']);
+    Route::delete('/cashback/{id}', [
+        CompanyController::class,
+        'deleteCashback',
+    ]);
+    Route::get('/cashback/{user_id}/{cashback}', [
+        UserController::class,
+        'cashback',
+    ]);
 
-    Route::get('/updating-device/last-created', [UpdatingDeviceController::class, 'getLastCreated']);
-    Route::get('/updating-device/check-success/last-created', [UpdatingDeviceController::class, 'checkSuccess']);
-    Route::get('/updating-device/check-failed/last-created', [UpdatingDeviceController::class, 'checkFailed']);
-    Route::get('/balance/user',[UserController::class,'getBalance']);
-    Route::get('/bank/transaction/detail/{order_id}',[TransactionController::class,'getTransactionDetail']);
-    Route::get('/bank/transaction/create/{amount}/{userId}',[TransactionController::class,'createTransaction']);
-    Route::get('/per/user/transactions/{id}',[TransactionController::class,'perUserTransaction']);
+    Route::get('/updating-device/last-created', [
+        UpdatingDeviceController::class,
+        'getLastCreated',
+    ]);
+    Route::get('/updating-device/check-success/last-created', [
+        UpdatingDeviceController::class,
+        'checkSuccess',
+    ]);
+    Route::get('/updating-device/check-failed/last-created', [
+        UpdatingDeviceController::class,
+        'checkFailed',
+    ]);
+    Route::get('/balance/user', [UserController::class, 'getBalance']);
+    Route::get('/bank/transaction/detail/{order_id}', [
+        TransactionController::class,
+        'getTransactionDetail',
+    ]);
+    Route::get('/bank/transaction/create/{amount}/{userId}', [
+        TransactionController::class,
+        'createTransaction',
+    ]);
+    Route::get('/per/user/transactions/{id}', [
+        TransactionController::class,
+        'perUserTransaction',
+    ]);
 });
-Route::get('/bank/transaction/detail/{order_id}',[TransactionController::class,'getTransactionDetail']);
+Route::get('/bank/transaction/detail/{order_id}', [
+    TransactionController::class,
+    'getTransactionDetail',
+]);
 
-Route::post('/bank/transaction/callback',[TransactionController::class,'transactionCallback']);
-Route::get('/test',[TransactionController::class,'updateUserData']);
+Route::post('/bank/transaction/callback', [
+    TransactionController::class,
+    'transactionCallback',
+]);
+Route::get('/test', [TransactionController::class, 'updateUserData']);
 
 Route::post('logout', function () {
     return Auth::id();
-}
+});
 
-);
-
-Route::post('login', [AuthController::class,'login']);
-Route::post('register', [AuthController::class,'register']);
-Route::get('/download/{file}', [FileController::class,'download']);
+Route::post('login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
+Route::get('/download/{file}', [FileController::class, 'download']);
 Route::get('mqtt/general', [MqttController::class, 'handleGeneralEvent']);
 Route::get('mqtt/heartbeat', [MqttController::class, 'handleHeartbeatEvent']);
 Route::post('/uploadForHttp', [FileController::class, 'uploadForHttp']);
-Route::delete('/filesForFileServer/{id}', [FileController::class, 'deleteForFileServer']);
+Route::delete('/filesForFileServer/{id}', [
+    FileController::class,
+    'deleteForFileServer',
+]);
