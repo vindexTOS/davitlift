@@ -15,7 +15,58 @@ use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Controllers\MqttController;
 use App\Http\Middleware\SuperAdminMiddleware;
 
+//  ADMIN ONLY
+
+Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
+    Route::apiResource('users', UserController::class);
+
+    Route::put('/updateUser', [UserController::class, 'update']);
+
+    Route::get('/change/user/password/admin/{user_id}/{password}', [
+        UserController::class,
+        'changePassword',
+        // s
+    ]);
+
+    // FILES
+    Route::get('/files', [FileController::class, 'index']);
+    Route::delete('/files/{id}', [FileController::class, 'delete']);
+
+    Route::get('/files/{name}/{version}', [
+        FileController::class,
+        'deviceUpdate',
+    ]);
+
+    Route::post('/send/update/to/selected/devices', [
+        FileController::class,
+        'deviceUpdateByArray',
+    ]);
+    Route::post('/upload', [FileController::class, 'upload']);
+    Route::get('/unregistered_device', [
+        UnregisteredDeviceController::class,
+        'get',
+    ]);
+    Route::delete('/unregistered_device', [
+        UnregisteredDeviceController::class,
+        'delete',
+    ]);
+
+    // DEVICES
+    Route::get('/updating-device/last-created', [
+        UpdatingDeviceController::class,
+        'getLastCreated',
+    ]);
+
+    Route::get('/updating-device/check-failed/last-created', [
+        UpdatingDeviceController::class,
+        'checkFailed',
+    ]);
+});
+
+// USER ONLY OR SHARED
+
 Route::middleware(['auth:api'])->group(function () {
+    // COMPANIES
     Route::apiResource('companies', CompanyController::class);
     Route::get('/companies/manager/{id}', [
         CompanyController::class,
@@ -46,6 +97,76 @@ Route::middleware(['auth:api'])->group(function () {
         'hideStatistic',
     ]);
 
+    // CARDS
+    Route::apiResource('cards', CardController::class);
+    Route::get('/user/cards/{id}', [CardController::class, 'getUserCards']);
+    Route::post('/user/add/card', [CardController::class, 'storeForUser']);
+    Route::get('/cards/generate/code', [
+        CardController::class,
+        'generateElevatorCode',
+    ]);
+    Route::get('/cards/getLift/calltolift', [
+        CardController::class,
+        'calltolift',
+    ]);
+    // TRANSACTIONS
+    Route::apiResource('transactions', TransactionController::class);
+    Route::get('transactions/generate/order', [
+        TransactionController::class,
+        'makeOrderTransaction',
+    ]);
+
+    Route::get('/changeManager/{company_id}/{user_id}/{new_email}', [
+        UserController::class,
+        'changeManager',
+    ]);
+    //  USERS
+    Route::get('user', [AuthController::class, 'user']);
+    Route::get('/userToDevice/{user_search}/{device_id}', [
+        UserController::class,
+        'addToDevice',
+    ]);
+
+    Route::post('/password/change', [
+        UserController::class,
+        'changeUserPassword',
+    ]);
+
+    Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
+        UserController::class,
+        'removeToDevice',
+    ]);
+    // FILES
+
+    Route::get('/get/pay/cashback/{company_id}/{manager_id}/', [
+        CompanyController::class,
+        'payedCashback',
+    ]);
+    Route::post('/pay/cashback', [CompanyController::class, 'payCashback']);
+    Route::delete('/cashback/{id}', [
+        CompanyController::class,
+        'deleteCashback',
+    ]);
+    Route::get('/cashback/{user_id}/{cashback}', [
+        UserController::class,
+        'cashback',
+    ]);
+
+    Route::get('/balance/user', [UserController::class, 'getBalance']);
+    Route::get('/bank/transaction/detail/{order_id}', [
+        TransactionController::class,
+        'getTransactionDetail',
+    ]);
+    Route::get('/bank/transaction/create/{amount}/{userId}', [
+        TransactionController::class,
+        'createTransaction',
+    ]);
+    Route::get('/per/user/transactions/{id}', [
+        TransactionController::class,
+        'perUserTransaction',
+    ]);
+    // DEVICES
+
     Route::apiResource('devices', DeviceController::class);
 
     Route::get('/get/devices/user', [DeviceController::class, 'userDevice']);
@@ -69,111 +190,12 @@ Route::middleware(['auth:api'])->group(function () {
         DeviceController::class,
         'deleteError',
     ]);
-    Route::apiResource('cards', CardController::class);
-    Route::get('/user/cards/{id}', [CardController::class, 'getUserCards']);
-    Route::post('/user/add/card', [CardController::class, 'storeForUser']);
-    Route::get('/cards/generate/code', [
-        CardController::class,
-        'generateElevatorCode',
-    ]);
-    Route::get('/cards/getLift/calltolift', [
-        CardController::class,
-        'calltolift',
-    ]);
-
-    Route::apiResource('transactions', TransactionController::class);
-    Route::get('transactions/generate/order', [
-        TransactionController::class,
-        'makeOrderTransaction',
-    ]);
-
-    Route::get('/changeManager/{company_id}/{user_id}/{new_email}', [
-        UserController::class,
-        'changeManager',
-    ]);
-    Route::get('/change/user/password/admin/{user_id}/{password}', [
-        UserController::class,
-        'changePassword',
-    ]);
-
-    Route::apiResource('users', UserController::class);
-    Route::get('user', [AuthController::class, 'user']);
-    Route::get('/userToDevice/{user_search}/{device_id}', [
-        UserController::class,
-        'addToDevice',
-    ]);
-    Route::post('/password/change', [
-        UserController::class,
-        'changeUserPassword',
-    ]);
-    //  updating user as admin
-    Route::put('/updateUser', [UserController::class, 'update'])->middleware(
-        'SuperAdminMiddleware'
-    );
-
-    Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
-        UserController::class,
-        'removeToDevice',
-    ]);
-    Route::get('/files', [FileController::class, 'index']);
-    Route::delete('/files/{id}', [FileController::class, 'delete']);
-    Route::get('/files/{name}/{version}', [
-        FileController::class,
-        'deviceUpdate',
-    ]);
-    Route::post('/send/update/to/selected/devices', [
-        FileController::class,
-        'deviceUpdateByArray',
-    ]);
-    Route::post('/upload', [FileController::class, 'upload']);
-    Route::get('/unregistered_device', [
-        UnregisteredDeviceController::class,
-        'get',
-    ]);
-    Route::delete('/unregistered_device', [
-        UnregisteredDeviceController::class,
-        'delete',
-    ]);
-    Route::get('/get/pay/cashback/{company_id}/{manager_id}/', [
-        CompanyController::class,
-        'payedCashback',
-    ]);
-    Route::post('/pay/cashback', [CompanyController::class, 'payCashback']);
-    Route::delete('/cashback/{id}', [
-        CompanyController::class,
-        'deleteCashback',
-    ]);
-    Route::get('/cashback/{user_id}/{cashback}', [
-        UserController::class,
-        'cashback',
-    ]);
-
-    Route::get('/updating-device/last-created', [
-        UpdatingDeviceController::class,
-        'getLastCreated',
-    ]);
     Route::get('/updating-device/check-success/last-created', [
         UpdatingDeviceController::class,
         'checkSuccess',
     ]);
-    Route::get('/updating-device/check-failed/last-created', [
-        UpdatingDeviceController::class,
-        'checkFailed',
-    ]);
-    Route::get('/balance/user', [UserController::class, 'getBalance']);
-    Route::get('/bank/transaction/detail/{order_id}', [
-        TransactionController::class,
-        'getTransactionDetail',
-    ]);
-    Route::get('/bank/transaction/create/{amount}/{userId}', [
-        TransactionController::class,
-        'createTransaction',
-    ]);
-    Route::get('/per/user/transactions/{id}', [
-        TransactionController::class,
-        'perUserTransaction',
-    ]);
 });
+// END OF AUTH MIDDLEWEAR
 Route::get('/bank/transaction/detail/{order_id}', [
     TransactionController::class,
     'getTransactionDetail',
