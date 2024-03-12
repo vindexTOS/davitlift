@@ -18,9 +18,8 @@ use App\Http\Middleware\SuperAdminMiddleware;
 //  ADMIN ONLY
 
 Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
-    Route::apiResource('users', UserController::class);
-
     Route::put('/updateUser', [UserController::class, 'update']);
+    Route::apiResource('users', UserController::class);
 
     Route::get('/change/user/password/admin/{user_id}/{password}', [
         UserController::class,

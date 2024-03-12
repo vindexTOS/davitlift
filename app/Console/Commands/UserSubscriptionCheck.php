@@ -39,8 +39,8 @@ class UserSubscriptionCheck extends Command
             foreach ($users as $user) {
                 $subscriptionDate = $user->pivot->subscription ? Carbon::parse($user->pivot->subscription) : null;
                 $nextMonthPayDay = Carbon::now()->addMonth()->startOfMonth()->addDays($device->pay_day - 1);
-                if ($user->balance >= $device->tariff_amount
-                    && $user->freezed_balance >= $device->tariff_amount
+                if ($user->balance >= $device->
+                    && $user->freezed_balance >= $device->
                     && !is_null($subscriptionDate)
                     && $subscriptionDate->lt($nextMonthPayDay)
                 ) {
@@ -49,23 +49,23 @@ class UserSubscriptionCheck extends Command
                     try {
 
                         // Update User balances
-                        $user->balance -= $device->tariff_amount;
-                        $user->freezed_balance -= $device->tariff_amount;
+                        $user->balance -= $device->;
+                        $user->freezed_balance -= $device->;
 
-                        if (($user->balance - $user->freezed_balance) >= $device->tariff_amount) {
+                        if (($user->balance - $user->freezed_balance) >= $device->) {
 
                             DeviceUser::where('device_id', $device->id)->where('user_id', $user->id)->update(
                                 ['subscription' => $nextMonthPayDay]
                             );
 
-                            $user->freezed_balance = $user->freezed_balance + $device->tariff_amount;
+                            $user->freezed_balance = $user->freezed_balance + $device->;
                         }
 
                         $user->save();
 
 
                         // Update device earnings
-                        $deviceEarning += $device->tariff_amount;
+                        $deviceEarning += $device->;
                         // Commit the transaction
                         DB::commit();
                     } catch (\Exception $e) {
