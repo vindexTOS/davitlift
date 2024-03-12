@@ -37,41 +37,55 @@ class UserSubscriptionCheck extends Command
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
 
             foreach ($users as $user) {
-                $subscriptionDate = $user->pivot->subscription ? Carbon::parse($user->pivot->subscription) : null;
-                $nextMonthPayDay = Carbon::now()->addMonth()->startOfMonth()->addDays($device->pay_day - 1);
-                if ($user->balance >= $device->
-                    && $user->freezed_balance >= $device->
-                    && !is_null($subscriptionDate)
-                    && $subscriptionDate->lt($nextMonthPayDay)
+                $subscriptionDate = $user->pivot->subscription
+                    ? Carbon::parse($user->pivot->subscription)
+                    : null;
+                $nextMonthPayDay = Carbon::now()
+                    ->addMonth()
+                    ->startOfMonth()
+                    ->addDays($device->pay_day - 1);
+                if (
+                    $user->balance >= $device->tariff_amount &&
+                    $user->freezed_balance >= $device->tariff_amount &&
+                    !is_null($subscriptionDate) &&
+                    $subscriptionDate->lt($nextMonthPayDay)
                 ) {
                     // Start transaction
                     DB::beginTransaction();
                     try {
-
                         // Update User balances
-                        $user->balance -= $device->;
-                        $user->freezed_balance -= $device->;
+                        $user->balance -= $device->tariff_amount;
+                        $user->freezed_balance -= $device->tariff_amount;
 
-                        if (($user->balance - $user->freezed_balance) >= $device->) {
+                        if (
+                            $user->balance - $user->freezed_balance >=
+                            $device->tariff_amount
+                        ) {
+                            DeviceUser::where('device_id', $device->id)
+                                ->where('user_id', $user->id)
+                                ->update(['subscription' => $nextMonthPayDay]);
 
-                            DeviceUser::where('device_id', $device->id)->where('user_id', $user->id)->update(
-                                ['subscription' => $nextMonthPayDay]
-                            );
-
-                            $user->freezed_balance = $user->freezed_balance + $device->;
+                            $user->freezed_balance =
+                                $user->freezed_balance + $device->tariff_amount;
                         }
 
                         $user->save();
 
-
                         // Update device earnings
-                        $deviceEarning += $device->;
+                        $deviceEarning += $device->tariff_amount;
                         // Commit the transaction
                         DB::commit();
                     } catch (\Exception $e) {
                         // An error occurred; rollback the transaction
                         DB::rollback();
-                        $this->error('Failed to process user ' . $user->id . ' with device ' . $device->id . ': ' . $e->getMessage());
+                        $this->error(
+                            'Failed to process user ' .
+                                $user->id .
+                                ' with device ' .
+                                $device->id .
+                                ': ' .
+                                $e->getMessage()
+                        );
                     }
                 }
             }
@@ -92,6 +106,8 @@ class UserSubscriptionCheck extends Command
             }
         }
 
-        $this->info('User subscriptions have been checked and updated successfully.');
+        $this->info(
+            'User subscriptions have been checked and updated successfully.'
+        );
     }
 }
