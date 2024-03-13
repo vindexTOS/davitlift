@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Device extends Model
 {
+    //  to do
+    // გააკეთე კორპუსის  თავჯდომარის ტარიფის თეიბლი რომელსაც ექნება ტარიფი, კორპუსი, თავდჯომარის ID
     use HasFactory, SoftDeletes;
 
     /**
@@ -15,6 +17,7 @@ class Device extends Model
      *
      * @var array
      */
+
     protected $fillable = [
         'sim_card_number',
         'relay_pulse_time',
@@ -49,7 +52,8 @@ class Device extends Model
         'network',
         'signal',
         'pay_day',
-        'isBlocked'
+        'isBlocked',
+        'deviecTariffAmount',
     ];
 
     /**
@@ -69,21 +73,22 @@ class Device extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'device_user')->withPivot('subscription')->withCount('cards');
+        return $this->belongsToMany(User::class, 'device_user')
+            ->withPivot('subscription')
+            ->withCount('cards');
     }
     public function earnings()
     {
-        return $this->hasMany(DeviceEarn::class,'device_id','id');
+        return $this->hasMany(DeviceEarn::class, 'device_id', 'id');
     }
     public function withdrawals()
     {
         return $this->hasMany(DeviceWithdrawn::class);
     }
-    public function errors() {
-        return $this->hasMany(DeviceError::class,'device_id','id');
-
+    public function errors()
+    {
+        return $this->hasMany(DeviceError::class, 'device_id', 'id');
     }
-
     /**
      * Get the company that owns the device.
      */
@@ -95,12 +100,16 @@ class Device extends Model
     {
         return self::query()
             ->where('can_search', true)
-            ->where(function($query) use ($term) {
-                $query->where('name', 'LIKE', "%{$term}%")
+            ->where(function ($query) use ($term) {
+                $query
+                    ->where('name', 'LIKE', "%{$term}%")
                     ->orWhere('comment', 'LIKE', "%{$term}%");
             });
     }
-    public function lastUpdate() {
-        return $this->hasOne(UpdatingDevice::class,'device_id','id')->where('status', '=',1)->latest();
+    public function lastUpdate()
+    {
+        return $this->hasOne(UpdatingDevice::class, 'device_id', 'id')
+            ->where('status', '=', 1)
+            ->latest();
     }
 }
