@@ -23,15 +23,30 @@
         {{ eachLiftTariffAmount }}
       </div>
 
-      <div v-if="isAdmin" style="display: flex; align-items: center;">
-        <b>ტარიფი თითო ლიფტზე:</b>
-        {{ filtredDevices[0]['deviceTariffAmount'] }}
-        <v-icon @click="toggleLiftTariff" size="xs" color="gray">
-          mdi-pencil
-        </v-icon>
+      <div
+        v-if="isAdmin"
+        style="
+          display: flex;
+          align-items: start;
+          flex-wrap: wrap;
+          flex-direction: column;
+        "
+      >
+        <div>
+          <b>ტარიფი თითო ლიფტზე:</b>
+          {{ filtredDevices[0]['deviceTariffAmount'] }}
+          <v-icon @click="toggleLiftTariff" size="xs" color="gray">
+            mdi-pencil
+          </v-icon>
+        </div>
         <div
           v-if="allLiftTariff"
-          style="display: flex; align-items: center; width: 200px;"
+          style="
+            display: flex;
+            align-items: center;
+            width: 200px;
+            margin-top: 10px;
+          "
         >
           <v-text-field
             v-model="liftTariffValue"
@@ -141,7 +156,7 @@
         <v-row v-if="filtredDevices">
           <v-col
             style="min-width: fit-content;"
-            v-for="item in filtredDevices"
+            v-for="(item, index) in filtredDevices"
             cols="12"
             sm="6"
             md="4"
@@ -196,6 +211,56 @@
                     item.op_mode == 0 ? 'გადახდის რიცხვი: ' + item.pay_day : ''
                   }}
                 </b>
+                <hr />
+                <!-- ლიფტის ტარიფის შეცვლა -->
+                <div v-if="isAdmin">
+                  <div>
+                    <b>ლიფტის ტარიფი {{ item.deviceTariffAmount }} ₾</b>
+                    <v-icon
+                      @click="openSingleDeviceTariffAmount(index)"
+                      size="xs"
+                      color="gray"
+                    >
+                      mdi-pencil
+                    </v-icon>
+                  </div>
+                  <div
+                    v-if="singleLiftMapBool[index]"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      width: 200px;
+                      margin-top: 10px;
+                    "
+                  >
+                    <v-text-field
+                      v-model="liftTariffValue"
+                      @input="handleInput"
+                      :value="liftTariffValue"
+                      type="number"
+                      outlined
+                      dense
+                      :style="{
+                        width: '100px',
+                        'margin-top': '5px',
+                      }"
+                    ></v-text-field>
+                    <v-icon
+                      @click="changeSingleLiftAmount(item.id, index)"
+                      size="40px"
+                      color="green"
+                    >
+                      mdi-check-circle
+                    </v-icon>
+                    <v-icon
+                      @click="openSingleDeviceTariffAmount(index)"
+                      size="40px"
+                      color="red"
+                    >
+                      mdi-close-circle-outline
+                    </v-icon>
+                  </div>
+                </div>
               </template>
 
               <template v-slot:text></template>
@@ -234,6 +299,7 @@ export default {
   data: function () {
     return {
       data: {},
+      singleLiftMapBool: [],
       isAdmin: false,
       hasError: true,
       isActive: true,
@@ -342,6 +408,12 @@ export default {
     },
   },
   methods: {
+    openSingleDeviceTariffAmount(index) {
+      let newBoolArr = [...this.singleLiftMapBool]
+      newBoolArr[index] = !newBoolArr[index]
+      this.singleLiftMapBool = newBoolArr
+    },
+
     chackAdminEmail() {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
@@ -384,6 +456,9 @@ export default {
           this.getDeviceAmount()
           this.getCashBackData()
           this.liftTariffValue = this.filtredDevices[0]['deviceTariffAmount']
+          this.singleLiftMapBool = new Array(this.filtredDevices.length).fill(
+            false,
+          )
         })
     },
 
@@ -405,16 +480,31 @@ export default {
           ]
         })
     },
+    changeSingleLiftAmount(id, index) {
+      axios
+        .put(`/api/device/tariff/${id}`, {
+          amount: Number(this.liftTariffValue),
+        })
+        .then((res) => {
+          console.log(res)
+
+          this.loadItems()
+          this.getCashback()
+          this.openSingleDeviceTariffAmount(index)
+          this.liftTariffValue = ''
+        })
+    },
     changeLiftAmountMany() {
       axios
         .put(`/api/device/manyTariff/${this.data.manager.id}`, {
-          amount: this.liftTariffValue,
+          amount: Number(this.liftTariffValue),
         })
         .then((res) => {
           console.log(res)
           this.toggleLiftTariff()
           this.loadItems()
           this.getCashback()
+          this.liftTariffValue = ''
         })
         .catch((err) => console.log(err))
     },
