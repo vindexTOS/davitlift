@@ -18,6 +18,41 @@
         <b>{{ $t('Cashback') }}:</b>
         {{ data.manager.cashback }}%
       </div>
+      <div v-if="isAdmin">
+        <b>სრული ტარიფი:</b>
+        {{ eachLiftTariffAmount }}
+      </div>
+
+      <div v-if="isAdmin" style="display: flex; align-items: center;">
+        <b>ტარიფი თითო ლიფტზე:</b>
+        {{ filtredDevices[0]['deviceTariffAmount'] }}
+        <v-icon @click="toggleLiftTariff" size="xs" color="gray">
+          mdi-pencil
+        </v-icon>
+        <div
+          v-if="allLiftTariff"
+          style="display: flex; align-items: center; width: 200px;"
+        >
+          <v-text-field
+            v-model="liftTariffValue"
+            @input="handleInput"
+            :value="liftTariffValue"
+            type="number"
+            outlined
+            dense
+            :style="{
+              width: '100px',
+              'margin-top': '5px',
+            }"
+          ></v-text-field>
+          <v-icon @click="changeLiftAmountMany" size="40px" color="green">
+            mdi-check-circle
+          </v-icon>
+          <v-icon @click="toggleLiftTariff" size="40px" color="red">
+            mdi-close-circle-outline
+          </v-icon>
+        </div>
+      </div>
     </v-card-text>
   </v-card>
 
@@ -53,6 +88,7 @@
         </v-card>
       </v-col>
     </v-row>
+    <!-- <h1 @click="testClick()">TESTTSETESTSETEST</h1> -->
     <v-row class="justify-space-between">
       <v-col style="min-height: 100%;" cols="12" md="6"></v-col>
       <v-col v-if="seriesC" cols="12" md="6">
@@ -198,9 +234,12 @@ export default {
   data: function () {
     return {
       data: {},
+      isAdmin: false,
       hasError: true,
       isActive: true,
       notActive: true,
+      allLiftTariff: false,
+      liftTariffValue: '',
       deleted: false,
       seriesB: [0, 0],
       seriesC: [0, 0],
@@ -219,6 +258,7 @@ export default {
   created() {
     this.loadItems()
     this.getCashback()
+    this.chackAdminEmail()
   },
   computed: {
     chartOptionsB() {
@@ -277,7 +317,8 @@ export default {
     },
     maxCashback() {
       if (this.data.manager) {
-        // this.totalMoney = 210  დასტატესი ვალუე
+        console.log(this.data.manager)
+        // this.totalMoney = 210
         let cashbackAmount =
           (this.totalMoney * this.data.manager.cashback) / 100
 
@@ -301,6 +342,33 @@ export default {
     },
   },
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
+    handleLiftAmountTariffInput(event) {
+      this.liftTariffValue = event.target.value
+    },
+    toggleLiftTariff() {
+      this.allLiftTariff = !this.allLiftTariff
+    },
+    getCashBackData() {
+      if (this.data.manager) {
+        // this.totalMoney = 210
+        let cashbackAmount =
+          (this.totalMoney * this.data.manager.cashback) / 100
+
+        if (cashbackAmount > this.totalMoney - this.eachLiftTariffAmount) {
+          this.cashBackAmount = this.totalMoney - this.eachLiftTariffAmount
+          return this.cashBackAmount
+        } else {
+          this.cashBackAmount = cashbackAmount
+          return this.cashBackAmount
+        }
+      }
+    },
+
     getDeviceAmount() {
       this.eachLiftTariffAmount = this.filtredDevices
         .map((val) => val.deviceTariffAmount)
@@ -314,6 +382,8 @@ export default {
         .then(({ data }) => {
           this.cashbackData = data
           this.getDeviceAmount()
+          this.getCashBackData()
+          this.liftTariffValue = this.filtredDevices[0]['deviceTariffAmount']
         })
     },
 
@@ -322,15 +392,31 @@ export default {
         .get('/api/companies/manager/' + this.$route.params.id)
         .then(({ data }) => {
           this.data = data
+          console.log(this.data.earnings)
           Object.values(this.data.earnings).forEach((x) => {
             this.series[0].data[x.month - 1] = x.earnings / 100
-            this.totalMoney += x.earnings / 100
+            // this.totalMoney += x.earnings / 100
           })
+
+          this.totalMoney = Object.values(this.data.earnings)[0].earnings / 100
           this.seriesB = [
             this.data.deviceActivity.inactive,
             this.data.deviceActivity.active,
           ]
         })
+    },
+    changeLiftAmountMany() {
+      axios
+        .put(`/api/device/manyTariff/${this.data.manager.id}`, {
+          amount: this.liftTariffValue,
+        })
+        .then((res) => {
+          console.log(res)
+          this.toggleLiftTariff()
+          this.loadItems()
+          this.getCashback()
+        })
+        .catch((err) => console.log(err))
     },
     detailDevice(id) {
       router.push({ name: `devicesDetail`, params: { id: id } })

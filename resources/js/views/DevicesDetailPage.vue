@@ -849,7 +849,6 @@ export default {
       return `${day}/${month}/${d.getFullYear()} ${hours}:${minutes}`
     },
     loadItems(withCong = false) {
-      console.log(this.$route.params.id)
       axios
         .get('/api/devices/' + this.$route.params.id)
         .then(({ data }) => {

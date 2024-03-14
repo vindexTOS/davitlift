@@ -60,8 +60,17 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         UpdatingDeviceController::class,
         'checkFailed',
     ]);
+    //  update deveice tarriff aomunt
+    Route::put('/device/tariff/{id}', [
+        DeviceController::class,
+        'updateDeviceTariff',
+    ]);
+    // update many  traffic amounts
 });
-
+Route::put('/device/manyTariff/{managerId}', [
+    DeviceController::class,
+    'updateManyDeviceTariff',
+]);
 // USER ONLY OR SHARED
 
 Route::middleware(['auth:api'])->group(function () {

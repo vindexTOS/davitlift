@@ -18,6 +18,7 @@ use App\Services\MqttService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use PhpMqtt\Client\MqttClient;
+use Illuminate\Support\Facades\Validator;
 
 class DeviceController extends Controller
 {
@@ -364,5 +365,40 @@ class DeviceController extends Controller
         $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
         return $response->json(['data' => ['dasd']]);
 
+    }
+
+    public function updateDeviceTariff($id,  Request $request){
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|integer'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+    
+        $device = Device::find($id);
+    
+        if (!$device) {
+            return response()->json(['error' => 'Device not found'], 404);
+        }
+    
+        $device->deviceTariffAmount = $request->input('amount');
+        $device->save();
+    
+        return response()->json(["data" => $device]);
+    }
+
+    public function updateManyDeviceTariff($managerId, Request $request){
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|integer'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+    
+        Device::where('users_id', $managerId)->update(['deviceTariffAmount' => $request->input('amount')]);
+    
+        return response()->json(["message" => "Devices updated successfully"]);
     }
 }
