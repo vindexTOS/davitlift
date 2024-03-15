@@ -585,6 +585,7 @@ class CompanyController extends Controller
                     'month' => $month,
                     'year' => $year,
                     'earnings' => floatval($earning['earnings']),
+                    'fullTime' => $earning['updated_at'],
                 ];
             }
         }

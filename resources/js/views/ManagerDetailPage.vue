@@ -1,4 +1,5 @@
 <template>
+  <!-- to do თუ მენეჯერს აქვს პროცენტი ამ შემთხვევაში კოპმანის სრული შემოსავლიდან უხდის გაწერილ პროცენტს თუ მენეჯრს ნული აქვს არ გავუტანთ გრაფას  -->
   <v-card v-if="data.manager" class="mb-4">
     <v-card-title>
       <v-btn icon="mdi-arrow-left" size="small" @click="goBack"></v-btn>
@@ -77,7 +78,7 @@
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
           <h4>
-            {{ $t('Total amount earned') }}: {{ totalMoney }}{{ $t('Lari') }}
+            {{ $t('Total amount earned') }}: {{ fullAmount }} {{ $t('Lari') }}
           </h4>
           <apexchart
             width="400"
@@ -108,11 +109,14 @@
       <v-col style="min-height: 100%;" cols="12" md="6"></v-col>
       <v-col v-if="seriesC" cols="12" md="6">
         <v-card
-          v-if="seriesC[0] + seriesC[1]"
+          v-if="seriesC[0] + seriesC[1] > 0"
           style="height: 100%;"
           class="overflow-auto pa-2"
         >
-          <h3>{{ $t('Cashback') }} ჩასარიცხი {{ seriesC[0] }}</h3>
+          <h3>
+            {{ $t('Cashback') }} ჩასარიცხი
+            {{ seriesC[0] <= 0 ? 0 : seriesC[0] }}
+          </h3>
           <h4>{{ $t('Total Cashback') }}: ჩარიცხული {{ seriesC[1] }}</h4>
           <apexchart
             width="400"
@@ -163,7 +167,8 @@
             lg="3"
             :key="item.id"
           >
-            <v-card @click="detailDevice(item.id)">
+            <!-- @click="detailDevice(item.id)" -->
+            <v-card>
               <template v-slot:title>
                 <div class="d-flex justify-space-between">
                   <span>
@@ -300,6 +305,7 @@ export default {
     return {
       data: {},
       singleLiftMapBool: [],
+
       isAdmin: false,
       hasError: true,
       isActive: true,
@@ -318,6 +324,7 @@ export default {
         },
       ],
       totalMoney: 0,
+      fullAmount: 0,
       cashbackData: {},
     }
   },
@@ -382,6 +389,7 @@ export default {
       }
     },
     maxCashback() {
+      console.log(this.data.manager)
       if (this.data.manager) {
         console.log(this.data.manager)
         // this.totalMoney = 210
@@ -467,13 +475,34 @@ export default {
         .get('/api/companies/manager/' + this.$route.params.id)
         .then(({ data }) => {
           this.data = data
-          console.log(this.data.earnings)
+          console.log(data)
+          let lastEarning
+
+          const sortedEarnings = Object.values(this.data.earnings).sort(
+            (a, b) => {
+              return new Date(a.fullTime) - new Date(b.fullTime)
+            },
+          )
+          sortedEarnings.forEach((x) => {
+            this.fullAmount += x.earnings / 100
+            const earningsIndex = new Date(x.fullTime).getMonth()
+            if (this.series[0].data[earningsIndex] === undefined) {
+              this.series[0].data[earningsIndex] = 0
+            }
+            this.series[0].data[earningsIndex] += x.earnings / 100
+          })
           Object.values(this.data.earnings).forEach((x) => {
-            this.series[0].data[x.month - 1] = x.earnings / 100
-            // this.totalMoney += x.earnings / 100
+            if (
+              !lastEarning ||
+              new Date(x.fullTime) > new Date(lastEarning.fullTime)
+            ) {
+              lastEarning = x
+              this.totalMoney = lastEarning.earnings / 100
+            }
           })
 
-          this.totalMoney = Object.values(this.data.earnings)[0].earnings / 100
+          0
+
           this.seriesB = [
             this.data.deviceActivity.inactive,
             this.data.deviceActivity.active,

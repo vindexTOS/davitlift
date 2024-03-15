@@ -32,7 +32,7 @@
 
   <v-card class="pa-2">
     <v-row class="justify-space-between">
-      <v-col v-if="totalMoney" style="min-height: 100%;" cols="12" md="6">
+      <v-col v-if="fullAmount" style="min-height: 100%;" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
 
@@ -62,14 +62,16 @@
     </v-row>
     <v-row class="justify-space-between">
       <v-col
-        v-if="seriesD[0] + seriesD[1]"
+        v-if="seriesD[0] + seriesD[1] > 0"
         style="min-height: 100%;"
         cols="12"
         md="6"
       >
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Cashback') }}</h3>
-          <h4>{{ $t('Total Cashback') }}:{{ seriesD[0] + seriesD[1] }}</h4>
+          <h4>
+            {{ $t('Total Cashback') }}:{{ seriesD[0] <= 0 ? 0 : seriesD[0] }}
+          </h4>
           <apexchart
             width="400"
             height="350"
@@ -82,7 +84,7 @@
       <v-col v-if="seriesC[0] + seriesC[1]" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Service fee') }}</h3>
-          <h4>{{ $t('Total service fee') }}:{{ seriesC[0] + seriesC[1] }}</h4>
+          <h4>{{ $t('Total service fee') }}:{{ seriesC[0] }}</h4>
           <apexchart
             width="400"
             height="350"
@@ -108,8 +110,8 @@
       @getCashback="loadItems"
       :max-cashback="
         (
-          (data['companyFee'] / 100).toFixed(2) - data['payedCompanyFee']
-        ).toFixed(2)
+          seriesD[0]
+        ) 
       "
       :isCompanyPage="true"
       :server-items="data['companyTransaction']"
@@ -132,6 +134,7 @@ export default {
   data: function () {
     return {
       data: {},
+      companyFee: 0,
       seriesB: [0, 0],
 
       seriesC: [0, 0],
@@ -146,6 +149,7 @@ export default {
         },
       ],
       totalMoney: 0,
+      fullAmount: 0,
     }
   },
   created() {
@@ -198,45 +202,41 @@ export default {
         .reduce((a, b) => a + b)
       console.log(data)
       let cashback = data.company.cashback
+
       let needToPay = Object.values(data.earnings)[0].earnings / 100
-      console.log(needToPay)
+      // console.log(needToPay)
       // this.totalMoney = 210
       let cashbackAmount = (needToPay * cashback) / 100
 
       if (cashbackAmount > needToPay - deviceTariffCombined) {
-        console.log('1')
+        this.companyFee = deviceTariffCombined
 
-        return needToPay - deviceTariffCombined
+        return needToPay - deviceTariffCombined - data.payedCompanyFee
       } else {
-        return cashbackAmount
+        this.companyFee = needToPay - cashbackAmount
+
+        return cashbackAmount - data.payedCompanyFee
       }
     },
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
         this.data = data
+        console.log(data)
 
         Object.values(this.data.earnings).forEach((x) => {
           this.series[0].data[x.month - 1] = x.earnings / 100
-          this.totalMoney += x.earnings / 100
+          this.fullAmount += x.earnings / 100
         })
         this.seriesB = [
           this.data.deviceActivity.inactive,
           this.data.deviceActivity.active,
         ]
-        this.seriesC = [
-          this.getCashBackData(data),
+
+        this.seriesD = [
+          Number(this.getCashBackData(data)),
           Number(this.data.payedCompanyFee),
         ]
-        this.getCashBackData(data)
-        this.seriesD = [
-          Number(
-            (
-              Number(this.data['needToPay']) -
-              Number(this.data['payedCashback'])
-            ).toFixed(2),
-          ),
-          Number(this.data['payedCashback'].toFixed(2)),
-        ]
+        this.seriesC = [this.companyFee, 0]
       })
     },
     generateData(baseval, count, yrange) {
