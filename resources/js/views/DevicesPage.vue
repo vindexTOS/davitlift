@@ -171,14 +171,14 @@
         <v-row v-if="serverItemsFilter">
           <v-col
             style="min-width: fit-content;"
-            v-for="item in serverItemsFilter"
+            v-for="(item, index) in serverItemsFilter"
             cols="12"
             sm="6"
             md="4"
             lg="3"
             :key="item.id"
           >
-            <v-card @click="detailDevice(item.id)">
+            <v-card>
               <template v-slot:title>
                 <div class="d-flex justify-space-between">
                   <span>
@@ -236,6 +236,61 @@
                       : ''
                   }}
                 </b>
+                <hr />
+                <div v-if="isAdmin">
+                  <div>
+                    <b>ლიფტის ტარიფი {{ item.deviceTariffAmount }} ₾</b>
+                    <v-icon
+                      @click="openSingleDeviceTariffAmount(index)"
+                      size="xs"
+                      color="gray"
+                    >
+                      mdi-pencil
+                    </v-icon>
+                  </div>
+                  <!-- ლიფტის ტარიფის შეცვლა -->
+
+                  <div
+                    v-if="singleLiftMapBool[index]"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      width: 200px;
+                      margin-top: 10px;
+                    "
+                  >
+                    <v-text-field
+                      v-model="liftTariffValue"
+                      @input="handleInput"
+                      :value="liftTariffValue"
+                      type="number"
+                      outlined
+                      dense
+                      :style="{
+                        width: '100px',
+                        'margin-top': '5px',
+                      }"
+                    ></v-text-field>
+                    <v-icon
+                      @click="changeSingleLiftAmount(item.id, index)"
+                      size="40px"
+                      color="green"
+                    >
+                      mdi-check-circle
+                    </v-icon>
+                    <v-icon
+                      @click="openSingleDeviceTariffAmount(index)"
+                      size="40px"
+                      color="red"
+                    >
+                      mdi-close-circle-outline
+                    </v-icon>
+                  </div>
+                </div>
+
+                <div v-if="isAdmin" @click="detailDevice(item.id)">
+                  <v-btn class="my-styled-btn">ლიფტის ინფომრაცია ვრცლად</v-btn>
+                </div>
               </template>
 
               <template v-slot:text></template>
@@ -260,6 +315,10 @@ export default {
     userAmount: 0,
     totalAmount: 0,
     dialogBussines: true,
+    allLiftTariff: false,
+    isAdmin: false,
+    singleLiftMapBool: [],
+    eachLiftTariffAmount: 0,
     items: [],
     expanded: [],
     fota: {},
@@ -426,9 +485,40 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
+    handleLiftAmountTariffInput(event) {
+      this.liftTariffValue = event.target.value
+    },
+    toggleLiftTariff() {
+      this.allLiftTariff = !this.allLiftTariff
+    },
+    openSingleDeviceTariffAmount(index) {
+      let newBoolArr = [...this.singleLiftMapBool]
+      newBoolArr[index] = !newBoolArr[index]
+      this.singleLiftMapBool = newBoolArr
+    },
+    changeSingleLiftAmount(id, index) {
+      axios
+        .put(`/api/device/tariff/${id}`, {
+          amount: Number(this.liftTariffValue),
+        })
+        .then((res) => {
+          console.log(res)
+
+          this.loadItems()
+
+          this.openSingleDeviceTariffAmount(index)
+          this.liftTariffValue = ''
+        })
+    },
     loadItems() {
       axios.get('api/devices').then(({ data }) => {
         this.serverItems = data
+        this.chackAdminEmail()
       })
     },
     detailDevice(id) {

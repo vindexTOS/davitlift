@@ -35,7 +35,6 @@
       <v-col v-if="fullAmount" style="min-height: 100%;" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
-          <h1 @click="console.log(series)">DATA</h1>
           <apexchart
             width="400"
             type="bar"
@@ -198,7 +197,6 @@ export default {
   },
   methods: {
     getCashBackData(data, deviceEarning) {
-      console.log(data.earnings)
       let deviceTariffCombined = data.managers
         .map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
         .reduce((a, b) => a + b)
@@ -206,36 +204,42 @@ export default {
       let cashback = data.company.cashback
       // let needToPay = Object.values(data.earnings)[0].earnings / 100
       let needToPay = deviceEarning
-      // console.log(needToPay)
-      // this.totalMoney = 210
+
+      let cashbackAmount = (needToPay * cashback) / 100
+
+      if (cashbackAmount > needToPay - deviceTariffCombined) {
+        // this.companyFee = deviceTariffCombined
+        let result = needToPay - deviceTariffCombined
+
+        return result
+      } else {
+        let result = cashbackAmount
+
+        // this.companyFee = needToPay - cashbackAmount
+        return result
+      }
+    },
+    getCompanyFee(data) {
+      let deviceTariffCombined = data.managers
+        ?.map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
+        .reduce((a, b) => a + b)
+
+      let cashback = data.company.cashback
+      let needToPay = Object.values(data.earnings)[0].earnings / 100
+
       let cashbackAmount = (needToPay * cashback) / 100
 
       if (cashbackAmount > needToPay - deviceTariffCombined) {
         this.companyFee = deviceTariffCombined
-        let result = needToPay - deviceTariffCombined
-        // if (oldMoney !== result) {
-        //   console.log(result + oldMoney)
-        //   result + oldMoney
-        // }
-        return result
       } else {
-        let result = cashbackAmount
         this.companyFee = needToPay - cashbackAmount
-        // if (oldMoney !== result) {
-        //   console.log(result)
-        //   result + oldMoney
-        // }
-        return result
       }
     },
+
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
         this.data = data
-
-        // Object.values(this.data.earnings).forEach((x) => {
-        //   this.series[0].data[x.month - 1] = x.earnings / 100
-        //   this.fullAmount += x.earnings / 100
-        // })
+        this.getCompanyFee(data)
         let lastEarning
 
         const sortedEarnings = [...Object.values(this.data.earnings)].sort(
@@ -250,8 +254,8 @@ export default {
           }
           this.series[0].data[earningsIndex] += x.earnings / 100
         })
-        let deviceLastEarning =
-          Object.values(this.data.earnings)[0].earnings / 100
+
+        Object.values(this.data.earnings)[0].earnings / 100
         this.deviceEarningByMonth = Array.from(
           Object.values(this.data.earnings),
         )
@@ -273,7 +277,7 @@ export default {
           .reduce((a, b) => a + b)
         let finalResultOfDisplayAmount =
           this.deviceEarningByMonth - amountAlreadyPayedNumber
-        console.log(this.deviceEarningByMonth, amountAlreadyPayedNumber)
+
         Object.values(this.data.earnings).forEach((x) => {
           if (
             !lastEarning ||

@@ -216,8 +216,8 @@
                     item.op_mode == 0 ? 'გადახდის რიცხვი: ' + item.pay_day : ''
                   }}
                 </b>
+
                 <hr />
-                <!-- ლიფტის ტარიფის შეცვლა -->
                 <div v-if="isAdmin">
                   <div>
                     <b>ლიფტის ტარიფი {{ item.deviceTariffAmount }} ₾</b>
@@ -229,6 +229,8 @@
                       mdi-pencil
                     </v-icon>
                   </div>
+                  <!-- ლიფტის ტარიფის შეცვლა -->
+
                   <div
                     v-if="singleLiftMapBool[index]"
                     style="
@@ -265,6 +267,11 @@
                       mdi-close-circle-outline
                     </v-icon>
                   </div>
+                </div>
+                <hr />
+
+                <div v-if="isAdmin" @click="detailDevice(item.id)">
+                  <v-btn class="my-styled-btn">ლიფტის ინფომრაცია ვრცლად</v-btn>
                 </div>
               </template>
 
@@ -500,8 +507,6 @@ export default {
               this.totalMoney = lastEarning.earnings / 100
             }
           })
-
-          0
 
           this.seriesB = [
             this.data.deviceActivity.inactive,
