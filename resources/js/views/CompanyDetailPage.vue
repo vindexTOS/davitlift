@@ -35,7 +35,7 @@
       <v-col v-if="fullAmount" style="min-height: 100%;" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
-
+          <h1 @click="console.log(series)">DATA</h1>
           <apexchart
             width="400"
             type="bar"
@@ -148,6 +148,7 @@ export default {
           data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
       ],
+      deviceEarningByMonth: [],
       totalMoney: 0,
       fullAmount: 0,
     }
@@ -196,46 +197,103 @@ export default {
     },
   },
   methods: {
-    getCashBackData(data) {
+    getCashBackData(data, deviceEarning) {
+      console.log(data.earnings)
       let deviceTariffCombined = data.managers
         .map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
         .reduce((a, b) => a + b)
-      console.log(data)
-      let cashback = data.company.cashback
 
-      let needToPay = Object.values(data.earnings)[0].earnings / 100
+      let cashback = data.company.cashback
+      // let needToPay = Object.values(data.earnings)[0].earnings / 100
+      let needToPay = deviceEarning
       // console.log(needToPay)
       // this.totalMoney = 210
       let cashbackAmount = (needToPay * cashback) / 100
 
       if (cashbackAmount > needToPay - deviceTariffCombined) {
         this.companyFee = deviceTariffCombined
-
-        return needToPay - deviceTariffCombined - data.payedCompanyFee
+        let result = needToPay - deviceTariffCombined
+        // if (oldMoney !== result) {
+        //   console.log(result + oldMoney)
+        //   result + oldMoney
+        // }
+        return result
       } else {
+        let result = cashbackAmount
         this.companyFee = needToPay - cashbackAmount
-
-        return cashbackAmount - data.payedCompanyFee
+        // if (oldMoney !== result) {
+        //   console.log(result)
+        //   result + oldMoney
+        // }
+        return result
       }
     },
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
         this.data = data
-        console.log(data)
 
-        Object.values(this.data.earnings).forEach((x) => {
-          this.series[0].data[x.month - 1] = x.earnings / 100
+        // Object.values(this.data.earnings).forEach((x) => {
+        //   this.series[0].data[x.month - 1] = x.earnings / 100
+        //   this.fullAmount += x.earnings / 100
+        // })
+        let lastEarning
+
+        const sortedEarnings = [...Object.values(this.data.earnings)].sort(
+          (a, b) => new Date(a.fullTime) - new Date(b.fullTime),
+        )
+
+        sortedEarnings.forEach((x) => {
           this.fullAmount += x.earnings / 100
+          const earningsIndex = new Date(x.fullTime).getMonth()
+          if (this.series[0].data[earningsIndex] === undefined) {
+            this.series[0].data[earningsIndex] = 0
+          }
+          this.series[0].data[earningsIndex] += x.earnings / 100
         })
+        let deviceLastEarning =
+          Object.values(this.data.earnings)[0].earnings / 100
+        this.deviceEarningByMonth = Array.from(
+          Object.values(this.data.earnings),
+        )
+          .map((x) => {
+            if (this.getCashBackData(data, x.earnings / 100) < 0) {
+              return 0
+            } else {
+              return this.getCashBackData(data, x.earnings / 100)
+            }
+          })
+          .reduce((a, b) => a + b)
+
+        let amountAlreadyPayed =
+          data['companyTransaction'].length <= 0
+            ? [{ amount: '0' }, { amount: '0' }]
+            : data['companyTransaction']
+        let amountAlreadyPayedNumber = amountAlreadyPayed
+          ?.map((val) => Number(val.amount))
+          .reduce((a, b) => a + b)
+        let finalResultOfDisplayAmount =
+          this.deviceEarningByMonth - amountAlreadyPayedNumber
+        console.log(this.deviceEarningByMonth, amountAlreadyPayedNumber)
+        Object.values(this.data.earnings).forEach((x) => {
+          if (
+            !lastEarning ||
+            new Date(x.fullTime) > new Date(lastEarning.fullTime)
+          ) {
+            lastEarning = x
+            this.totalMoney = lastEarning.earnings / 100
+          }
+        })
+
         this.seriesB = [
           this.data.deviceActivity.inactive,
           this.data.deviceActivity.active,
         ]
 
         this.seriesD = [
-          Number(this.getCashBackData(data)),
+          finalResultOfDisplayAmount,
           Number(this.data.payedCompanyFee),
         ]
+
         this.seriesC = [this.companyFee, 0]
       })
     },

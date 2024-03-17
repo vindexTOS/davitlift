@@ -15,6 +15,7 @@ class CompanyTransaction extends Model
     protected $fillable = [
         'company_id',
         'amount',
+
         'manager_id',
         'type',
         'transaction_date',
@@ -25,4 +26,5 @@ class CompanyTransaction extends Model
     public function company()
     {
         return $this->belongsTo(Company::class);
-    }}
+    }
+}
