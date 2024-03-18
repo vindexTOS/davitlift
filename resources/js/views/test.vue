@@ -288,7 +288,7 @@ export default {
 
     maxCashback() {
       if (this.data.manager) {
-        console.log(this.totalMoney)
+        // console.log(this.totalMoney)
 
         let remaining =
           this.totalMoney - (this.totalMoney * this.data.manager.cashback) / 100
@@ -301,7 +301,7 @@ export default {
     },
 
     seriesC() {
-      console.log(this.cashbackData)
+      // console.log(this.cashbackData)
       if (this.cashBackAmount > -1) {
         return [Number(this.cashBackAmount), Number(this.cashbackData.total)]
       }
@@ -318,7 +318,7 @@ export default {
       } else {
         this.cashBackAmount = remaining
       }
-      console.log(this.cashBackAmount)
+      // console.log(this.cashBackAmount)
     },
     getDeviceAmount() {
       this.eachLiftTariffAmount = this.filtredDevices
@@ -332,7 +332,7 @@ export default {
         )
         .then(({ data }) => {
           this.cashbackData = data
-          console.log(data, ' CASH BACK DATA')
+          // console.log(data, ' CASH BACK DATA')
           this.getDeviceAmount()
         })
     },

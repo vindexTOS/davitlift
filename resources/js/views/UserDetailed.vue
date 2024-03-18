@@ -627,7 +627,7 @@ export default {
       })
     },
     cardEditFun(item) {
-      console.log(item)
+      // console.log(item)
       this.showCardEditModal = true
       this.cardEdit.name = item.name
       this.cardEdit.id = item.id

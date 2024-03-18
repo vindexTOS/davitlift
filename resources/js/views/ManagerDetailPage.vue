@@ -330,9 +330,12 @@ export default {
           data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
       ],
+      deviceEarningByMonth: [],
+
       totalMoney: 0,
       fullAmount: 0,
       cashbackData: {},
+      displayCashBack: 0,
     }
   },
   created() {
@@ -398,7 +401,6 @@ export default {
     maxCashback() {
       console.log(this.data.manager)
       if (this.data.manager) {
-        console.log(this.data.manager)
         // this.totalMoney = 210
         let cashbackAmount =
           (this.totalMoney * this.data.manager.cashback) / 100
@@ -414,10 +416,7 @@ export default {
     },
     seriesC() {
       if (this.cashbackData.total > -1) {
-        return [
-          Number(this.cashBackAmount - this.cashbackData.total),
-          Number(this.cashbackData.total),
-        ]
+        return [this.displayCashBack, Number(this.cashbackData.total)]
       }
       return [0, 0]
     },
@@ -440,19 +439,25 @@ export default {
     toggleLiftTariff() {
       this.allLiftTariff = !this.allLiftTariff
     },
-    getCashBackData() {
-      if (this.data.manager) {
-        // this.totalMoney = 210
-        let cashbackAmount =
-          (this.totalMoney * this.data.manager.cashback) / 100
+    getCashBackData(data, deviceEarning) {
+      let deviceTariffCombined = this.eachLiftTariffAmount
+      let cashback = data?.manager?.cashback
+      console.log(data)
+      // let needToPay = Object.values(data.earnings)[0].earnings / 100
+      let needToPay = deviceEarning
 
-        if (cashbackAmount > this.totalMoney - this.eachLiftTariffAmount) {
-          this.cashBackAmount = this.totalMoney - this.eachLiftTariffAmount
-          return this.cashBackAmount
-        } else {
-          this.cashBackAmount = cashbackAmount
-          return this.cashBackAmount
-        }
+      let cashbackAmount = (needToPay * cashback) / 100
+
+      if (cashbackAmount > needToPay - deviceTariffCombined) {
+        // this.companyFee = deviceTariffCombined
+        let result = needToPay - deviceTariffCombined
+
+        return result
+      } else {
+        let result = cashbackAmount
+
+        // this.companyFee = needToPay - cashbackAmount
+        return result
       }
     },
 
@@ -468,8 +473,9 @@ export default {
         )
         .then(({ data }) => {
           this.cashbackData = data
+
           this.getDeviceAmount()
-          this.getCashBackData()
+          this.loadItems()
           this.liftTariffValue = this.filtredDevices[0]['deviceTariffAmount']
           this.singleLiftMapBool = new Array(this.filtredDevices.length).fill(
             false,
@@ -482,7 +488,7 @@ export default {
         .get('/api/companies/manager/' + this.$route.params.id)
         .then(({ data }) => {
           this.data = data
-          console.log(data)
+          // console.log(data)
           let lastEarning
 
           const sortedEarnings = Object.values(this.data.earnings).sort(
@@ -498,6 +504,31 @@ export default {
             }
             this.series[0].data[earningsIndex] += x.earnings / 100
           })
+          //
+          this.deviceEarningByMonth = Array.from(
+            Object.values(this.data.earnings),
+          )
+            .map((x) => {
+              if (this.getCashBackData(data, x.earnings / 100) < 0) {
+                return 0
+              } else {
+                return this.getCashBackData(data, x.earnings / 100)
+              }
+            })
+            .reduce((a, b) => a + b)
+
+          let amountAlreadyPayed =
+            Object.values(this.cashbackData['transaction']).length <= 0
+              ? [{ amount: '0' }, { amount: '0' }]
+              : Object.values(this.cashbackData['transaction'])
+
+          let amountAlreadyPayedNumber = amountAlreadyPayed
+            ?.map((val) => Number(val.amount))
+            .reduce((a, b) => a + b)
+
+          let finalResultOfDisplayAmount =
+            this.deviceEarningByMonth - amountAlreadyPayedNumber
+          this.displayCashBack = finalResultOfDisplayAmount
           Object.values(this.data.earnings).forEach((x) => {
             if (
               !lastEarning ||
@@ -520,7 +551,7 @@ export default {
           amount: Number(this.liftTariffValue),
         })
         .then((res) => {
-          console.log(res)
+          // console.log(res)
 
           this.loadItems()
           this.getCashback()
@@ -534,7 +565,7 @@ export default {
           amount: Number(this.liftTariffValue),
         })
         .then((res) => {
-          console.log(res)
+          // console.log(res)
           this.toggleLiftTariff()
           this.loadItems()
           this.getCashback()

@@ -223,7 +223,7 @@ export default {
       let deviceTariffCombined = data.managers
         ?.map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
         .reduce((a, b) => a + b)
-
+      console.log(data.managers)
       let cashback = data.company.cashback
       let needToPay = Object.values(data.earnings)[0].earnings / 100
 
