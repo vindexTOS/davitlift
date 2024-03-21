@@ -238,7 +238,9 @@ export default {
 
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
+        this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         this.data = data
+        console.log(data['companyTransaction'])
         this.getCompanyFee(data)
         let lastEarning
 
