@@ -114,12 +114,15 @@
       "
       :isCompanyPage="true"
       :server-items="data['companyTransaction']"
+      :availableCashback="
+        this.cashbackData['total'] - this.cashbackData['totalWithdrow']
+      "
     ></CashbackTable>
   </div>
 </template>
 <script>
 import VueApexCharts from 'vue3-apexcharts'
-import Router from '@/router'
+import router from '@/router'
 import { th } from 'vuetify/locale'
 import ManagersTable from '../components/ManagersTable.vue'
 import CashbackTable from '../components/CashbackTable.vue'
@@ -150,6 +153,8 @@ export default {
       deviceEarningByMonth: [],
       totalMoney: 0,
       fullAmount: 0,
+      totalTransfers: 0,
+      cashbackData: {},
     }
   },
   created() {
@@ -223,7 +228,7 @@ export default {
       let deviceTariffCombined = data.managers
         ?.map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
         .reduce((a, b) => a + b)
-      console.log(data.managers)
+      // console.log(data.managers)
       let cashback = data.company.cashback
       let needToPay = Object.values(data.earnings)[0].earnings / 100
 
@@ -240,14 +245,19 @@ export default {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
         this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         this.data = data
-        console.log(data['companyTransaction'])
+         console.log(data['companyTransaction'])
+ 
+        this.getCashback()
+
+ 
         this.getCompanyFee(data)
+
         let lastEarning
 
         const sortedEarnings = [...Object.values(this.data.earnings)].sort(
           (a, b) => new Date(a.fullTime) - new Date(b.fullTime),
         )
-
+        this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         sortedEarnings.forEach((x) => {
           this.fullAmount += x.earnings / 100
           const earningsIndex = new Date(x.fullTime).getMonth()
@@ -274,9 +284,14 @@ export default {
           data['companyTransaction'].length <= 0
             ? [{ amount: '0' }, { amount: '0' }]
             : data['companyTransaction']
+        // console.log(amountAlreadyPayed)
         let amountAlreadyPayedNumber = amountAlreadyPayed
+          ?.filter((val) => val.type !== 3)
           ?.map((val) => Number(val.amount))
           .reduce((a, b) => a + b)
+
+        // console.log(data)
+        this.totalTransfers = amountAlreadyPayedNumber
         let finalResultOfDisplayAmount =
           this.deviceEarningByMonth - amountAlreadyPayedNumber
 
@@ -317,6 +332,13 @@ export default {
         i++
       }
       return series
+    },
+    getCashback() {
+      axios
+        .get(`/api/get/pay/companycashback/${this.$route.params.id}`)
+        .then(({ data }) => {
+          this.cashbackData = data
+        })
     },
   },
 }

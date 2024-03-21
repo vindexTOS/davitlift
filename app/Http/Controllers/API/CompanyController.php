@@ -226,6 +226,28 @@ class CompanyController extends Controller
         }
         return $data;
     }
+    public function payedCashbackForCompany($company_id)
+    {
+        $data = [];
+        $data['total'] = 0;
+        $data['totalWithdrow'] = 0;
+
+        $data['transactions'] = CompanyTransaction::where(
+            'company_id',
+            $company_id
+        )->get();
+        $data['id'] = $company_id;
+        foreach ($data['transactions'] as $transaction) {
+            if ($transaction->type === 2) {
+                $data['total'] += $transaction->amount;
+            }
+            if ($transaction->type === 3) {
+                $data['totalWithdrow'] += $transaction->amount;
+            }
+        }
+
+        return $data;
+    }
 
     public function payCashback(Request $request)
     {
@@ -342,12 +364,12 @@ class CompanyController extends Controller
             $data['payedCashback'] = 0;
             $data['withdrCashback'] = 0;
 
-            foreach ($data['companyTransaction'] as $key => $trans) {
-                if ($trans['type'] == 1) {
-                    $data['payedCashback'] += $trans['amount'];
+            foreach ($data['companyTransaction'] as $transaction) {
+                if ($transaction->type === 2) {
+                    $data['payedCashback'] += $transaction->amount;
                 }
-                if ($trans['type'] == 3) {
-                    $data['withdrCashback'] += $trans['amount'];
+                if ($transaction['type'] === 3) {
+                    $data['withdrCashback'] += $transaction->amount;
                 }
             }
 
@@ -356,7 +378,9 @@ class CompanyController extends Controller
                 $valid['amount']
             ) {
                 return response()->json(
-                    ['message' => 'ამ თანხის გამოტანა შეუძლებელია'],
+                    [
+                        'message' => 'ამ თანხის გამოტანა შეუძლებელია',
+                    ],
                     422
                 );
             }

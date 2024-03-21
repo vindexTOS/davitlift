@@ -270,6 +270,7 @@ export default {
         : this.$t('Withdrawal cashback')
     },
     saveExisted() {
+      console.log(this.isCompanyPage)
       axios
         .post('/api/pay/cashback', {
           ...this.cashbackManager,

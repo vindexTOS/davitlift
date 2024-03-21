@@ -66,11 +66,12 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         'updateDeviceTariff',
     ]);
     // update many  traffic amounts
+    Route::put('/device/manyTariff/{managerId}', [
+        DeviceController::class,
+        'updateManyDeviceTariff',
+    ]);
 });
-Route::put('/device/manyTariff/{managerId}', [
-    DeviceController::class,
-    'updateManyDeviceTariff',
-]);
+
 // USER ONLY OR SHARED
 
 Route::middleware(['auth:api'])->group(function () {
@@ -149,6 +150,10 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/get/pay/cashback/{company_id}/{manager_id}/', [
         CompanyController::class,
         'payedCashback',
+    ]);
+    Route::get('/get/pay/companycashback/{company_id}', [
+        CompanyController::class,
+        'payedCashbackForCompany',
     ]);
     Route::post('/pay/cashback', [CompanyController::class, 'payCashback']);
     Route::delete('/cashback/{id}', [

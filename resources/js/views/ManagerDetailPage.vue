@@ -115,7 +115,7 @@
         >
           <h3>
             {{ $t('Cashback') }} ჩასარიცხი
-            {{ seriesC[0] <= 0 ? 0 : seriesC[0] }}
+            {{ seriesC[0] <= 0 ? 0 : seriesC[0].toFixed(2) }}
           </h3>
           <h4>{{ $t('Total Cashback') }}: ჩარიცხული {{ seriesC[1] }}</h4>
           <apexchart
@@ -473,7 +473,7 @@ export default {
         )
         .then(({ data }) => {
           this.cashbackData = data
-
+          console.log(data)
           this.getDeviceAmount()
           this.loadItems()
           this.liftTariffValue = this.filtredDevices[0]['deviceTariffAmount']
