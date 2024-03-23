@@ -78,7 +78,8 @@
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
           <h4>
-            {{ $t('Total amount earned') }}: {{ fullAmount }} {{ $t('Lari') }}
+            {{ $t('Total amount earned') }}: {{ fullAmount }}
+            {{ $t('Lari') }}
           </h4>
           <apexchart
             width="400"
@@ -290,7 +291,7 @@
             ? 0
             : cashbackData['total'] - cashbackData['totalWithdrow']
         "
-        :maxCashback="seriesC[0]"
+        :maxCashback="seriesC[0].toFixed(2)"
       ></CashbackTable>
     </div>
   </div>
@@ -326,6 +327,7 @@ export default {
       seriesC: [0, 0],
       eachLiftTariffAmount: 0,
       cashBackAmount: 0,
+      shouldCashBackOnManager: false,
       series: [
         {
           name: '',
@@ -417,6 +419,8 @@ export default {
     },
     seriesC() {
       if (this.cashbackData.total > -1) {
+        this.shouldCashBackOnManager =
+          Number(this.cashbackData.total) > this.displayCashBack
         return [this.displayCashBack, Number(this.cashbackData.total)]
       }
       return [0, 0]
@@ -474,6 +478,7 @@ export default {
         )
         .then(({ data }) => {
           this.cashbackData = data
+
           // console.log(this.cashbackData['transaction'])
           this.loadItems()
           this.getDeviceAmount()
@@ -490,6 +495,8 @@ export default {
         .get('/api/companies/manager/' + this.$route.params.id)
         .then(({ data }) => {
           this.data = data
+          this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
           // console.log(data)
           let lastEarning
 
@@ -520,14 +527,16 @@ export default {
             .reduce((a, b) => a + b)
           let amountAlreadyPayed =
             Object.values(this.cashbackData['transaction']).length <= 0
-              ? [{ amount: '0' }, { amount: '0' }]
+              ? [
+                  { amount: '0', type: 1 },
+                  { amount: '0', type: 1 },
+                ]
               : Object.values(this.cashbackData['transaction'])
 
           let amountAlreadyPayedNumber = amountAlreadyPayed
-            .filter((val) => val.type === 1)
+            ?.filter((val) => val.type === 1)
             ?.map((val) => Number(val.amount))
             .reduce((a, b) => a + b)
-
           let finalResultOfDisplayAmount =
             this.deviceEarningByMonth - amountAlreadyPayedNumber
           this.displayCashBack = finalResultOfDisplayAmount
@@ -541,6 +550,7 @@ export default {
             }
           })
 
+          console.log(this.totalMoney)
           this.seriesB = [
             this.data.deviceActivity.inactive,
             this.data.deviceActivity.active,
@@ -569,7 +579,6 @@ export default {
         .then((res) => {
           // console.log(res)
           this.toggleLiftTariff()
-          this.loadItems()
           this.getCashback()
           this.liftTariffValue = ''
         })

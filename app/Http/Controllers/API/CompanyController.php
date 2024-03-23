@@ -218,12 +218,13 @@ class CompanyController extends Controller
             ->get();
         foreach ($data['transaction'] as $key => $value) {
             if ($value['type'] === 1) {
-                $data['total'] += $value->amount;
+                $data['total'] += +$value->amount;
             }
             if ($value['type'] === 3) {
-                $data['totalWithdrow'] += $value->amount;
+                $data['totalWithdrow'] += +$value->amount;
             }
         }
+
         return $data;
     }
     public function payedCashbackForCompany($company_id)
@@ -288,7 +289,7 @@ class CompanyController extends Controller
                 (($total / 100) * $user['cashback']) / 100 - $totalPayed;
             if ($maxCashback + 1 < $valid['amount']) {
                 return response()->json(
-                    ['message' => 'მაქსიმალურ ქეშბექზე დიდი თანხაა'],
+                    ['message' => 'თანხა არასაკმარისია'],
                     422
                 );
             }

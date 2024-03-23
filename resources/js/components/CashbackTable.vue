@@ -74,6 +74,7 @@
                         type="date"
                       ></v-text-field>
                     </v-col>
+                    <p style="color: red;">{{ errorMessege }}</p>
                   </v-card-text>
 
                   <v-card-actions>
@@ -101,12 +102,12 @@
                     class="mb-2"
                     v-bind="props"
                   >
-                    {{ $t('ქეშბექის გამოტანა') }}
+                    ქეშბექის გამოტანა
                   </v-btn>
                 </template>
                 <v-card>
                   <v-card-title>
-                    <span class="text-h5">{{ $t('ქეშბექის გამოტანა') }}</span>
+                    <span class="text-h5">ქეშბექის გამოტანა</span>
                   </v-card-title>
 
                   <v-card-text>
@@ -215,6 +216,7 @@ export default {
     existUser: '',
     cashbackManager: {},
     action: {},
+    errorMessege: '',
   }),
 
   computed: {
@@ -270,7 +272,6 @@ export default {
         : this.$t('Withdrawal cashback')
     },
     saveExisted() {
-      console.log(this.isCompanyPage)
       axios
         .post('/api/pay/cashback', {
           ...this.cashbackManager,
@@ -291,24 +292,31 @@ export default {
         })
     },
     save() {
-      axios
-        .post('/api/pay/cashback', {
-          ...this.cashback,
-          company_id: this.isCompanyPage
-            ? this.$route.params.id
-            : this.$route.params.companyId,
-          manager_id: this.isCompanyPage ? null : this.$route.params.id,
-          type: this.isCompanyPage ? 2 : 1,
-        })
-        .then(() => {
-          this.$swal.fire({
-            icon: 'success',
-            position: 'center',
-            allowOutsideClick: false,
+      if (this.maxCashback >= this.cashback.amount) {
+        axios
+          .post('/api/pay/cashback', {
+            ...this.cashback,
+            company_id: this.isCompanyPage
+              ? this.$route.params.id
+              : this.$route.params.companyId,
+            manager_id: this.isCompanyPage ? null : this.$route.params.id,
+            type: this.isCompanyPage ? 2 : 1,
           })
-          this.$emit('getCashback')
-          this.dialogExisted = false
-        })
+          .then(() => {
+            this.$swal.fire({
+              icon: 'success',
+              position: 'center',
+              allowOutsideClick: false,
+            })
+            this.$emit('getCashback')
+            this.dialogExisted = false
+          })
+      } else {
+        this.errorMessege = 'არა საკმარისი თანხა'
+        setTimeout(() => {
+          this.errorMessege = ''
+        }, 5000)
+      }
     },
     getDateWithoutHours(dateString) {
       // Convert the string into a Date object
