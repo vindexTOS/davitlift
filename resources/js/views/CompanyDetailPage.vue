@@ -115,7 +115,9 @@
       :isCompanyPage="true"
       :server-items="data['companyTransaction']"
       :availableCashback="
-        this.cashbackData['total'] - this.cashbackData['totalWithdrow']
+        this.cashbackData['total'] - this.cashbackData['totalWithdrow'] < 0
+          ? 0
+          : this.cashbackData['total'] - this.cashbackData['totalWithdrow']
       "
     ></CashbackTable>
   </div>
@@ -245,11 +247,10 @@ export default {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
         this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         this.data = data
-         console.log(data['companyTransaction'])
- 
+        console.log(data['companyTransaction'])
+
         this.getCashback()
 
- 
         this.getCompanyFee(data)
 
         let lastEarning

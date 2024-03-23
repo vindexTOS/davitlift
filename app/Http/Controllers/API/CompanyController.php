@@ -357,15 +357,23 @@ class CompanyController extends Controller
 
         if ($valid['type'] == 3) {
             $data = [];
-            $data['companyTransaction'] = CompanyTransaction::where(
-                'company_id',
-                $valid['company_id']
-            )->get();
+            if ($valid['manager_id']) {
+                $data['companyTransaction'] = CompanyTransaction::where(
+                    'manager_id',
+                    $valid['manager_id']
+                )->get();
+            } else {
+                $data['companyTransaction'] = CompanyTransaction::where(
+                    'company_id',
+                    $valid['company_id']
+                )->get();
+            }
+
             $data['payedCashback'] = 0;
             $data['withdrCashback'] = 0;
 
             foreach ($data['companyTransaction'] as $transaction) {
-                if ($transaction->type === 2) {
+                if ($transaction->type === 2 || $transaction->type === 1) {
                     $data['payedCashback'] += $transaction->amount;
                 }
                 if ($transaction['type'] === 3) {
@@ -379,7 +387,8 @@ class CompanyController extends Controller
             ) {
                 return response()->json(
                     [
-                        'message' => 'ამ თანხის გამოტანა შეუძლებელია',
+                        'message' =>
+                            'მაქსიმალურ სერვისის გადასახადზე დიდი თანხაა',
                     ],
                     422
                 );

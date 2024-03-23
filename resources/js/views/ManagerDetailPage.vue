@@ -168,7 +168,7 @@
             :key="item.id"
           >
             <!-- @click="detailDevice(item.id)" -->
-            <v-card>
+            <v-card @click="detailDevice(item.id)">
               <template v-slot:title>
                 <div class="d-flex justify-space-between">
                   <span>
@@ -270,9 +270,9 @@
                 </div>
                 <hr />
 
-                <div v-if="isAdmin" @click="detailDevice(item.id)">
+                <!-- <div v-if="isAdmin" @click="detailDevice(item.id)">
                   <v-btn class="my-styled-btn">ლიფტის ინფომრაცია ვრცლად</v-btn>
-                </div>
+                </div> -->
               </template>
 
               <template v-slot:text></template>
@@ -286,7 +286,9 @@
         @getCashback="getCashback"
         :serverItems="cashbackData['transaction']"
         :availableCashback="
-          cashbackData['total'] - cashbackData['totalWithdrow']
+          cashbackData['total'] - cashbackData['totalWithdrow'] <= 0
+            ? 0
+            : cashbackData['total'] - cashbackData['totalWithdrow']
         "
         :maxCashback="seriesC[0]"
       ></CashbackTable>
@@ -339,7 +341,6 @@ export default {
     }
   },
   created() {
-    this.loadItems()
     this.getCashback()
     this.chackAdminEmail()
   },
@@ -399,7 +400,7 @@ export default {
       }
     },
     maxCashback() {
-      console.log(this.data.manager)
+      // console.log(this.data.manager)
       if (this.data.manager) {
         // this.totalMoney = 210
         let cashbackAmount =
@@ -442,7 +443,7 @@ export default {
     getCashBackData(data, deviceEarning) {
       let deviceTariffCombined = this.eachLiftTariffAmount
       let cashback = data?.manager?.cashback
-      console.log(data)
+      // console.log(data)
       // let needToPay = Object.values(data.earnings)[0].earnings / 100
       let needToPay = deviceEarning
 
@@ -473,9 +474,10 @@ export default {
         )
         .then(({ data }) => {
           this.cashbackData = data
-          console.log(data)
-          this.getDeviceAmount()
+          // console.log(this.cashbackData['transaction'])
           this.loadItems()
+          this.getDeviceAmount()
+
           this.liftTariffValue = this.filtredDevices[0]['deviceTariffAmount']
           this.singleLiftMapBool = new Array(this.filtredDevices.length).fill(
             false,
@@ -516,13 +518,13 @@ export default {
               }
             })
             .reduce((a, b) => a + b)
-
           let amountAlreadyPayed =
             Object.values(this.cashbackData['transaction']).length <= 0
               ? [{ amount: '0' }, { amount: '0' }]
               : Object.values(this.cashbackData['transaction'])
 
           let amountAlreadyPayedNumber = amountAlreadyPayed
+            .filter((val) => val.type === 1)
             ?.map((val) => Number(val.amount))
             .reduce((a, b) => a + b)
 
