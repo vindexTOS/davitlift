@@ -28,7 +28,7 @@
               <v-dialog v-model="dialogExisted" max-width="500px">
                 <template v-slot:activator="{ props }">
                   <v-btn
-                    v-if="$store.state.auth.user.lvl >= 3"
+                    v-if="$store.state.auth.user.lvl >= 3 && isAdmin"
                     dark
                     style="width: 100%;"
                     class="mb-2"
@@ -51,8 +51,8 @@
                       }}
                     </span>
                   </v-card-title>
-
-                  <v-card-text>
+                  <!-- თუ ადმინია არ აჩვენო -->
+                  <v-card-text v-if="isAdmin">
                     <v-col cols="12">
                       <p>
                         {{ $t('The maximum amount to be enrolled') }}:
@@ -169,7 +169,7 @@
       <template v-slot:item.balance="{ item }">
         {{ item.raw.balance / 100 }}{{ $t('Lari') }}
       </template>
-      <template v-slot:item.actions="{ item }">
+      <template v-if="isAdmin" v-slot:item.actions="{ item }">
         <v-icon
           v-if="$store.state.auth.user.lvl >= 3"
           size="small"
@@ -217,8 +217,11 @@ export default {
     cashbackManager: {},
     action: {},
     errorMessege: '',
+    isAdmin: false,
   }),
-
+  created() {
+    this.chackAdminEmail()
+  },
   computed: {
     headers() {
       return [
@@ -240,6 +243,11 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
     deleteItem(id) {
       this.$swal
         .fire({

@@ -57,7 +57,9 @@
       <v-card min-width="48%" class="pb-16 mt-md-0 mt-10">
         <v-card-title class="mt-5 d-sm-flex justify-space-between">
           <div>{{ $t('Elevator cards') }}</div>
-          <v-btn @click="showElevator = true">{{ $t('Add card') }}</v-btn>
+          <v-btn v-if="isAdmin" @click="showElevator = true">
+            {{ $t('Add card') }}
+          </v-btn>
         </v-card-title>
         <div>
           <!--  დამატებითი კარტები  -->
@@ -447,6 +449,7 @@ export default {
       showBalance: false,
       showCode: false,
       user: {},
+      isAdmin: false,
       transaction: [],
       card: {
         name: '',
@@ -516,6 +519,7 @@ export default {
     this.getCards()
     this.getUserDevice()
     this.getTransactions()
+    this.chackAdminEmail()
   },
   watch: {
     amount(val) {
@@ -569,6 +573,11 @@ export default {
     },
   },
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
     addBalance() {
       // Your logic for adding balance
       axios
