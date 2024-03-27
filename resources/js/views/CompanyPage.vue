@@ -597,12 +597,15 @@ export default {
     async save() {
       console.log(this.editedItem)
       if (this.editedItem.id) {
+        console.log('put')
+        console.log(this.editedItem)
         const res = await axios.put(
           '/api/companies/' + this.editedItem.id,
           this.editedItem,
         )
         console.log(res)
       } else {
+        console.log('post')
         const res = await axios.post('/api/companies', this.editedItem)
         console.log(res)
       }

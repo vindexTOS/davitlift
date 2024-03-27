@@ -207,7 +207,7 @@ class CompanyController extends Controller
             'admin_id' => $user->id,
             ...$request->all(),
         ]);
-
+        $company['test'] = 'test';
         return response()->json($company, 201);
     }
 
@@ -641,6 +641,10 @@ class CompanyController extends Controller
             );
         }
         $user = User::where('email', $request->admin_email)->first();
+        $user->update([
+            'cashback' => $request->cashback,
+        ]);
+
         if (empty($user)) {
             return response()->json(
                 ['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],
@@ -654,6 +658,12 @@ class CompanyController extends Controller
 
     public function destroy(Company $company)
     {
+        $companyID = $company->admin_id;
+        $user = User::where('id', $companyID)->first();
+        $user->update([
+            'cashback' => 0,
+            'role' => 'member',
+        ]);
         $company->delete();
         return response()->json(null, 204);
     }
