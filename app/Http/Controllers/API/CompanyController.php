@@ -60,6 +60,7 @@ class CompanyController extends Controller
             $data['payedServiceFee'] += $statistic['payedCompanyFee'];
             $data['payedCashback'] += $statistic['payedCashback'];
         }
+
         return $data;
     }
     public function blockCompanies($id)
@@ -192,6 +193,10 @@ class CompanyController extends Controller
             );
         }
         $user = User::where('email', $request->admin_email)->first();
+        $user->update([
+            'cashback' => $request->cashback,
+            'role' => $request->role,
+        ]);
         if (empty($user)) {
             return response()->json(
                 ['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],
@@ -202,6 +207,7 @@ class CompanyController extends Controller
             'admin_id' => $user->id,
             ...$request->all(),
         ]);
+
         return response()->json($company, 201);
     }
 

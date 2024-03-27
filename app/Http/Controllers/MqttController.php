@@ -818,7 +818,9 @@ class MqttController extends Controller
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
         // Generate the date for month_year
+ 
 
+        // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
         $now = Carbon::now();
 
         // Try to retrieve the entry for the given device and month_year

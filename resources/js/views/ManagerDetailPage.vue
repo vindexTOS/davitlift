@@ -470,6 +470,7 @@ export default {
       this.eachLiftTariffAmount = this.filtredDevices
         .map((val) => val.deviceTariffAmount)
         .reduce((a, b) => a + b)
+      console.log(this.filtredDevices)
     },
     getCashback() {
       axios
@@ -482,7 +483,9 @@ export default {
           // console.log(this.cashbackData['transaction'])
           this.loadItems()
           this.getDeviceAmount()
-
+          this.eachLiftTariffAmount = this.filtredDevices
+            .map((val) => val.deviceTariffAmount)
+            .reduce((a, b) => a + b)
           this.liftTariffValue = this.filtredDevices[0]['deviceTariffAmount']
           this.singleLiftMapBool = new Array(this.filtredDevices.length).fill(
             false,
@@ -556,6 +559,9 @@ export default {
             this.data.deviceActivity.active,
           ]
         })
+      this.eachLiftTariffAmount = this.filtredDevices
+        .map((val) => val.deviceTariffAmount)
+        .reduce((a, b) => a + b)
     },
     changeSingleLiftAmount(id, index) {
       axios
