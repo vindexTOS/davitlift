@@ -152,12 +152,15 @@ class UserController extends Controller
     {
         $newUser = User::where('email', $new_email)->first();
         $oldUser = User::where('id', $user_id)->first();
+
         if (empty($newUser)) {
             return response()->json(
                 ['message' => 'ასეთი მომხმარებელი არ არსებობს'],
                 422
             );
         }
+        $newUser->update(['role' => 'manager']);
+        $oldUser->update(['role' => 'member']);
         $newUser->cashback = $oldUser->cashback;
         $newUser->save();
         CompanyTransaction::where('manager_id', $oldUser->id)

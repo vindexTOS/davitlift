@@ -141,6 +141,7 @@ class DeviceController extends Controller
         $user = User::where('email', $data['admin_email'])->first();
         if(empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],422);
         $user->update(['role' =>  "manager"]);
+        
         $device = Device::create(['users_id' => $user->id,...$data,
             'soft_version' => $UnregisteredDevice->soft_version,'hardware_version' => $UnregisteredDevice->hardware_version,]);
         if(!empty($device)) {

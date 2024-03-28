@@ -813,7 +813,7 @@ export default {
   computed: {
     earnings() {
       let sum = 0
-      this.data?.earnings.forEach((x) => {
+      this.data?.earnings.reverse().forEach((x) => {
         sum += +x.earnings
       })
       return sum
@@ -855,6 +855,7 @@ export default {
           this.$nextTick(() => {})
 
           this.data = data
+          console.log(data)
         })
         .then(() => {
           if (withCong) {
