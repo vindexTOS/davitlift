@@ -36,6 +36,7 @@
           <td style="padding: 8px; border: 1px solid #ddd;">
             <p v-if="!boolMapper[index]">{{ item.deviceTariff }}</p>
             <input
+              @input="changeInput($event, 'deviceTariff')"
               style="width: 50px; background-color: greenyellow;"
               v-if="boolMapper[index]"
               :value="item.deviceTariff"
@@ -44,6 +45,7 @@
           <td style="padding: 8px; border: 1px solid #ddd;">
             <p v-if="!boolMapper[index]">{{ item.cashback }}</p>
             <input
+              @input="changeInput($event, 'cashback')"
               style="width: 50px; background-color: greenyellow;"
               v-if="boolMapper[index]"
               :value="item.cashback"
@@ -59,13 +61,15 @@
               cursor: pointer;
             "
           >
-            <p @click="toogleEedit(index)" v-if="boolMapper[index]">
+            <p @click="toogleEedit(index, item)" v-if="boolMapper[index]">
               ❌
             </p>
-            <p @click="toogleEedit(index)" v-if="boolMapper[index]">
+            <p @click="updateEarning(item, index)" v-if="boolMapper[index]">
               ✔️
             </p>
-            <p @click="updateEarning(item)" v-if="!boolMapper[index]">✎</p>
+            <p @click="toogleEedit(index, item)" v-if="!boolMapper[index]">
+              ✎
+            </p>
           </td>
         </tr>
       </tbody>
@@ -139,6 +143,8 @@ export default {
     totalItems: 0,
     desserts: [],
     editedIndex: -1,
+    cashback: 0,
+    deviceTariff: 0,
     editedItem: {
       name: '',
       phone: 0,
@@ -201,13 +207,37 @@ export default {
   },
 
   methods: {
-    updateEarning(id) {
-      console.log(id)
+    changeInput(event, type) {
+      if (type == 'cashback') {
+        this.cashback = event.target.value
+      } else {
+        this.deviceTariff = event.target.value
+      }
     },
-    toogleEedit(index) {
+    updateEarning(body, index) {
+      this.toogleEedit(index)
+      body.cashback = Number(this.cashback)
+      body.deviceTariff = Number(this.deviceTariff)
+      console.log(body)
+      axios
+        .put('/api/deviceEarn/edit/', body)
+        .then(({ data }) => {
+          console.log(data)
+        })
+        .then((error) => {
+          console.log(error)
+        })
+    },
+    toogleEedit(index, item) {
       let newArr = [...this.boolMapper]
       newArr[index] = !newArr[index]
       this.boolMapper = newArr
+      console.log(item)
+      if (item) {
+        this.cashback = item.cashback
+
+        this.deviceTariff = item.deviceTariff
+      }
     },
     prevPage() {
       if (this.currentPage > 1) {
