@@ -97,17 +97,33 @@ class UserSubscriptionCheck extends Command
                 ->where('year', $currentYear)
                 ->first();
             if (empty($deviceEarn)) {
-                DeviceEarn::create([
-                    'device_id' => $device->id,
-                    'month' => $currentMonth,
-                    'year' => $currentYear,
-                    'earnings' => $deviceEarning,
-                    'cashback' => $user->cashback,
-                    'deviceTariff' => $device->deviceTariffAmount,
-                ]);
+                if ($user && $device) {
+                    DeviceEarn::create([
+                        'device_id' => $device->id,
+                        'month' => $currentMonth,
+                        'year' => $currentYear,
+                        'earnings' => $deviceEarning,
+                        'cashback' => $user->cashback,
+                        'deviceTariff' => $device->deviceTariffAmount,
+                    ]);
+                } else {
+                    DeviceEarn::create([
+                        'device_id' => $device->id,
+                        'month' => $currentMonth,
+                        'year' => $currentYear,
+                        'earnings' => $deviceEarning,
+                    ]);
+                }
             } else {
-                $deviceEarn->earnings += $deviceEarning;
-                $deviceEarn->save();
+                if ($user && $device) {
+                    $deviceEarn->earnings += $deviceEarning;
+                    $deviceEarn->cashback = $user->cashback;
+                    $deviceEarn->deviceTariff = $device->deviceTariffAmount;
+                    $deviceEarn->save();
+                } else {
+                    $deviceEarn->earnings += $deviceEarning;
+                    $deviceEarn->save();
+                }
             }
         }
 

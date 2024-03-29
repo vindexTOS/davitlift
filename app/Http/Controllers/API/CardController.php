@@ -291,21 +291,36 @@ class CardController extends Controller
             ->where('year', $now->year)
             ->first();
         if (!empty($deviceEarnings)) {
-            $deviceEarnings->earnings += $earningsValue;
-            $deviceEarnings->cashback = $user->cashback;
-            $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
+            if ($user && $device) {
+                $deviceEarnings->earnings += $earningsValue;
+                $deviceEarnings->cashback = $user->cashback;
+                $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
+                $deviceEarnings->save();
+            } else {
+                $deviceEarnings->earnings += $earningsValue;
 
-            $deviceEarnings->save();
+                $deviceEarnings->save();
+            }
         } else {
-            DeviceEarn::create([
-                'company_id' => $companyId,
-                'device_id' => $deviceId,
-                'month' => $now->month,
-                'year' => $now->year,
-                'earnings' => $earningsValue,
-                'cashback' => $user->cashback,
-                'deviceTariff' => $device->deviceTariffAmount,
-            ]);
+            if ($user && $device) {
+                DeviceEarn::create([
+                    'company_id' => $companyId,
+                    'device_id' => $deviceId,
+                    'month' => $now->month,
+                    'year' => $now->year,
+                    'earnings' => $earningsValue,
+                    'cashback' => $user->cashback,
+                    'deviceTariff' => $device->deviceTariffAmount,
+                ]);
+            } else {
+                DeviceEarn::create([
+                    'company_id' => $companyId,
+                    'device_id' => $deviceId,
+                    'month' => $now->month,
+                    'year' => $now->year,
+                    'earnings' => $earningsValue,
+                ]);
+            }
         }
         // Save the model (either updates or creates based on existence)
     }
