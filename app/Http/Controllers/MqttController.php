@@ -818,11 +818,11 @@ class MqttController extends Controller
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
         // Generate the date for month_year
- 
 
         // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
         $now = Carbon::now();
-
+        $user = User::where('id', $companyId)->first();
+        $device = Device::where('id', $deviceId)->first();
         // Try to retrieve the entry for the given device and month_year
         $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
             ->where('month', $now->month)
@@ -830,6 +830,8 @@ class MqttController extends Controller
             ->first();
         if (!empty($deviceEarnings)) {
             $deviceEarnings->earnings += $earningsValue;
+            $deviceEarnings->cashback = $user->cashback;
+            $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
             $deviceEarnings->save();
         } else {
             DeviceEarn::create([
@@ -838,6 +840,8 @@ class MqttController extends Controller
                 'month' => $now->month,
                 'year' => $now->year,
                 'earnings' => $earningsValue,
+                'cashback' => $user->cashback,
+                'deviceTariff' => $device->deviceTariffAmount,
             ]);
         }
         // Save the model (either updates or creates based on existence)
