@@ -603,7 +603,7 @@ export default {
           '/api/companies/' + this.editedItem.id,
           this.editedItem,
         )
-        console.log(res)
+        // console.log(res)
       } else {
         console.log('post')
         const res = await axios.post('/api/companies', this.editedItem)

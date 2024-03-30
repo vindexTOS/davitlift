@@ -60,7 +60,6 @@ class CompanyController extends Controller
             $data['payedServiceFee'] += $statistic['payedCompanyFee'];
             $data['payedCashback'] += $statistic['payedCashback'];
         }
-
         return $data;
     }
     public function blockCompanies($id)
@@ -180,6 +179,7 @@ class CompanyController extends Controller
             100 /
             100;
         $data['deviceActivity'] = $devicesActivity;
+
         $data['earnings'] = $this->getEarnings($earnings);
         return $data;
     }
@@ -556,6 +556,7 @@ class CompanyController extends Controller
         $data['deviceActivity'] = $devicesActivity;
         $data['earnings'] = $this->getEarnings($earnings);
         $data['managers'] = [...$managers];
+
         return $data;
     }
 
@@ -614,6 +615,8 @@ class CompanyController extends Controller
             $month = $earning->month;
             $year = $earning->year;
             $key = "$month-$year"; // e.g., "9-2023"
+            $cashback = intval($earning->cashback);
+            $devicetariff = intval($earning->deviceTariff);
             if (isset($groupedEarnings[$key])) {
                 // If the key already exists, sum the earnings
                 $groupedEarnings[$key]['earnings'] += floatval(
@@ -625,7 +628,9 @@ class CompanyController extends Controller
                     'month' => $month,
                     'year' => $year,
                     'earnings' => floatval($earning['earnings']),
-                    'fullTime' => $earning['updated_at'],
+                    'fullTime' => $earning['created_at'],
+                    'cashback' => $cashback,
+                    'devicetariff' => $devicetariff,
                 ];
             }
         }

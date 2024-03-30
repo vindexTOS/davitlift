@@ -156,6 +156,10 @@ export default {
       totalMoney: 0,
       fullAmount: 0,
       totalTransfers: 0,
+      totalDeviceTariff: 0,
+      totalDeviceAmount: 0,
+      sortedEarnings: [],
+      mtlianiCash: 0,
       cashbackData: {},
     }
   },
@@ -204,16 +208,18 @@ export default {
   },
   methods: {
     getCashBackData(data, deviceEarning) {
+      // this.totalDevices = data.managers.map.deviceTariffAmounts.length
+
       let deviceTariffCombined = data.managers
         .map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
         .reduce((a, b) => a + b)
+      this.totalDeviceTariff = deviceTariffCombined
 
       let cashback = data.company.cashback
       // let needToPay = Object.values(data.earnings)[0].earnings / 100
       let needToPay = deviceEarning
 
       let cashbackAmount = (needToPay * cashback) / 100
-
       if (cashbackAmount > needToPay - deviceTariffCombined) {
         // this.companyFee = deviceTariffCombined
         let result = needToPay - deviceTariffCombined
@@ -227,27 +233,44 @@ export default {
       }
     },
     getCompanyFee(data) {
+      // console.log(data)
+
       let deviceTariffCombined = data.managers
         ?.map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
         .reduce((a, b) => a + b)
-      // console.log(data.managers)
       let cashback = data.company.cashback
       let needToPay = Object.values(data.earnings)[0].earnings / 100
 
       let cashbackAmount = (needToPay * cashback) / 100
-
+      // console.log(cashbackAmount)
       if (cashbackAmount > needToPay - deviceTariffCombined) {
         this.companyFee = deviceTariffCombined
       } else {
         this.companyFee = needToPay - cashbackAmount
       }
     },
+    calculateProecnt() {
+      console.log(this.totalDeviceAmount)
+      this.sortedEarnings.forEach((x) => {
+        let needToPay = x.earnings / 100
+        let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
+        let cashbackAmount = (x.cashback * needToPay) / 100
 
+        // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
+        let isProcenteMore = needToPay - cashbackAmount
+        if (isProcenteMore < totalDeviceTariff) {
+          this.mtlianiCash += needToPay - totalDeviceTariff
+        } else {
+          console.log(needToPay - isProcenteMore)
+          this.mtlianiCash = needToPay - isProcenteMore
+        }
+      })
+      console.log(this.mtlianiCash)
+    },
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
         this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         this.data = data
-        console.log(data['companyTransaction'])
 
         this.getCashback()
 
@@ -258,9 +281,12 @@ export default {
         const sortedEarnings = [...Object.values(this.data.earnings)].sort(
           (a, b) => new Date(a.fullTime) - new Date(b.fullTime),
         )
+
+        this.sortedEarnings = sortedEarnings
         this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         sortedEarnings.forEach((x) => {
           this.fullAmount += x.earnings / 100
+
           const earningsIndex = new Date(x.fullTime).getMonth()
           if (this.series[0].data[earningsIndex] === undefined) {
             this.series[0].data[earningsIndex] = 0
@@ -280,7 +306,8 @@ export default {
             }
           })
           .reduce((a, b) => a + b)
-
+        this.totalDeviceAmount = data.device.length
+        this.calculateProecnt()
         let amountAlreadyPayed =
           data['companyTransaction'].length <= 0
             ? [{ amount: '0' }, { amount: '0' }]
