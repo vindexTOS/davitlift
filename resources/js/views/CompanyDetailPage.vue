@@ -207,50 +207,51 @@ export default {
     },
   },
   methods: {
-    getCashBackData(data, deviceEarning) {
-      // this.totalDevices = data.managers.map.deviceTariffAmounts.length
+    // getCashBackData(data, deviceEarning) {
+    //   // this.totalDevices = data.managers.map.deviceTariffAmounts.length
 
-      let deviceTariffCombined = data.managers
-        .map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
-        .reduce((a, b) => a + b)
-      this.totalDeviceTariff = deviceTariffCombined
+    //   let deviceTariffCombined = data.managers
+    //     .map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
+    //     .reduce((a, b) => a + b)
+    //   this.totalDeviceTariff = deviceTariffCombined
 
-      let cashback = data.company.cashback
-      // let needToPay = Object.values(data.earnings)[0].earnings / 100
-      let needToPay = deviceEarning
+    //   let cashback = data.company.cashback
+    //   // let needToPay = Object.values(data.earnings)[0].earnings / 100
+    //   let needToPay = deviceEarning
 
-      let cashbackAmount = (needToPay * cashback) / 100
-      if (cashbackAmount > needToPay - deviceTariffCombined) {
-        // this.companyFee = deviceTariffCombined
-        let result = needToPay - deviceTariffCombined
+    //   let cashbackAmount = (needToPay * cashback) / 100
+    //   if (cashbackAmount > needToPay - deviceTariffCombined) {
+    //     // this.companyFee = deviceTariffCombined
+    //     let result = needToPay - deviceTariffCombined
 
-        return result
-      } else {
-        let result = cashbackAmount
+    //     return result
+    //   } else {
+    //     let result = cashbackAmount
 
-        // this.companyFee = needToPay - cashbackAmount
-        return result
-      }
-    },
-    getCompanyFee(data) {
-      // console.log(data)
+    //     // this.companyFee = needToPay - cashbackAmount
+    //     return result
+    //   }
+    // },
+    // getCompanyFee(data) {
+    //   // console.log(data)
 
-      let deviceTariffCombined = data.managers
-        ?.map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
-        .reduce((a, b) => a + b)
-      let cashback = data.company.cashback
-      let needToPay = Object.values(data.earnings)[0].earnings / 100
+    //   let deviceTariffCombined = data.managers
+    //     ?.map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
+    //     .reduce((a, b) => a + b)
+    //   let cashback = data.company.cashback
+    //   let needToPay = Object.values(data.earnings)[0].earnings / 100
 
-      let cashbackAmount = (needToPay * cashback) / 100
-      // console.log(cashbackAmount)
-      if (cashbackAmount > needToPay - deviceTariffCombined) {
-        this.companyFee = deviceTariffCombined
-      } else {
-        this.companyFee = needToPay - cashbackAmount
-      }
-    },
-    calculateProecnt() {
-      console.log(this.totalDeviceAmount)
+    //   let cashbackAmount = (needToPay * cashback) / 100
+    //   // console.log(cashbackAmount)
+    //   if (cashbackAmount > needToPay - deviceTariffCombined) {
+    //     this.companyFee = deviceTariffCombined
+    //   } else {
+    //     this.companyFee = needToPay - cashbackAmount
+    //   }
+    // },
+    calculateProecnt(data) {
+      this.companyFee = 0
+      this.mtlianiCash = 0
       this.sortedEarnings.forEach((x) => {
         let needToPay = x.earnings / 100
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
@@ -260,12 +261,40 @@ export default {
         let isProcenteMore = needToPay - cashbackAmount
         if (isProcenteMore < totalDeviceTariff) {
           this.mtlianiCash += needToPay - totalDeviceTariff
+          this.companyFee = totalDeviceTariff
         } else {
           console.log(needToPay - isProcenteMore)
-          this.mtlianiCash = needToPay - isProcenteMore
+
+          this.mtlianiCash += needToPay - isProcenteMore
+          console.log(needToPay, isProcenteMore)
+          this.companyFee = isProcenteMore
         }
       })
-      console.log(this.mtlianiCash)
+      let amountAlreadyPayed =
+        data['companyTransaction'].length <= 0
+          ? [{ amount: '0' }, { amount: '0' }]
+          : data['companyTransaction']
+      // console.log(data['companyTransaction'])
+
+      let amountAlreadyPayedNumber = amountAlreadyPayed
+        ?.filter((val) => val.type !== 3)
+        ?.map((val) => Number(val.amount))
+        .reduce((a, b) => a + b)
+
+      // console.log(data)
+      this.totalTransfers = amountAlreadyPayedNumber
+
+      let finalResultOfDisplayAmount =
+        this.mtlianiCash - amountAlreadyPayedNumber
+      console.log(finalResultOfDisplayAmount)
+      // console.log(amountAlreadyPayedNumber)
+
+      this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
+
+      this.seriesD = [finalResultOfDisplayAmount, Number(data.payedCompanyFee)]
+
+      this.seriesC = [this.companyFee, 0]
+      // console.log(this.mtlianiCash)
     },
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
@@ -273,8 +302,6 @@ export default {
         this.data = data
 
         this.getCashback()
-
-        this.getCompanyFee(data)
 
         let lastEarning
 
@@ -294,56 +321,8 @@ export default {
           this.series[0].data[earningsIndex] += x.earnings / 100
         })
 
-        Object.values(this.data.earnings)[0].earnings / 100
-        this.deviceEarningByMonth = Array.from(
-          Object.values(this.data.earnings),
-        )
-          .map((x) => {
-            if (this.getCashBackData(data, x.earnings / 100) < 0) {
-              return 0
-            } else {
-              return this.getCashBackData(data, x.earnings / 100)
-            }
-          })
-          .reduce((a, b) => a + b)
         this.totalDeviceAmount = data.device.length
-        this.calculateProecnt()
-        let amountAlreadyPayed =
-          data['companyTransaction'].length <= 0
-            ? [{ amount: '0' }, { amount: '0' }]
-            : data['companyTransaction']
-        // console.log(amountAlreadyPayed)
-        let amountAlreadyPayedNumber = amountAlreadyPayed
-          ?.filter((val) => val.type !== 3)
-          ?.map((val) => Number(val.amount))
-          .reduce((a, b) => a + b)
-
-        // console.log(data)
-        this.totalTransfers = amountAlreadyPayedNumber
-        let finalResultOfDisplayAmount =
-          this.deviceEarningByMonth - amountAlreadyPayedNumber
-
-        Object.values(this.data.earnings).forEach((x) => {
-          if (
-            !lastEarning ||
-            new Date(x.fullTime) > new Date(lastEarning.fullTime)
-          ) {
-            lastEarning = x
-            this.totalMoney = lastEarning.earnings / 100
-          }
-        })
-
-        this.seriesB = [
-          this.data.deviceActivity.inactive,
-          this.data.deviceActivity.active,
-        ]
-
-        this.seriesD = [
-          finalResultOfDisplayAmount,
-          Number(this.data.payedCompanyFee),
-        ]
-
-        this.seriesC = [this.companyFee, 0]
+        this.calculateProecnt(data)
       })
     },
     generateData(baseval, count, yrange) {
