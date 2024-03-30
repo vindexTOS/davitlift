@@ -224,13 +224,12 @@ class CompanyController extends Controller
             ->get();
         foreach ($data['transaction'] as $key => $value) {
             if ($value['type'] === 1) {
-                $data['total'] += +$value->amount;
+                $data['total'] += $value->amount;
             }
             if ($value['type'] === 3) {
-                $data['totalWithdrow'] += +$value->amount;
+                $data['totalWithdrow'] += $value->amount;
             }
         }
-
         return $data;
     }
     public function payedCashbackForCompany($company_id)

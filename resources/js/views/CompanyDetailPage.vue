@@ -253,6 +253,7 @@ export default {
       this.companyFee = 0
       this.mtlianiCash = 0
       this.sortedEarnings.forEach((x) => {
+        console.log(x)
         let needToPay = x.earnings / 100
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
@@ -264,7 +265,7 @@ export default {
           this.companyFee = totalDeviceTariff
         } else {
           console.log(needToPay - isProcenteMore)
-
+          console.log(this.mtlianiCash)
           this.mtlianiCash += needToPay - isProcenteMore
           console.log(needToPay, isProcenteMore)
           this.companyFee = isProcenteMore

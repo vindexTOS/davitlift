@@ -291,7 +291,7 @@
             ? 0
             : cashbackData['total'] - cashbackData['totalWithdrow']
         "
-        :maxCashback="seriesC[0].toFixed(2)"
+        :maxCashback="seriesC[0].toFixed(2) + 200"
       ></CashbackTable>
     </div>
   </div>
@@ -325,6 +325,7 @@ export default {
       deleted: false,
       seriesB: [0, 0],
       seriesC: [0, 0],
+      seriesD: [0, 0],
       eachLiftTariffAmount: 0,
       cashBackAmount: 0,
       shouldCashBackOnManager: false,
@@ -340,6 +341,11 @@ export default {
       fullAmount: 0,
       cashbackData: {},
       displayCashBack: 0,
+      totalDeviceTariff: 0,
+      totalDeviceAmount: 0,
+      sortedEarnings: [],
+      companyFee: 0,
+      mtlianiCash: 0,
     }
   },
   created() {
@@ -417,14 +423,14 @@ export default {
         }
       }
     },
-    seriesC() {
-      if (this.cashbackData.total > -1) {
-        this.shouldCashBackOnManager =
-          Number(this.cashbackData.total) > this.displayCashBack
-        return [this.displayCashBack, Number(this.cashbackData.total)]
-      }
-      return [0, 0]
-    },
+    //   seriesC() {
+    //     if (this.cashbackData.total > -1) {
+    //       this.shouldCashBackOnManager =
+    //         Number(this.cashbackData.total) > this.displayCashBack
+    //       return [this.displayCashBack, Number(this.cashbackData.total)]
+    //     }
+    //     return [0, 0]
+    //   },
   },
   methods: {
     openSingleDeviceTariffAmount(index) {
@@ -479,8 +485,8 @@ export default {
         )
         .then(({ data }) => {
           this.cashbackData = data
-
-          // console.log(this.cashbackData['transaction'])
+          console.log(data)
+          // conso  le.log(this.cashbackData['transaction'])
           this.loadItems()
           this.getDeviceAmount()
           this.eachLiftTariffAmount = this.filtredDevices
@@ -492,14 +498,82 @@ export default {
           )
         })
     },
+    calculateProecnt(data) {
+      console.log(data)
+      this.companyFee = 0
+      this.mtlianiCash = 0
+      this.totalDeviceAmount = data.device.length
+      console.log()
+      this.sortedEarnings.forEach((x) => {
+        let needToPay = x.earnings / 100
+        let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
+        let cashbackAmount = (x.cashback * needToPay) / 100
 
+        // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
+        let isProcenteMore = needToPay - cashbackAmount
+
+        if (isProcenteMore < totalDeviceTariff) {
+          this.mtlianiCash += needToPay - totalDeviceTariff
+          this.companyFee = totalDeviceTariff
+          console.log(this.companyFee)
+        } else {
+          console.log(needToPay - isProcenteMore)
+
+          this.mtlianiCash += needToPay - isProcenteMore
+          this.companyFee = isProcenteMore
+        }
+      })
+
+      let amountAlreadyPayed =
+        Object.values(this.cashbackData['transaction']).length <= 0
+          ? [
+              { amount: '0', type: 1 },
+              { amount: '0', type: 1 },
+            ]
+          : Object.values(this.cashbackData['transaction'])
+
+      // console.log(data['companyTransaction'])
+
+      let amountAlreadyPayedNumber = amountAlreadyPayed
+        ?.filter((val) => val.type !== 3)
+        ?.map((val) => Number(val.amount))
+        .reduce((a, b) => a + b)
+
+      // console.log(data)
+      this.totalTransfers = amountAlreadyPayedNumber
+
+      let finalResultOfDisplayAmount =
+        this.mtlianiCash - amountAlreadyPayedNumber
+      console.log(finalResultOfDisplayAmount)
+      // console.log(amountAlreadyPayedNumber)
+
+      this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
+
+      this.seriesD = [finalResultOfDisplayAmount, Number(data.payedCompanyFee)]
+      // this.seriesC = [finalResultOfDisplayAmount, Number(data.payedCompanyFee)]
+
+      if (this.cashbackData.total > -1 && data.manager.cashback > 0) {
+        // this.shouldCashBackOnManager =
+        //   Number(this.cashbackData.total) > this.displayCashBack
+
+        this.seriesC = [
+          finalResultOfDisplayAmount,
+          Number(this.cashbackData.total),
+        ]
+      }
+      console.log(this.cashbackData.total)
+      console.log(this.cashbackData)
+      console.log(this.seriesC, this.seriesB, this.seriesD)
+
+      // console.log(this.mtlianiCash)
+    },
     loadItems() {
       axios
         .get('/api/companies/manager/' + this.$route.params.id)
         .then(({ data }) => {
           this.data = data
-          this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+          this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
           // console.log(data)
           let lastEarning
 
@@ -508,6 +582,7 @@ export default {
               return new Date(a.fullTime) - new Date(b.fullTime)
             },
           )
+          this.sortedEarnings = sortedEarnings
           sortedEarnings.forEach((x) => {
             this.fullAmount += x.earnings / 100
             const earningsIndex = new Date(x.fullTime).getMonth()
@@ -517,48 +592,50 @@ export default {
             this.series[0].data[earningsIndex] += x.earnings / 100
           })
           //
-          this.deviceEarningByMonth = Array.from(
-            Object.values(this.data.earnings),
-          )
-            .map((x) => {
-              if (this.getCashBackData(data, x.earnings / 100) < 0) {
-                return 0
-              } else {
-                return this.getCashBackData(data, x.earnings / 100)
-              }
-            })
-            .reduce((a, b) => a + b)
-          let amountAlreadyPayed =
-            Object.values(this.cashbackData['transaction']).length <= 0
-              ? [
-                  { amount: '0', type: 1 },
-                  { amount: '0', type: 1 },
-                ]
-              : Object.values(this.cashbackData['transaction'])
+          // this.deviceEarningByMonth = Array.from(
+          //   Object.values(this.data.earnings),
+          // )
+          //   .map((x) => {
+          //     if (this.getCashBackData(data, x.earnings / 100) < 0) {
+          //       return 0
+          //     } else {
+          //       return this.getCashBackData(data, x.earnings / 100)
+          //     }
+          //   })
+          //   .reduce((a, b) => a + b)
+          // let amountAlreadyPayed =
+          //   Object.values(this.cashbackData['transaction']).length <= 0
+          //     ? [
+          //         { amount: '0', type: 1 },
+          //         { amount: '0', type: 1 },
+          //       ]
+          //     : Object.values(this.cashbackData['transaction'])
 
-          let amountAlreadyPayedNumber = amountAlreadyPayed
-            ?.filter((val) => val.type === 1)
-            ?.map((val) => Number(val.amount))
-            .reduce((a, b) => a + b)
-          let finalResultOfDisplayAmount =
-            this.deviceEarningByMonth - amountAlreadyPayedNumber
-          this.displayCashBack = finalResultOfDisplayAmount
-          Object.values(this.data.earnings).forEach((x) => {
-            if (
-              !lastEarning ||
-              new Date(x.fullTime) > new Date(lastEarning.fullTime)
-            ) {
-              lastEarning = x
-              this.totalMoney = lastEarning.earnings / 100
-            }
-          })
+          // let amountAlreadyPayedNumber = amountAlreadyPayed
+          //   ?.filter((val) => val.type === 1)
+          //   ?.map((val) => Number(val.amount))
+          //   .reduce((a, b) => a + b)
+          // let finalResultOfDisplayAmount =
+          //   this.deviceEarningByMonth - amountAlreadyPayedNumber
+          // this.displayCashBack = finalResultOfDisplayAmount
+          // Object.values(this.data.earnings).forEach((x) => {
+          //   if (
+          //     !lastEarning ||
+          //     new Date(x.fullTime) > new Date(lastEarning.fullTime)
+          //   ) {
+          //     lastEarning = x
+          //     this.totalMoney = lastEarning.earnings / 100
+          //   }
+          // })
 
           console.log(this.totalMoney)
-          this.seriesB = [
-            this.data.deviceActivity.inactive,
-            this.data.deviceActivity.active,
-          ]
+          // this.seriesB = [
+          //   this.data.deviceActivity.inactive,
+          //   this.data.deviceActivity.active,
+          // ]
+          this.calculateProecnt(data)
         })
+
       this.eachLiftTariffAmount = this.filtredDevices
         .map((val) => val.deviceTariffAmount)
         .reduce((a, b) => a + b)
