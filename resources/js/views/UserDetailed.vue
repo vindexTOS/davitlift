@@ -270,6 +270,12 @@
           :label="$t('Balance')"
           required
         ></v-text-field>
+        <v-select
+          v-model="user.role"
+          :items="roles"
+          label="როლი"
+          required
+        ></v-select>
       </v-card-text>
 
       <v-card-actions>
@@ -445,6 +451,8 @@ export default {
   components: { TransactionUserTable, SignalIcon, apexchart: VueApexCharts },
   data() {
     return {
+      selectedRole: null,
+      roles: ['user', 'member'],
       showElevator: false,
       showBalance: false,
       showCode: false,

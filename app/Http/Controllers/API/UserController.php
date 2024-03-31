@@ -120,6 +120,7 @@ class UserController extends Controller
             'email' => 'email|max:255',
             'balance' => 'integer',
             'phone' => 'string|min:5|max:15',
+            'role' => 'string',
         ]);
 
         $user = User::findOrFail($validated['id']);

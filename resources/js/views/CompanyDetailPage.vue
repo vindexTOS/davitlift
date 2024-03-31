@@ -252,21 +252,30 @@ export default {
     calculateProecnt(data) {
       this.companyFee = 0
       this.mtlianiCash = 0
+      let needToPay = 0
+
       this.sortedEarnings.forEach((x) => {
         console.log(x)
-        let needToPay = x.earnings / 100
+        console.log(needToPay)
+        needToPay += x.earnings / 100
+        console.log(needToPay)
+
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
 
         // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
-        let isProcenteMore = needToPay - cashbackAmount
+
+        let isProcenteMore = 0
+        isProcenteMore = needToPay - cashbackAmount
+        console.log(needToPay)
+
         if (isProcenteMore < totalDeviceTariff) {
-          this.mtlianiCash += needToPay - totalDeviceTariff
+          this.mtlianiCash = needToPay - totalDeviceTariff
           this.companyFee = totalDeviceTariff
         } else {
           console.log(needToPay - isProcenteMore)
           console.log(this.mtlianiCash)
-          this.mtlianiCash += needToPay - isProcenteMore
+          this.mtlianiCash = needToPay - isProcenteMore
           console.log(needToPay, isProcenteMore)
           this.companyFee = isProcenteMore
         }
@@ -287,15 +296,19 @@ export default {
 
       let finalResultOfDisplayAmount =
         this.mtlianiCash - amountAlreadyPayedNumber
-      console.log(finalResultOfDisplayAmount)
+      console.log(this.mtlianiCash, amountAlreadyPayedNumber)
       // console.log(amountAlreadyPayedNumber)
 
       this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
+      this.seriesD = [
+        Number(finalResultOfDisplayAmount.toFixed(2)),
+        Number(amountAlreadyPayedNumber),
+      ]
 
-      this.seriesD = [finalResultOfDisplayAmount, Number(data.payedCompanyFee)]
+      this.seriesC = [Number(this.companyFee.toFixed(2)), 0]
+      console.log(this.seriesB, this.seriesC, this.seriesD)
 
-      this.seriesC = [this.companyFee, 0]
-      // console.log(this.mtlianiCash)
+      console.log(this.mtlianiCash)
     },
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
