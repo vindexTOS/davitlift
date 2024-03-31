@@ -255,10 +255,7 @@ export default {
       let needToPay = 0
 
       this.sortedEarnings.forEach((x) => {
-        console.log(x)
-        console.log(needToPay)
-        needToPay += x.earnings / 100
-        console.log(needToPay)
+        needToPay = x.earnings / 100
 
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
@@ -267,17 +264,16 @@ export default {
 
         let isProcenteMore = 0
         isProcenteMore = needToPay - cashbackAmount
-        console.log(needToPay)
 
         if (isProcenteMore < totalDeviceTariff) {
-          this.mtlianiCash = needToPay - totalDeviceTariff
-          this.companyFee = totalDeviceTariff
+          this.mtlianiCash += needToPay - totalDeviceTariff
+          this.companyFee += totalDeviceTariff
         } else {
           console.log(needToPay - isProcenteMore)
           console.log(this.mtlianiCash)
-          this.mtlianiCash = needToPay - isProcenteMore
+          this.mtlianiCash += needToPay - isProcenteMore
           console.log(needToPay, isProcenteMore)
-          this.companyFee = isProcenteMore
+          this.companyFee += isProcenteMore
         }
       })
       let amountAlreadyPayed =
