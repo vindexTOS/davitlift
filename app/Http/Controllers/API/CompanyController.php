@@ -224,12 +224,13 @@ class CompanyController extends Controller
             ->get();
         foreach ($data['transaction'] as $key => $value) {
             if ($value['type'] === 1) {
-                $data['total'] += $value->amount;
+                $data['total'] += +$value->amount;
             }
             if ($value['type'] === 3) {
-                $data['totalWithdrow'] += $value->amount;
+                $data['totalWithdrow'] += +$value->amount;
             }
         }
+
         return $data;
     }
     public function payedCashbackForCompany($company_id)
@@ -613,6 +614,7 @@ class CompanyController extends Controller
         foreach ($allEarnings as $earning) {
             $month = $earning->month;
             $year = $earning->year;
+            $deviceId = $earning->device_id;
             $key = "$month-$year"; // e.g., "9-2023"
             $cashback = intval($earning->cashback);
             $devicetariff = intval($earning->deviceTariff);
@@ -630,6 +632,8 @@ class CompanyController extends Controller
                     'fullTime' => $earning['created_at'],
                     'cashback' => $cashback,
                     'devicetariff' => $devicetariff,
+                    'key' => $key,
+                    'all' => $allEarnings,
                 ];
             }
         }

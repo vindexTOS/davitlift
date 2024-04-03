@@ -253,12 +253,12 @@ export default {
       this.companyFee = 0
       this.mtlianiCash = 0
       let needToPay = 0
-
       this.sortedEarnings.forEach((x) => {
         needToPay = x.earnings / 100
 
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
+        console.log(cashbackAmount)
 
         // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
 
@@ -266,13 +266,14 @@ export default {
         isProcenteMore = needToPay - cashbackAmount
 
         if (isProcenteMore < totalDeviceTariff) {
+          console.log(needToPay)
+
           this.mtlianiCash += needToPay - totalDeviceTariff
           this.companyFee += totalDeviceTariff
         } else {
-          console.log(needToPay - isProcenteMore)
-          console.log(this.mtlianiCash)
+          console.log(needToPay)
+
           this.mtlianiCash += needToPay - isProcenteMore
-          console.log(needToPay, isProcenteMore)
           this.companyFee += isProcenteMore
         }
       })
@@ -310,7 +311,7 @@ export default {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
         this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         this.data = data
-
+        console.log(data)
         this.getCashback()
 
         let lastEarning

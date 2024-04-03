@@ -73,6 +73,11 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
     ]);
 });
 
+//  tbc fast pay
+Route::post('/tansaction/tbcfastpay', [
+    TransactionController::class,
+    'makeTbcFastPayOrder',
+]);
 // USER ONLY OR SHARED
 
 Route::middleware(['auth:api'])->group(function () {

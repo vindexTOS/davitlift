@@ -109,6 +109,7 @@
     <v-row class="justify-space-between">
       <v-col style="min-height: 100%;" cols="12" md="6"></v-col>
       <v-col v-if="seriesC" cols="12" md="6">
+        <!-- ქეშბექი გასაცემი კლიენტზე -->
         <v-card
           v-if="seriesC[0] + seriesC[1] > 0"
           style="height: 100%;"
@@ -502,25 +503,27 @@ export default {
       console.log(data)
       this.companyFee = 0
       this.mtlianiCash = 0
-      this.totalDeviceAmount = data.device.length
-      console.log()
+      this.totalDeviceAmount = data.device.filter(
+        (val) => val.deleted_at == null,
+      ).length
+      let needToPay = 0
+
       this.sortedEarnings.forEach((x) => {
-        let needToPay = x.earnings / 100
+        needToPay = x.earnings / 100
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
 
         // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
         let isProcenteMore = needToPay - cashbackAmount
-
+        console.log(data.device)
         if (isProcenteMore < totalDeviceTariff) {
           this.mtlianiCash += needToPay - totalDeviceTariff
-          this.companyFee = totalDeviceTariff
-          console.log(this.companyFee)
+          this.companyFee += totalDeviceTariff
         } else {
-          console.log(needToPay - isProcenteMore)
+          console.log(needToPay)
 
           this.mtlianiCash += needToPay - isProcenteMore
-          this.companyFee = isProcenteMore
+          this.companyFee += isProcenteMore
         }
       })
 
@@ -545,11 +548,14 @@ export default {
       let finalResultOfDisplayAmount =
         this.mtlianiCash - amountAlreadyPayedNumber
       console.log(finalResultOfDisplayAmount)
-      // console.log(amountAlreadyPayedNumber)
+      console.log(amountAlreadyPayedNumber)
 
       this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
 
-      this.seriesD = [finalResultOfDisplayAmount, Number(data.payedCompanyFee)]
+      this.seriesD = [
+        finalResultOfDisplayAmount,
+        Number(amountAlreadyPayedNumber),
+      ]
       // this.seriesC = [finalResultOfDisplayAmount, Number(data.payedCompanyFee)]
 
       if (this.cashbackData.total > -1 && data.manager.cashback > 0) {
@@ -583,6 +589,7 @@ export default {
             },
           )
           this.sortedEarnings = sortedEarnings
+
           sortedEarnings.forEach((x) => {
             this.fullAmount += x.earnings / 100
             const earningsIndex = new Date(x.fullTime).getMonth()
