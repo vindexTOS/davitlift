@@ -74,6 +74,11 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
 });
 
 //  tbc fast pay
+Route::post('/transaction/checkuser', [
+    TransactionController::class,
+    'checkIfUserExists',
+]);
+
 Route::post('/tansaction/tbcfastpay', [
     TransactionController::class,
     'makeTbcFastPayOrder',

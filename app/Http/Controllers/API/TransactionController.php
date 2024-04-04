@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Models\Company;
-use App\Models\Device;
-use App\Models\DeviceUser;
-use App\Models\LastUserAmount;
+use Carbon\Carbon;
+use Monolog\Logger;
 use App\Models\User;
+use App\Models\Device;
+use GuzzleHttp\Client;
+use App\Models\Company;
+use App\Models\DeviceUser;
+use App\Models\Transaction;
+use Illuminate\Http\Request;
+use App\Models\LastUserAmount;
+use Monolog\Handler\StreamHandler;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
-use Carbon\Carbon;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use GuzzleHttp\Client;
+use Symfony\Component\HttpFoundation\Response;
 
 class TransactionController extends Controller
 {
@@ -80,9 +82,111 @@ class TransactionController extends Controller
         return response()->json(null, 204);
     }
 
+    //   TBC FAST PAY
+    public function checkIfUserExists(Request $request)
+    {
+        $phone = $request->input('phone');
+
+        try {
+            $user = User::where('phone', $phone)->first();
+
+            if ($user) {
+                return response()->json(['phone' => $phone], Response::HTTP_OK);
+            } else {
+                return response()->json(
+                    ['error' => 'User not found'],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Error checking user existence: ' . $e->getMessage()
+            );
+
+            return response()->json(
+                ['error' => 'An unexpected error occurred'],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    // fast pay version of create transaction
+    public function createTransactionFastPay($data, $amount, $userId)
+    {
+        $user = User::where('id', $userId)->first();
+
+        Transaction::create([
+            'user_id' => $userId,
+            'amount' => $amount,
+            'status' => $data['status'],
+            'transaction_id' => $data['payId'],
+        ]);
+    }
+
     public function makeTbcFastPayOrder(Request $request)
     {
-        return response()->json(['msg' => 'hit tbc fast pay'], 200);
+        $phone = $request->input('phone');
+        $status = $request->input('status');
+        $order_id = $request->input('order_id');
+        $amount = $request->input('amount');
+        $data = $request->all();
+        // try {
+        $user = User::where('phone', $phone)->first();
+        $userId = $user->id;
+        $string = '' . $user->id;
+
+        $deviceId = DeviceUser::where('user_id', $user->id)->first();
+        if ($deviceId) {
+            $device = Device::where('id', $deviceId->device_id)->first();
+            $manager = User::where('id', $device->users_id)->first();
+            $company = Company::where('id', $device->company_id)->first();
+            if (
+                isset($manager) &&
+                isset($manager->phone) &&
+                isset($company) &&
+                isset($company->sk_code)
+            ) {
+                $string .= '#' . $company->sk_code;
+                $length = strlen($string);
+
+                // If the length is greater than 30, truncate the string to 30 characters
+                if ($length > 30) {
+                    $string = substr($string, 0, 30);
+                }
+
+                // Calculate the remaining length available for the manager's name
+                $remainingLength = 30 - strlen($string);
+
+                // Append the portion of the manager's name that fits into the remaining length
+                $string .= '#' . substr($manager->phone, 0, $remainingLength);
+            }
+        }
+        $this->createTransactionFastPay($data, $amount, $userId);
+
+        $this->updateTransactionOrder($data, $order_id);
+
+        return response()->json(['merchantPaymentId' => $string], 200);
+        // } catch (\Exception $e) {
+        //     \Illuminate\Support\Facades\Log::error(
+        //         'Error checking user existence: ' . $e->getMessage()
+        //     );
+
+        //     return response()->json(
+        //         ['error' => 'An unexpected error occurred'],
+        //         Response::HTTP_INTERNAL_SERVER_ERROR
+        //     );
+        // }
+    }
+    public function updateTransactionOrder($data, $order_id)
+    {
+        $transaction = Transaction::where('transaction_id', $order_id)->first();
+        if ($transaction) {
+            if ($data['status'] === 'Succeeded') {
+                $this->updateUserData($data, $transaction, $order_id);
+            }
+            $transaction->status = $data['status'];
+            $transaction->save();
+        }
+        return $data;
     }
 
     public function makeOrderTransaction($amount, $user, $token)
@@ -174,17 +278,6 @@ class TransactionController extends Controller
         ])->get("https://api.tbcbank.ge/v1/tpay/payments/$order_id");
         $data = json_decode($response->body(), true);
         return $this->updateTransactionOrder($data, $order_id);
-    }
-
-    public function updateTransactionOrder($data, $order_id)
-    {
-        $transaction = Transaction::where('transaction_id', $order_id)->first();
-        if ($data['status'] === 'Succeeded') {
-            $this->updateUserData($data, $transaction, $order_id);
-        }
-        $transaction->status = $data['status'];
-        $transaction->save();
-        return $data;
     }
 
     public function updateUserData($data, $transaction, $order_id)
