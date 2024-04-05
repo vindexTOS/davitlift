@@ -79,7 +79,7 @@ Route::post('/transaction/checkuser', [
     'checkIfUserExists',
 ]);
 
-Route::post('/tansaction/tbcfastpay', [
+Route::post('/transaction/tbcfastpay', [
     TransactionController::class,
     'makeTbcFastPayOrder',
 ]);

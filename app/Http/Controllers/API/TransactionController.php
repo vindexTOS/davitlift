@@ -15,6 +15,7 @@ use App\Models\LastUserAmount;
 use Monolog\Handler\StreamHandler;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\TbcTransaction;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
@@ -82,7 +83,7 @@ class TransactionController extends Controller
         return response()->json(null, 204);
     }
 
-    //   TBC FAST PAY
+    //   TBC FAST PAY           //////////////////////////////////////////////////////////////
     public function checkIfUserExists(Request $request)
     {
         $phone = $request->input('phone');
@@ -94,7 +95,7 @@ class TransactionController extends Controller
                 return response()->json(['phone' => $phone], Response::HTTP_OK);
             } else {
                 return response()->json(
-                    ['error' => 'User not found'],
+                    ['code' => 5],
                     Response::HTTP_NOT_FOUND
                 );
             }
@@ -104,78 +105,132 @@ class TransactionController extends Controller
             );
 
             return response()->json(
-                ['error' => 'An unexpected error occurred'],
+                ['code' => 300],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
-    // fast pay version of create transaction
-    public function createTransactionFastPay($data, $amount, $userId)
-    {
-        $user = User::where('id', $userId)->first();
 
-        Transaction::create([
+    public function checkIfTransactionAlreadyHappend($order_id)
+    {
+        $order = Tbctransaction::where('order_id', $order_id)->first();
+
+        if ($order) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // fast pay version of create transaction
+    public function updateTransactionOrderFastPay($data, $order_id, $amount)
+    {
+        try {
+            $transaction = Tbctransaction::where(
+                'order_id',
+                $order_id
+            )->first();
+            if ($transaction) {
+                $data['confirmedAmount'] = $amount;
+                $this->updateUserData($data, $transaction, $order_id);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Error checking user existence: ' . $e->getMessage()
+            );
+
+            return response()->json(
+                ['code' => 300],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    public function createTransactionFastPay(
+        $amount,
+        $userId,
+        $order_id,
+        $FileId
+    ) {
+        Tbctransaction::create([
             'user_id' => $userId,
             'amount' => $amount,
-            'status' => $data['status'],
-            'transaction_id' => $data['payId'],
+            'FileId' => $FileId,
+            'order_id' => $order_id,
         ]);
     }
-
     public function makeTbcFastPayOrder(Request $request)
     {
-        $phone = $request->input('phone');
-        $status = $request->input('status');
-        $order_id = $request->input('order_id');
-        $amount = $request->input('amount');
-        $data = $request->all();
-        // try {
-        $user = User::where('phone', $phone)->first();
-        $userId = $user->id;
-        $string = '' . $user->id;
+        $validatedData = $request->validate([
+            'phone' => 'required',
+            'order_id' => 'required',
+            'amount' => 'required',
+        ]);
 
-        $deviceId = DeviceUser::where('user_id', $user->id)->first();
-        if ($deviceId) {
-            $device = Device::where('id', $deviceId->device_id)->first();
-            $manager = User::where('id', $device->users_id)->first();
-            $company = Company::where('id', $device->company_id)->first();
-            if (
-                isset($manager) &&
-                isset($manager->phone) &&
-                isset($company) &&
-                isset($company->sk_code)
-            ) {
-                $string .= '#' . $company->sk_code;
-                $length = strlen($string);
-
-                // If the length is greater than 30, truncate the string to 30 characters
-                if ($length > 30) {
-                    $string = substr($string, 0, 30);
-                }
-
-                // Calculate the remaining length available for the manager's name
-                $remainingLength = 30 - strlen($string);
-
-                // Append the portion of the manager's name that fits into the remaining length
-                $string .= '#' . substr($manager->phone, 0, $remainingLength);
-            }
+        $phone = $validatedData['phone'];
+        $order_id = $validatedData['order_id'];
+        $amount = $validatedData['amount'];
+        // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
+        $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
+        if ($isOrderExit) {
+            return response(['code' => 215], 400);
         }
-        $this->createTransactionFastPay($data, $amount, $userId);
+        //  ვეძებნთ უსერს ტელეფონის ნომრით
+        $data = $request->all();
+        try {
+            $user = User::where('phone', $phone)->first();
+            $userId = $user->id;
+            $string = '' . $user->id;
 
-        $this->updateTransactionOrder($data, $order_id);
+            $deviceId = DeviceUser::where('user_id', $userId)->first();
+            if ($deviceId) {
+                $device = Device::where('id', $deviceId->device_id)->first();
+                $manager = User::where('id', $device->users_id)->first();
+                $company = Company::where('id', $device->company_id)->first();
+                if (
+                    isset($manager) &&
+                    isset($manager->phone) &&
+                    isset($company) &&
+                    isset($company->sk_code)
+                ) {
+                    $string .= '#' . $company->sk_code;
+                    $length = strlen($string);
 
-        return response()->json(['merchantPaymentId' => $string], 200);
-        // } catch (\Exception $e) {
-        //     \Illuminate\Support\Facades\Log::error(
-        //         'Error checking user existence: ' . $e->getMessage()
-        //     );
+                    // If the length is greater than 30, truncate the string to 30 characters
+                    if ($length > 30) {
+                        $string = substr($string, 0, 30);
+                    }
 
-        //     return response()->json(
-        //         ['error' => 'An unexpected error occurred'],
-        //         Response::HTTP_INTERNAL_SERVER_ERROR
-        //     );
-        // }
+                    // Calculate the remaining length available for the manager's name
+                    $remainingLength = 30 - strlen($string);
+
+                    // Append the portion of the manager's name that fits into the remaining length
+                    $string .=
+                        '#' . substr($manager->phone, 0, $remainingLength);
+                }
+            }
+            $this->createTransactionFastPay(
+                $amount,
+                $userId,
+                $order_id,
+                $string
+            );
+
+            $this->updateTransactionOrderFastPay($data, $order_id, $amount);
+
+            return response()->json(['FileId' => $string, 'code' => 0], 200);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Error checking user existence: ' . $e->getMessage()
+            );
+
+            return response()->json(
+                ['code' => 300],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
     }
+
+    // tbc fast pay ends here /////////////////////////////////////////////////////////////////
     public function updateTransactionOrder($data, $order_id)
     {
         $transaction = Transaction::where('transaction_id', $order_id)->first();
@@ -282,85 +337,109 @@ class TransactionController extends Controller
 
     public function updateUserData($data, $transaction, $order_id)
     {
-        $user = User::where('id', $transaction->user_id)
-            ->with('devices')
-            ->first();
-        $transfer_amount = floatval($data['confirmedAmount']) * 100;
-        $sakomisio = $transfer_amount * 0.02;
+        try {
+            $user = User::where('id', $transaction->user_id)
+                ->with('devices')
+                ->first();
+            $transfer_amount = floatval($data['confirmedAmount']) * 100;
+            $sakomisio = $transfer_amount * 0.02;
 
-        $sakomisio = number_format($sakomisio, 2, '.', '');
-        $user->balance = intval($user->balance) + $transfer_amount - $sakomisio;
-        foreach ($user->devices as $key => $device) {
-            if ($device->op_mode === '0') {
-                $subscriptionDate = $device->pivot->subscription
-                    ? Carbon::parse($device->pivot->subscription)
-                    : null;
-                $currentDay = Carbon::now()->day;
-                if ($currentDay < $device->pay_day) {
-                    $nextMonthPayDay = Carbon::now()
-                        ->startOfMonth()
-                        ->addDays($device->pay_day - 1);
-                } else {
-                    $nextMonthPayDay = Carbon::now()
-                        ->addMonth()
-                        ->startOfMonth()
-                        ->addDays($device->pay_day - 1);
-                }
-                if (
-                    is_null($subscriptionDate) ||
-                    ($subscriptionDate &&
-                        $subscriptionDate->lt($nextMonthPayDay))
-                ) {
-                    if (
-                        $user->balance - $user->freezed_balance >=
-                        $device->tariff_amount
-                    ) {
-                        DeviceUser::where('device_id', $device->id)
-                            ->where('user_id', $user->id)
-                            ->update(['subscription' => $nextMonthPayDay]);
-                        $user->freezed_balance =
-                            $user->freezed_balance + $device->tariff_amount;
-                    }
-                }
-            }
-            $devices_ids = Device::where('users_id', $device->users_id)->get();
-            foreach ($devices_ids as $key2 => $value2) {
-                if ($value2->op_mode == '1') {
-                    $lastAmount = LastUserAmount::where('user_id', $user->id)
-                        ->where('device_id', $value2->id)
-                        ->first();
-
-                    if (empty($lastAmount->user_id)) {
-                        LastUserAmount::insert([
-                            'user_id' => $user->id,
-                            'device_id' => $value2->id,
-                            'last_amount' =>
-                                $user->balance - $user->freezed_balance,
-                        ]);
+            $sakomisio = number_format($sakomisio, 2, '.', '');
+            $user->balance =
+                intval($user->balance) + $transfer_amount - $sakomisio;
+            foreach ($user->devices as $key => $device) {
+                if ($device->op_mode === '0') {
+                    $subscriptionDate = $device->pivot->subscription
+                        ? Carbon::parse($device->pivot->subscription)
+                        : null;
+                    $currentDay = Carbon::now()->day;
+                    if ($currentDay < $device->pay_day) {
+                        $nextMonthPayDay = Carbon::now()
+                            ->startOfMonth()
+                            ->addDays($device->pay_day - 1);
                     } else {
-                        $lastAmount->last_amount =
-                            $user->balance - $user->freezed_balance;
-                        $lastAmount->save();
+                        $nextMonthPayDay = Carbon::now()
+                            ->addMonth()
+                            ->startOfMonth()
+                            ->addDays($device->pay_day - 1);
                     }
-                    $payload = $this->generateHexPayload(5, [
-                        [
-                            'type' => 'string',
-                            'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
-                        ],
-                        [
-                            'type' => 'number',
-                            'value' => 0,
-                        ],
-                        [
-                            'type' => 'number16',
-                            'value' => $user->balance - $user->freezed_balance,
-                        ],
-                    ]);
-                    $this->publishMessage($value2->dev_id, $payload);
+                    if (
+                        is_null($subscriptionDate) ||
+                        ($subscriptionDate &&
+                            $subscriptionDate->lt($nextMonthPayDay))
+                    ) {
+                        if (
+                            $user->balance - $user->freezed_balance >=
+                            $device->tariff_amount
+                        ) {
+                            DeviceUser::where('device_id', $device->id)
+                                ->where('user_id', $user->id)
+                                ->update(['subscription' => $nextMonthPayDay]);
+                            $user->freezed_balance =
+                                $user->freezed_balance + $device->tariff_amount;
+                        }
+                    }
+                }
+                $devices_ids = Device::where(
+                    'users_id',
+                    $device->users_id
+                )->get();
+                foreach ($devices_ids as $key2 => $value2) {
+                    if ($value2->op_mode == '1') {
+                        $lastAmount = LastUserAmount::where(
+                            'user_id',
+                            $user->id
+                        )
+                            ->where('device_id', $value2->id)
+                            ->first();
+
+                        if (empty($lastAmount->user_id)) {
+                            LastUserAmount::insert([
+                                'user_id' => $user->id,
+                                'device_id' => $value2->id,
+                                'last_amount' =>
+                                    $user->balance - $user->freezed_balance,
+                            ]);
+                        } else {
+                            $lastAmount->last_amount =
+                                $user->balance - $user->freezed_balance;
+                            $lastAmount->save();
+                        }
+                        $payload = $this->generateHexPayload(5, [
+                            [
+                                'type' => 'string',
+                                'value' => str_pad(
+                                    $user->id,
+                                    6,
+                                    '0',
+                                    STR_PAD_LEFT
+                                ),
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                            [
+                                'type' => 'number16',
+                                'value' =>
+                                    $user->balance - $user->freezed_balance,
+                            ],
+                        ]);
+                        $this->publishMessage($value2->dev_id, $payload);
+                    }
                 }
             }
+            $user->save();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Error checking user existence: ' . $e->getMessage()
+            );
+
+            return response()->json(
+                ['code' => 300],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
-        $user->save();
     }
 
     private function getToken()
