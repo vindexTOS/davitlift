@@ -169,11 +169,7 @@ class TransactionController extends Controller
         $phone = $validatedData['phone'];
         $order_id = $validatedData['order_id'];
         $amount = $validatedData['amount'];
-        // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
-        $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
-        if ($isOrderExit) {
-            return response(['code' => 215], 400);
-        }
+
         //  ვეძებნთ უსერს ტელეფონის ნომრით
         $data = $request->all();
         try {
@@ -208,6 +204,13 @@ class TransactionController extends Controller
                         '#' . substr($manager->phone, 0, $remainingLength);
                 }
             }
+
+            // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
+            $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
+            if ($isOrderExit) {
+                return response(['FileId' => $string, 'code' => 215], 400);
+            }
+
             $this->createTransactionFastPay(
                 $amount,
                 $userId,
