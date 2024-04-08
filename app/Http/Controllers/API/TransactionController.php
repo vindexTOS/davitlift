@@ -92,7 +92,10 @@ class TransactionController extends Controller
             $user = User::where('phone', $phone)->first();
 
             if ($user) {
-                return response()->json(['phone' => $phone], Response::HTTP_OK);
+                return response()->json(
+                    ['phone' => $phone, 'user' => $user->name],
+                    Response::HTTP_OK
+                );
             } else {
                 return response()->json(
                     ['code' => 5],
