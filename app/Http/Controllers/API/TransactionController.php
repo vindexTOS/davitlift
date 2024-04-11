@@ -240,13 +240,11 @@ class TransactionController extends Controller
     public function updateTransactionOrder($data, $order_id)
     {
         $transaction = Transaction::where('transaction_id', $order_id)->first();
-        if ($transaction) {
-            if ($data['status'] === 'Succeeded') {
-                $this->updateUserData($data, $transaction, $order_id);
-            }
-            $transaction->status = $data['status'];
-            $transaction->save();
+        if ($data['status'] === 'Succeeded') {
+            $this->updateUserData($data, $transaction, $order_id);
         }
+        $transaction->status = $data['status'];
+        $transaction->save();
         return $data;
     }
 
