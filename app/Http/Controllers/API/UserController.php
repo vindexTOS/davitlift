@@ -92,13 +92,17 @@ class UserController extends Controller
     }
     public function removeToDevice($user_id, $device_id)
     {
-        DeviceUser::where('user_id', $user_id)
-            ->where('device_id', $device_id)
-            ->delete();
-        Card::where('user_id', $user_id)
-            ->where('device_id', $device_id)
-            ->delete();
-        return response()->json(['a' => 'b'], 200);
+        try {
+            DeviceUser::where('user_id', $user_id)
+                ->where('device_id', $device_id)
+                ->delete();
+            Card::where('user_id', $user_id)
+                ->where('device_id', $device_id)
+                ->delete();
+            return response()->json(['a' => 'b'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['err' => 'err'], 500);
+        }
     }
 
     public function store(Request $request)
