@@ -28,7 +28,7 @@
               <v-dialog v-model="dialogExisted" max-width="500px">
                 <template v-slot:activator="{ props }">
                   <v-btn
-                    v-if="$store.state.auth.user.lvl >= 3"
+                    v-if="$store.state.auth.user.lvl >= 3 && isAdmin"
                     dark
                     style="width: 100%;"
                     class="mb-2"
@@ -51,8 +51,8 @@
                       }}
                     </span>
                   </v-card-title>
-
-                  <v-card-text>
+                  <!-- თუ ადმინია არ აჩვენო -->
+                  <v-card-text v-if="isAdmin">
                     <v-col cols="12">
                       <p>
                         {{ $t('The maximum amount to be enrolled') }}:
@@ -74,6 +74,7 @@
                         type="date"
                       ></v-text-field>
                     </v-col>
+                    <p style="color: red;">{{ errorMessege }}</p>
                   </v-card-text>
 
                   <v-card-actions>
@@ -101,12 +102,12 @@
                     class="mb-2"
                     v-bind="props"
                   >
-                    {{ $t('ქეშბექის გამოტანა') }}
+                    ქეშბექის გამოტანა
                   </v-btn>
                 </template>
                 <v-card>
                   <v-card-title>
-                    <span class="text-h5">{{ $t('ქეშბექის გამოტანა') }}</span>
+                    <span class="text-h5">ქეშბექის გამოტანა</span>
                   </v-card-title>
 
                   <v-card-text>
@@ -168,7 +169,7 @@
       <template v-slot:item.balance="{ item }">
         {{ item.raw.balance / 100 }}{{ $t('Lari') }}
       </template>
-      <template v-slot:item.actions="{ item }">
+      <template v-if="isAdmin" v-slot:item.actions="{ item }">
         <v-icon
           v-if="$store.state.auth.user.lvl >= 3"
           size="small"
@@ -215,8 +216,12 @@ export default {
     existUser: '',
     cashbackManager: {},
     action: {},
+    errorMessege: '',
+    isAdmin: false,
   }),
-
+  created() {
+    this.chackAdminEmail()
+  },
   computed: {
     headers() {
       return [
@@ -238,6 +243,11 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
     deleteItem(id) {
       this.$swal
         .fire({
@@ -270,7 +280,6 @@ export default {
         : this.$t('Withdrawal cashback')
     },
     saveExisted() {
-      console.log(this.isCompanyPage)
       axios
         .post('/api/pay/cashback', {
           ...this.cashbackManager,
@@ -291,24 +300,31 @@ export default {
         })
     },
     save() {
-      axios
-        .post('/api/pay/cashback', {
-          ...this.cashback,
-          company_id: this.isCompanyPage
-            ? this.$route.params.id
-            : this.$route.params.companyId,
-          manager_id: this.isCompanyPage ? null : this.$route.params.id,
-          type: this.isCompanyPage ? 2 : 1,
-        })
-        .then(() => {
-          this.$swal.fire({
-            icon: 'success',
-            position: 'center',
-            allowOutsideClick: false,
+      if (this.maxCashback >= this.cashback.amount) {
+        axios
+          .post('/api/pay/cashback', {
+            ...this.cashback,
+            company_id: this.isCompanyPage
+              ? this.$route.params.id
+              : this.$route.params.companyId,
+            manager_id: this.isCompanyPage ? null : this.$route.params.id,
+            type: this.isCompanyPage ? 2 : 1,
           })
-          this.$emit('getCashback')
-          this.dialogExisted = false
-        })
+          .then(() => {
+            this.$swal.fire({
+              icon: 'success',
+              position: 'center',
+              allowOutsideClick: false,
+            })
+            this.$emit('getCashback')
+            this.dialogExisted = false
+          })
+      } else {
+        this.errorMessege = 'არა საკმარისი თანხა'
+        setTimeout(() => {
+          this.errorMessege = ''
+        }, 5000)
+      }
     },
     getDateWithoutHours(dateString) {
       // Convert the string into a Date object

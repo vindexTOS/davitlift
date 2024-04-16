@@ -78,7 +78,8 @@
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
           <h4>
-            {{ $t('Total amount earned') }}: {{ fullAmount }} {{ $t('Lari') }}
+            {{ $t('Total amount earned') }}: {{ fullAmount }}
+            {{ $t('Lari') }}
           </h4>
           <apexchart
             width="400"
@@ -108,6 +109,7 @@
     <v-row class="justify-space-between">
       <v-col style="min-height: 100%;" cols="12" md="6"></v-col>
       <v-col v-if="seriesC" cols="12" md="6">
+        <!-- ქეშბექი გასაცემი კლიენტზე -->
         <v-card
           v-if="seriesC[0] + seriesC[1] > 0"
           style="height: 100%;"
@@ -168,7 +170,7 @@
             :key="item.id"
           >
             <!-- @click="detailDevice(item.id)" -->
-            <v-card>
+            <v-card @click="detailDevice(item.id)">
               <template v-slot:title>
                 <div class="d-flex justify-space-between">
                   <span>
@@ -270,9 +272,9 @@
                 </div>
                 <hr />
 
-                <div v-if="isAdmin" @click="detailDevice(item.id)">
+                <!-- <div v-if="isAdmin" @click="detailDevice(item.id)">
                   <v-btn class="my-styled-btn">ლიფტის ინფომრაცია ვრცლად</v-btn>
-                </div>
+                </div> -->
               </template>
 
               <template v-slot:text></template>
@@ -286,9 +288,11 @@
         @getCashback="getCashback"
         :serverItems="cashbackData['transaction']"
         :availableCashback="
-          cashbackData['total'] - cashbackData['totalWithdrow']
+          cashbackData['total'] - cashbackData['totalWithdrow'] <= 0
+            ? 0
+            : cashbackData['total'] - cashbackData['totalWithdrow']
         "
-        :maxCashback="seriesC[0]"
+        :maxCashback="seriesC[0].toFixed(2) + 200"
       ></CashbackTable>
     </div>
   </div>
@@ -322,8 +326,10 @@ export default {
       deleted: false,
       seriesB: [0, 0],
       seriesC: [0, 0],
+      seriesD: [0, 0],
       eachLiftTariffAmount: 0,
       cashBackAmount: 0,
+      shouldCashBackOnManager: false,
       series: [
         {
           name: '',
@@ -336,10 +342,14 @@ export default {
       fullAmount: 0,
       cashbackData: {},
       displayCashBack: 0,
+      totalDeviceTariff: 0,
+      totalDeviceAmount: 0,
+      sortedEarnings: [],
+      companyFee: 0,
+      mtlianiCash: 0,
     }
   },
   created() {
-    this.loadItems()
     this.getCashback()
     this.chackAdminEmail()
   },
@@ -399,7 +409,7 @@ export default {
       }
     },
     maxCashback() {
-      console.log(this.data.manager)
+      // console.log(this.data.manager)
       if (this.data.manager) {
         // this.totalMoney = 210
         let cashbackAmount =
@@ -414,12 +424,14 @@ export default {
         }
       }
     },
-    seriesC() {
-      if (this.cashbackData.total > -1) {
-        return [this.displayCashBack, Number(this.cashbackData.total)]
-      }
-      return [0, 0]
-    },
+    //   seriesC() {
+    //     if (this.cashbackData.total > -1) {
+    //       this.shouldCashBackOnManager =
+    //         Number(this.cashbackData.total) > this.displayCashBack
+    //       return [this.displayCashBack, Number(this.cashbackData.total)]
+    //     }
+    //     return [0, 0]
+    //   },
   },
   methods: {
     openSingleDeviceTariffAmount(index) {
@@ -442,7 +454,7 @@ export default {
     getCashBackData(data, deviceEarning) {
       let deviceTariffCombined = this.eachLiftTariffAmount
       let cashback = data?.manager?.cashback
-      console.log(data)
+      // console.log(data)
       // let needToPay = Object.values(data.earnings)[0].earnings / 100
       let needToPay = deviceEarning
 
@@ -465,6 +477,7 @@ export default {
       this.eachLiftTariffAmount = this.filtredDevices
         .map((val) => val.deviceTariffAmount)
         .reduce((a, b) => a + b)
+      console.log(this.filtredDevices)
     },
     getCashback() {
       axios
@@ -474,20 +487,99 @@ export default {
         .then(({ data }) => {
           this.cashbackData = data
           console.log(data)
-          this.getDeviceAmount()
+          // conso  le.log(this.cashbackData['transaction'])
           this.loadItems()
+          this.getDeviceAmount()
+          this.eachLiftTariffAmount = this.filtredDevices
+            .map((val) => val.deviceTariffAmount)
+            .reduce((a, b) => a + b)
           this.liftTariffValue = this.filtredDevices[0]['deviceTariffAmount']
           this.singleLiftMapBool = new Array(this.filtredDevices.length).fill(
             false,
           )
         })
     },
+    calculateProecnt(data) {
+      console.log(data)
+      this.companyFee = 0
+      this.mtlianiCash = 0
+      this.totalDeviceAmount = data.device.filter(
+        (val) => val.deleted_at == null,
+      ).length
+      let needToPay = 0
 
+      this.sortedEarnings.forEach((x) => {
+        needToPay = x.earnings / 100
+        let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
+        let cashbackAmount = (x.cashback * needToPay) / 100
+
+        // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
+        let isProcenteMore = needToPay - cashbackAmount
+        console.log(data.device)
+        if (isProcenteMore < totalDeviceTariff) {
+          this.mtlianiCash += needToPay - totalDeviceTariff
+          this.companyFee += totalDeviceTariff
+        } else {
+          console.log(needToPay)
+
+          this.mtlianiCash += needToPay - isProcenteMore
+          this.companyFee += isProcenteMore
+        }
+      })
+
+      let amountAlreadyPayed =
+        Object.values(this.cashbackData['transaction']).length <= 0
+          ? [
+              { amount: '0', type: 1 },
+              { amount: '0', type: 1 },
+            ]
+          : Object.values(this.cashbackData['transaction'])
+
+      // console.log(data['companyTransaction'])
+
+      let amountAlreadyPayedNumber = amountAlreadyPayed
+        ?.filter((val) => val.type !== 3)
+        ?.map((val) => Number(val.amount))
+        .reduce((a, b) => a + b)
+
+      // console.log(data)
+      this.totalTransfers = amountAlreadyPayedNumber
+
+      let finalResultOfDisplayAmount =
+        this.mtlianiCash - amountAlreadyPayedNumber
+      console.log(finalResultOfDisplayAmount)
+      console.log(amountAlreadyPayedNumber)
+
+      this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
+
+      this.seriesD = [
+        finalResultOfDisplayAmount,
+        Number(amountAlreadyPayedNumber),
+      ]
+      // this.seriesC = [finalResultOfDisplayAmount, Number(data.payedCompanyFee)]
+
+      if (this.cashbackData.total > -1 && data.manager.cashback > 0) {
+        // this.shouldCashBackOnManager =
+        //   Number(this.cashbackData.total) > this.displayCashBack
+
+        this.seriesC = [
+          finalResultOfDisplayAmount,
+          Number(this.cashbackData.total),
+        ]
+      }
+      console.log(this.cashbackData.total)
+      console.log(this.cashbackData)
+      console.log(this.seriesC, this.seriesB, this.seriesD)
+
+      // console.log(this.mtlianiCash)
+    },
     loadItems() {
       axios
         .get('/api/companies/manager/' + this.$route.params.id)
         .then(({ data }) => {
           this.data = data
+
+          this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
           // console.log(data)
           let lastEarning
 
@@ -496,6 +588,8 @@ export default {
               return new Date(a.fullTime) - new Date(b.fullTime)
             },
           )
+          this.sortedEarnings = sortedEarnings
+
           sortedEarnings.forEach((x) => {
             this.fullAmount += x.earnings / 100
             const earningsIndex = new Date(x.fullTime).getMonth()
@@ -505,45 +599,53 @@ export default {
             this.series[0].data[earningsIndex] += x.earnings / 100
           })
           //
-          this.deviceEarningByMonth = Array.from(
-            Object.values(this.data.earnings),
-          )
-            .map((x) => {
-              if (this.getCashBackData(data, x.earnings / 100) < 0) {
-                return 0
-              } else {
-                return this.getCashBackData(data, x.earnings / 100)
-              }
-            })
-            .reduce((a, b) => a + b)
+          // this.deviceEarningByMonth = Array.from(
+          //   Object.values(this.data.earnings),
+          // )
+          //   .map((x) => {
+          //     if (this.getCashBackData(data, x.earnings / 100) < 0) {
+          //       return 0
+          //     } else {
+          //       return this.getCashBackData(data, x.earnings / 100)
+          //     }
+          //   })
+          //   .reduce((a, b) => a + b)
+          // let amountAlreadyPayed =
+          //   Object.values(this.cashbackData['transaction']).length <= 0
+          //     ? [
+          //         { amount: '0', type: 1 },
+          //         { amount: '0', type: 1 },
+          //       ]
+          //     : Object.values(this.cashbackData['transaction'])
 
-          let amountAlreadyPayed =
-            Object.values(this.cashbackData['transaction']).length <= 0
-              ? [{ amount: '0' }, { amount: '0' }]
-              : Object.values(this.cashbackData['transaction'])
+          // let amountAlreadyPayedNumber = amountAlreadyPayed
+          //   ?.filter((val) => val.type === 1)
+          //   ?.map((val) => Number(val.amount))
+          //   .reduce((a, b) => a + b)
+          // let finalResultOfDisplayAmount =
+          //   this.deviceEarningByMonth - amountAlreadyPayedNumber
+          // this.displayCashBack = finalResultOfDisplayAmount
+          // Object.values(this.data.earnings).forEach((x) => {
+          //   if (
+          //     !lastEarning ||
+          //     new Date(x.fullTime) > new Date(lastEarning.fullTime)
+          //   ) {
+          //     lastEarning = x
+          //     this.totalMoney = lastEarning.earnings / 100
+          //   }
+          // })
 
-          let amountAlreadyPayedNumber = amountAlreadyPayed
-            ?.map((val) => Number(val.amount))
-            .reduce((a, b) => a + b)
-
-          let finalResultOfDisplayAmount =
-            this.deviceEarningByMonth - amountAlreadyPayedNumber
-          this.displayCashBack = finalResultOfDisplayAmount
-          Object.values(this.data.earnings).forEach((x) => {
-            if (
-              !lastEarning ||
-              new Date(x.fullTime) > new Date(lastEarning.fullTime)
-            ) {
-              lastEarning = x
-              this.totalMoney = lastEarning.earnings / 100
-            }
-          })
-
-          this.seriesB = [
-            this.data.deviceActivity.inactive,
-            this.data.deviceActivity.active,
-          ]
+          console.log(this.totalMoney)
+          // this.seriesB = [
+          //   this.data.deviceActivity.inactive,
+          //   this.data.deviceActivity.active,
+          // ]
+          this.calculateProecnt(data)
         })
+
+      this.eachLiftTariffAmount = this.filtredDevices
+        .map((val) => val.deviceTariffAmount)
+        .reduce((a, b) => a + b)
     },
     changeSingleLiftAmount(id, index) {
       axios
@@ -567,7 +669,6 @@ export default {
         .then((res) => {
           // console.log(res)
           this.toggleLiftTariff()
-          this.loadItems()
           this.getCashback()
           this.liftTariffValue = ''
         })

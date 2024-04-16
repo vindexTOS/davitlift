@@ -819,24 +819,46 @@ class MqttController extends Controller
     {
         // Generate the date for month_year
 
+        // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
         $now = Carbon::now();
-
+        $user = User::where('id', $companyId)->first();
+        $device = Device::where('id', $deviceId)->first();
         // Try to retrieve the entry for the given device and month_year
         $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
             ->where('month', $now->month)
             ->where('year', $now->year)
             ->first();
         if (!empty($deviceEarnings)) {
-            $deviceEarnings->earnings += $earningsValue;
-            $deviceEarnings->save();
+            if ($user && $device) {
+                $deviceEarnings->earnings += $earningsValue;
+                $deviceEarnings->cashback = $user->cashback;
+                $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
+                $deviceEarnings->save();
+            } else {
+                $deviceEarnings->earnings += $earningsValue;
+
+                $deviceEarnings->save();
+            }
         } else {
-            DeviceEarn::create([
-                'company_id' => $companyId,
-                'device_id' => $deviceId,
-                'month' => $now->month,
-                'year' => $now->year,
-                'earnings' => $earningsValue,
-            ]);
+            if ($user && $device) {
+                DeviceEarn::create([
+                    'company_id' => $companyId,
+                    'device_id' => $deviceId,
+                    'month' => $now->month,
+                    'year' => $now->year,
+                    'earnings' => $earningsValue,
+                    'cashback' => $user->cashback,
+                    'deviceTariff' => $device->deviceTariffAmount,
+                ]);
+            } else {
+                DeviceEarn::create([
+                    'company_id' => $companyId,
+                    'device_id' => $deviceId,
+                    'month' => $now->month,
+                    'year' => $now->year,
+                    'earnings' => $earningsValue,
+                ]);
+            }
         }
         // Save the model (either updates or creates based on existence)
     }

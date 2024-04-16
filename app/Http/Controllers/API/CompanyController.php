@@ -179,6 +179,7 @@ class CompanyController extends Controller
             100 /
             100;
         $data['deviceActivity'] = $devicesActivity;
+
         $data['earnings'] = $this->getEarnings($earnings);
         return $data;
     }
@@ -192,6 +193,10 @@ class CompanyController extends Controller
             );
         }
         $user = User::where('email', $request->admin_email)->first();
+        $user->update([
+            'cashback' => $request->cashback,
+            'role' => $request->role,
+        ]);
         if (empty($user)) {
             return response()->json(
                 ['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],
@@ -202,6 +207,7 @@ class CompanyController extends Controller
             'admin_id' => $user->id,
             ...$request->all(),
         ]);
+        $company['test'] = 'test';
         return response()->json($company, 201);
     }
 
@@ -218,12 +224,13 @@ class CompanyController extends Controller
             ->get();
         foreach ($data['transaction'] as $key => $value) {
             if ($value['type'] === 1) {
-                $data['total'] += $value->amount;
+                $data['total'] += +$value->amount;
             }
             if ($value['type'] === 3) {
-                $data['totalWithdrow'] += $value->amount;
+                $data['totalWithdrow'] += +$value->amount;
             }
         }
+
         return $data;
     }
     public function payedCashbackForCompany($company_id)
@@ -288,7 +295,7 @@ class CompanyController extends Controller
                 (($total / 100) * $user['cashback']) / 100 - $totalPayed;
             if ($maxCashback + 1 < $valid['amount']) {
                 return response()->json(
-                    ['message' => 'მაქსიმალურ ქეშბექზე დიდი თანხაა'],
+                    ['message' => 'თანხა არასაკმარისია'],
                     422
                 );
             }
@@ -357,15 +364,23 @@ class CompanyController extends Controller
 
         if ($valid['type'] == 3) {
             $data = [];
-            $data['companyTransaction'] = CompanyTransaction::where(
-                'company_id',
-                $valid['company_id']
-            )->get();
+            if ($valid['manager_id']) {
+                $data['companyTransaction'] = CompanyTransaction::where(
+                    'manager_id',
+                    $valid['manager_id']
+                )->get();
+            } else {
+                $data['companyTransaction'] = CompanyTransaction::where(
+                    'company_id',
+                    $valid['company_id']
+                )->get();
+            }
+
             $data['payedCashback'] = 0;
             $data['withdrCashback'] = 0;
 
             foreach ($data['companyTransaction'] as $transaction) {
-                if ($transaction->type === 2) {
+                if ($transaction->type === 2 || $transaction->type === 1) {
                     $data['payedCashback'] += $transaction->amount;
                 }
                 if ($transaction['type'] === 3) {
@@ -379,7 +394,8 @@ class CompanyController extends Controller
             ) {
                 return response()->json(
                     [
-                        'message' => 'ამ თანხის გამოტანა შეუძლებელია',
+                        'message' =>
+                            'მაქსიმალურ სერვისის გადასახადზე დიდი თანხაა',
                     ],
                     422
                 );
@@ -540,6 +556,7 @@ class CompanyController extends Controller
         $data['deviceActivity'] = $devicesActivity;
         $data['earnings'] = $this->getEarnings($earnings);
         $data['managers'] = [...$managers];
+
         return $data;
     }
 
@@ -597,7 +614,10 @@ class CompanyController extends Controller
         foreach ($allEarnings as $earning) {
             $month = $earning->month;
             $year = $earning->year;
+            $deviceId = $earning->device_id;
             $key = "$month-$year"; // e.g., "9-2023"
+            $cashback = intval($earning->cashback);
+            $devicetariff = intval($earning->deviceTariff);
             if (isset($groupedEarnings[$key])) {
                 // If the key already exists, sum the earnings
                 $groupedEarnings[$key]['earnings'] += floatval(
@@ -609,7 +629,11 @@ class CompanyController extends Controller
                     'month' => $month,
                     'year' => $year,
                     'earnings' => floatval($earning['earnings']),
-                    'fullTime' => $earning['updated_at'],
+                    'fullTime' => $earning['created_at'],
+                    'cashback' => $cashback,
+                    'devicetariff' => $devicetariff,
+                    'key' => $key,
+                    'all' => $allEarnings,
                 ];
             }
         }
@@ -625,6 +649,10 @@ class CompanyController extends Controller
             );
         }
         $user = User::where('email', $request->admin_email)->first();
+        $user->update([
+            'cashback' => $request->cashback,
+        ]);
+
         if (empty($user)) {
             return response()->json(
                 ['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],
@@ -638,6 +666,12 @@ class CompanyController extends Controller
 
     public function destroy(Company $company)
     {
+        $companyID = $company->admin_id;
+        $user = User::where('id', $companyID)->first();
+        $user->update([
+            'cashback' => 0,
+            'role' => 'member',
+        ]);
         $company->delete();
         return response()->json(null, 204);
     }

@@ -14,6 +14,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Controllers\MqttController;
 use App\Http\Middleware\SuperAdminMiddleware;
+use App\Models\Device;
 
 //  ADMIN ONLY
 
@@ -72,6 +73,16 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
     ]);
 });
 
+//  tbc fast pay
+Route::post('/transaction/checkuser', [
+    TransactionController::class,
+    'checkIfUserExists',
+]);
+
+Route::post('/transaction/tbcfastpay', [
+    TransactionController::class,
+    'makeTbcFastPayOrder',
+]);
 // USER ONLY OR SHARED
 
 Route::middleware(['auth:api'])->group(function () {
@@ -181,7 +192,7 @@ Route::middleware(['auth:api'])->group(function () {
     // DEVICES
 
     Route::apiResource('devices', DeviceController::class);
-
+    Route::put('/deviceEarn/edit', [DeviceController::class, 'EditDevicEarn']);
     Route::get('/get/devices/user', [DeviceController::class, 'userDevice']);
     Route::get('/get/devices/user/{id}', [
         DeviceController::class,

@@ -191,6 +191,11 @@ export default {
           key: 'cards_count',
           align: 'start',
         },
+        {
+          title: 'როლი',
+          key: 'role',
+          align: 'start',
+        },
       ]
       if (this.isFixed) {
         header.push({ title: this.$t('has paid'), key: 'paid', align: 'start' })

@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\MqttConnectionService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\DeviceEarn;
 use Illuminate\Support\Facades\Auth;
 use App\Services\MqttService;
 use Illuminate\Support\Facades\Http;
@@ -140,6 +141,7 @@ class DeviceController extends Controller
 
         $user = User::where('email', $data['admin_email'])->first();
         if(empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],422);
+        $user->update(['role' =>  "manager"]);
 
         $device = Device::create(['users_id' => $user->id,...$data,
             'soft_version' => $UnregisteredDevice->soft_version,'hardware_version' => $UnregisteredDevice->hardware_version,]);
@@ -401,4 +403,18 @@ class DeviceController extends Controller
     
         return response()->json(["message" => "Devices updated successfully"]);
     }
+
+    public function EditDevicEarn (Request $request){
+         $id = $request->id;
+
+         $deviceEarn = DeviceEarn::where("id", $id);
+         
+    $deviceEarn->cashback = $request->cashback;
+  
+    $deviceEarn->update([
+        'cashback' =>  $request->cashback ,
+        'deviceTariff' => $request->deviceTariff,
+    ]);
+        return response()->json(["data"=>  "item updated" ]);
+     } 
 }

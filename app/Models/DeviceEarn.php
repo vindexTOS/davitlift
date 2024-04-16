@@ -13,6 +13,12 @@ class DeviceEarn extends Model
     protected $table = 'device_earn';
 
     // Define the fillable attributes
-    protected $fillable = ['device_id', 'earnings', 'month','year'];
+    protected $fillable = [
+        'device_id',
+        'earnings',
+        'month',
+        'year',
+        'cashback',
+        'deviceTariff',
+    ];
 }
-

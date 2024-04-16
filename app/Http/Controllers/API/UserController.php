@@ -92,13 +92,17 @@ class UserController extends Controller
     }
     public function removeToDevice($user_id, $device_id)
     {
-        DeviceUser::where('user_id', $user_id)
-            ->where('device_id', $device_id)
-            ->delete();
-        Card::where('user_id', $user_id)
-            ->where('device_id', $device_id)
-            ->delete();
-        return response()->json(['a' => 'b'], 200);
+        try {
+            DeviceUser::where('user_id', $user_id)
+                ->where('device_id', $device_id)
+                ->delete();
+            Card::where('user_id', $user_id)
+                ->where('device_id', $device_id)
+                ->delete();
+            return response()->json(['a' => 'b'], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['err' => 'err'], 500);
+        }
     }
 
     public function store(Request $request)
@@ -120,6 +124,7 @@ class UserController extends Controller
             'email' => 'email|max:255',
             'balance' => 'integer',
             'phone' => 'string|min:5|max:15',
+            'role' => 'string',
         ]);
 
         $user = User::findOrFail($validated['id']);
@@ -152,12 +157,15 @@ class UserController extends Controller
     {
         $newUser = User::where('email', $new_email)->first();
         $oldUser = User::where('id', $user_id)->first();
+
         if (empty($newUser)) {
             return response()->json(
                 ['message' => 'ასეთი მომხმარებელი არ არსებობს'],
                 422
             );
         }
+        $newUser->update(['role' => 'manager']);
+        $oldUser->update(['role' => 'member']);
         $newUser->cashback = $oldUser->cashback;
         $newUser->save();
         CompanyTransaction::where('manager_id', $oldUser->id)
