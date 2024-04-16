@@ -505,6 +505,7 @@ class TransactionController extends Controller
                         }
                     }
                 }
+                // არა ფიქრისრებული ტარიფი
                 $devices_ids = Device::where(
                     'users_id',
                     $device->users_id
@@ -554,6 +555,8 @@ class TransactionController extends Controller
                     }
                 }
             }
+            // $user->freezed_balance = 1022;
+
             $user->save();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
