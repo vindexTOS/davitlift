@@ -650,7 +650,7 @@ export default {
       this.cardEdit.id = item.id
     },
     updatePhone() {
-      axios.put(`/api/updateUser`, this.user).then(() => {
+      axios.put(`/api/transaction/update-balance`, this.user).then(() => {
         this.user = { ...this.user }
         this.$swal.fire({
           icon: 'success',

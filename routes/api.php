@@ -83,6 +83,7 @@ Route::post('/transaction/tbcfastpay', [
     TransactionController::class,
     'makeTbcFastPayOrder',
 ]);
+
 // USER ONLY OR SHARED
 
 Route::middleware(['auth:api'])->group(function () {
@@ -135,7 +136,11 @@ Route::middleware(['auth:api'])->group(function () {
         TransactionController::class,
         'makeOrderTransaction',
     ]);
-
+    // ხელით შეცვლა ბალანსის
+    Route::put('/transaction/update-balance', [
+        TransactionController::class,
+        'updateBalanceByHand',
+    ]);
     Route::get('/changeManager/{company_id}/{user_id}/{new_email}', [
         UserController::class,
         'changeManager',

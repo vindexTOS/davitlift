@@ -445,7 +445,128 @@ class TransactionController extends Controller
             );
         }
     }
+    // ხელით დააფდეითება ბალანსის
+    public function updateBalanceByHand(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'id' => 'required|exists:users,id',
+            'name' => 'string|max:255',
+            'email' => 'email|max:255',
+            'balance' => 'integer',
+            'phone' => 'string|min:5|max:15',
+            'role' => 'string',
+        ]);
 
+        $user = User::findOrFail($validated['id']);
+        $data = $validated;
+
+        $this->updateBalanceByHandUserDataUpdate($data);
+        // $user->update($validated);
+    }
+
+    public function updateBalanceByHandUserDataUpdate($data)
+    {
+        try {
+            $transfer_amount = floatval($data['balance']);
+            $user = User::where('id', $data['id'])
+                ->with('devices')
+                ->first();
+            $user->balance = $transfer_amount;
+            foreach ($user->devices as $key => $device) {
+                if ($device->op_mode === '0') {
+                    $subscriptionDate = $device->pivot->subscription
+                        ? Carbon::parse($device->pivot->subscription)
+                        : null;
+                    $currentDay = Carbon::now()->day;
+                    if ($currentDay < $device->pay_day) {
+                        $nextMonthPayDay = Carbon::now()
+                            ->startOfMonth()
+                            ->addDays($device->pay_day - 1);
+                    } else {
+                        $nextMonthPayDay = Carbon::now()
+                            ->addMonth()
+                            ->startOfMonth()
+                            ->addDays($device->pay_day - 1);
+                    }
+                    if (
+                        is_null($subscriptionDate) ||
+                        ($subscriptionDate &&
+                            $subscriptionDate->lt($nextMonthPayDay))
+                    ) {
+                        if (
+                            $user->balance - $user->freezed_balance >=
+                            $device->tariff_amount
+                        ) {
+                            DeviceUser::where('device_id', $device->id)
+                                ->where('user_id', $user->id)
+                                ->update(['subscription' => $nextMonthPayDay]);
+                            $user->freezed_balance =
+                                $user->freezed_balance + $device->tariff_amount;
+                        }
+                    }
+                }
+                $devices_ids = Device::where(
+                    'users_id',
+                    $device->users_id
+                )->get();
+                foreach ($devices_ids as $key2 => $value2) {
+                    if ($value2->op_mode == '1') {
+                        $lastAmount = LastUserAmount::where(
+                            'user_id',
+                            $user->id
+                        )
+                            ->where('device_id', $value2->id)
+                            ->first();
+
+                        if (empty($lastAmount->user_id)) {
+                            LastUserAmount::insert([
+                                'user_id' => $user->id,
+                                'device_id' => $value2->id,
+                                'last_amount' =>
+                                    $user->balance - $user->freezed_balance,
+                            ]);
+                        } else {
+                            $lastAmount->last_amount =
+                                $user->balance - $user->freezed_balance;
+                            $lastAmount->save();
+                        }
+                        $payload = $this->generateHexPayload(5, [
+                            [
+                                'type' => 'string',
+                                'value' => str_pad(
+                                    $user->id,
+                                    6,
+                                    '0',
+                                    STR_PAD_LEFT
+                                ),
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                            [
+                                'type' => 'number16',
+                                'value' =>
+                                    $user->balance - $user->freezed_balance,
+                            ],
+                        ]);
+                        $this->publishMessage($value2->dev_id, $payload);
+                    }
+                }
+            }
+            $user->save();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Error checking user existence: ' . $e->getMessage()
+            );
+
+            return response()->json(
+                ['code' => 300],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+    //   tokeni
     private function getToken()
     {
         $response = Http::asForm()

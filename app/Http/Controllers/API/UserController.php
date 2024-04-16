@@ -116,23 +116,23 @@ class UserController extends Controller
         return $user;
     }
 
-    public function update(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'id' => 'required|exists:users,id',
-            'name' => 'string|max:255',
-            'email' => 'email|max:255',
-            'balance' => 'integer',
-            'phone' => 'string|min:5|max:15',
-            'role' => 'string',
-        ]);
+    // public function update(Request $request, User $user)
+    // {
+    //     $validated = $request->validate([
+    //         'id' => 'required|exists:users,id',
+    //         'name' => 'string|max:255',
+    //         'email' => 'email|max:255',
+    //         'balance' => 'integer',
+    //         'phone' => 'string|min:5|max:15',
+    //         'role' => 'string',
+    //     ]);
 
-        $user = User::findOrFail($validated['id']);
+    //     $user = User::findOrFail($validated['id']);
 
-        $user->update($validated);
+    //     $user->update($validated);
 
-        return response()->json(['msg' => 'user updated']);
-    }
+    //     return response()->json(['msg' => 'user updated']);
+    // }
 
     public function destroy(User $user)
     {
