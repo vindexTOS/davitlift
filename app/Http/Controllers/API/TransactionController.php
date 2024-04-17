@@ -468,9 +468,11 @@ class TransactionController extends Controller
 
         $user = User::findOrFail($validated['id']);
         $data = $validated;
+        $userUpdateData = $validated;
+        unset($userUpdateData['balance']);
 
+        $user->update($userUpdateData);
         $this->updateBalanceByHandUserDataUpdate($data);
-        // $user->update($validated);
     }
 
     public function updateBalanceByHandUserDataUpdate($data)
@@ -566,7 +568,11 @@ class TransactionController extends Controller
             }
             // $user->freezed_balance = 1022;
             // $user->update($validated);
-
+            // $user->name = $data->name;
+            // $user->phone = $data->phone;
+            // $user->role = $data->role;
+            // $user->email = $data->email;
+            Log::info('data......');
             $user->save();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
