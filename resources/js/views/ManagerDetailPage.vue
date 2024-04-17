@@ -506,7 +506,7 @@ export default {
       this.totalDeviceAmount = data.device.filter(
         (val) => val.deleted_at == null,
       ).length
-      let needToPay = 0
+      let needToPay = 0 
 
       this.sortedEarnings.forEach((x) => {
         needToPay = x.earnings / 100

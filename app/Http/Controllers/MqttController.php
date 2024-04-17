@@ -251,10 +251,10 @@ class MqttController extends Controller
                 }
             } else {
                 if (
-                    $$user->balance - $device->tariff_amount >
+                    $user->balance - $device->tariff_amount >
                     $device->tariff_amount
                 ) {
-                    $user->balance = $user->balance - $device->tariff_amount;
+                    $user->balance - $device->tariff_amount;
                     $lastAmount = LastUserAmount::where('user_id', $user->id)
                         ->where('device_id', $device->id)
                         ->first();
