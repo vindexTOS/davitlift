@@ -1,21 +1,23 @@
 <?php
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Card;
+use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceEarn;
-use App\Models\DeviceError;
 use App\Models\DeviceUser;
-use App\Models\LastUserAmount;
-use App\Models\UnregisteredDevice;
-use App\Models\UpdatingDevice;
-use App\Models\User;
-use Carbon\Carbon;
+use App\Models\DeviceError;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Models\LastUserAmount;
+use App\Models\UpdatingDevice;
 use PhpMqtt\Client\MqttClient;
+use App\Models\UnregisteredDevice;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class MqttController extends Controller
 {
@@ -26,7 +28,7 @@ class MqttController extends Controller
         $msg = $request->all();
         $date = $msg['payload'];
         $topic = $msg['topic'];
-
+        Log::info('User logged in successfully.' . $date);
         $parts = explode('/', $topic);
         $device_id = $parts[1];
         $device = Device::where('dev_id', $parts[1])->first();
