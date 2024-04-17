@@ -1,23 +1,21 @@
 <?php
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Models\Card;
-use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceEarn;
-use App\Models\DeviceUser;
 use App\Models\DeviceError;
-use Illuminate\Http\Request;
+use App\Models\DeviceUser;
 use App\Models\LastUserAmount;
-use App\Models\UpdatingDevice;
-use PhpMqtt\Client\MqttClient;
 use App\Models\UnregisteredDevice;
+use App\Models\UpdatingDevice;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use PhpMqtt\Client\MqttClient;
+use Illuminate\Support\Facades\Http;
 
 class MqttController extends Controller
 {
@@ -28,7 +26,7 @@ class MqttController extends Controller
         $msg = $request->all();
         $date = $msg['payload'];
         $topic = $msg['topic'];
-        Log::info('User logged in successfully.' . $date);
+
         $parts = explode('/', $topic);
         $device_id = $parts[1];
         $device = Device::where('dev_id', $parts[1])->first();
@@ -260,7 +258,7 @@ class MqttController extends Controller
                     $lastAmount = LastUserAmount::where('user_id', $user->id)
                         ->where('device_id', $device->id)
                         ->first();
-
+                    // aq shmeodis
                     if (empty($lastAmount->user_id)) {
                         LastUserAmount::insert([
                             'user_id' => $user->id,
@@ -308,7 +306,6 @@ class MqttController extends Controller
                                 ->first();
 
                             if (empty($lastAmountCurrentDevice->user_id)) {
-                                // aq ar shemodis
                                 LastUserAmount::insert([
                                     'user_id' => $user->id,
                                     'device_id' => $value2->id,
@@ -316,12 +313,9 @@ class MqttController extends Controller
                                         $user->balance - $user->freezed_balance,
                                 ]);
                             } else {
-                                //  aq shemovida
                                 $lastAmountCurrentDevice->last_amount =
                                     $user->balance - $user->freezed_balance;
                                 $lastAmountCurrentDevice->save();
-                                $user->balance - $user->freezed_balance;
-                                $user->save();
                             }
                             $payload = $this->generateHexPayload(5, [
                                 [
