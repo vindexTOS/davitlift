@@ -58,7 +58,7 @@
       <v-card min-width="48%" class="pb-16 mt-md-0 mt-10">
         <v-card-title class="mt-5 d-sm-flex justify-space-between">
           <div>{{ $t('Elevator cards') }}</div>
-          <v-btn v-if="user.role !== 'user'" @click="showElevator = true">
+          <v-btn v-if="role !== 'user'" @click="showElevator = true">
             {{ $t('Add card') }}
           </v-btn>
         </v-card-title>
@@ -459,6 +459,7 @@ export default {
       showCode: false,
       user: {},
       isAdmin: false,
+      role: '',
       transaction: [],
       card: {
         name: '',
@@ -586,6 +587,7 @@ export default {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
       this.isAdmin = email === 'info@eideas.io'
+      this.role = JSON.parse(token).auth.user.role
     },
     addBalance() {
       // Your logic for adding balance
@@ -653,7 +655,6 @@ export default {
     updatePhone() {
       axios.put(`/api/transaction/update-balance`, this.user).then(() => {
         this.user = { ...this.user }
-        console.log(this.user)
         this.$swal.fire({
           icon: 'success',
           position: 'center',

@@ -61,7 +61,7 @@
         >
           <div>{{ $t('Elevator cards') }}</div>
           <!-- კარტების დამატება -->
-          <v-btn v-if="isAdmin" @click="showElevator = true">
+          <v-btn v-if="role !== 'user'" @click="showElevator = true">
             {{ $t('Add card') }}
           </v-btn>
         </v-card-title>
@@ -559,6 +559,7 @@ export default {
           data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
       ],
+      role: '',
       transaction: [],
       totalMoney: 0,
       dialog: false,
@@ -675,7 +676,9 @@ export default {
     chackAdminEmail() {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
+      let role = JSON.parse(token).auth.user.role
       this.isAdmin = email === 'info@eideas.io'
+      this.role = role
     },
     getBalance() {
       axios.get('/api/balance/user').then(({ data }) => {
