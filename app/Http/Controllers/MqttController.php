@@ -306,14 +306,20 @@ class MqttController extends Controller
                                 ->first();
 
                             if (empty($lastAmountCurrentDevice->user_id)) {
+                                // aq ar shemodis
                                 LastUserAmount::insert([
                                     'user_id' => $user->id,
                                     'device_id' => $value2->id,
-                                    'last_amount' => 100,
+                                    'last_amount' =>
+                                        $user->balance - $user->freezed_balance,
                                 ]);
                             } else {
-                                $lastAmountCurrentDevice->last_amount = 200;
+                                //  aq shemovida
+                                $lastAmountCurrentDevice->last_amount =
+                                    $user->balance - $user->freezed_balance;
                                 $lastAmountCurrentDevice->save();
+                                $user->balance - $user->freezed_balance;
+                                $user->save();
                             }
                             $payload = $this->generateHexPayload(5, [
                                 [
