@@ -135,7 +135,12 @@ class TransactionController extends Controller
             )->first();
             if ($transaction) {
                 $data['confirmedAmount'] = $amount;
-                $this->updateUserData($data, $transaction, $order_id);
+                $this->updateUserData(
+                    $data,
+                    $transaction,
+                    $order_id,
+                    'fast_pay'
+                );
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
@@ -241,7 +246,7 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::where('transaction_id', $order_id)->first();
         if ($data['status'] === 'Succeeded') {
-            $this->updateUserData($data, $transaction, $order_id);
+            $this->updateUserData($data, $transaction, $order_id, 'e_com');
         }
         $transaction->status = $data['status'];
         $transaction->save();
@@ -339,16 +344,20 @@ class TransactionController extends Controller
         return $this->updateTransactionOrder($data, $order_id);
     }
 
-    public function updateUserData($data, $transaction, $order_id)
+    public function updateUserData($data, $transaction, $order_id, $isFastPay)
     {
         try {
             $user = User::where('id', $transaction->user_id)
                 ->with('devices')
                 ->first();
             $transfer_amount = floatval($data['confirmedAmount']) * 100;
-            $sakomisio = $transfer_amount * 0.02;
+            $sakomisio = 0;
+            if ($isFastPay === 'e_com') {
+                $sakomisio = $transfer_amount * 0.02;
 
-            $sakomisio = number_format($sakomisio, 2, '.', '');
+                $sakomisio = number_format($sakomisio, 2, '.', '');
+            }
+
             $user->balance =
                 intval($user->balance) + $transfer_amount - $sakomisio;
             foreach ($user->devices as $key => $device) {
@@ -556,6 +565,7 @@ class TransactionController extends Controller
                 }
             }
             // $user->freezed_balance = 1022;
+            // $user->update($validated);
 
             $user->save();
         } catch (\Exception $e) {
