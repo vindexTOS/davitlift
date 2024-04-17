@@ -254,7 +254,7 @@ class MqttController extends Controller
                     $user->balance - $device->tariff_amount >
                     $device->tariff_amount
                 ) {
-                    $user->balance - $device->tariff_amount;
+                    $user->balance = $user->balance - $device->tariff_amount;
                     $lastAmount = LastUserAmount::where('user_id', $user->id)
                         ->where('device_id', $device->id)
                         ->first();
@@ -263,11 +263,12 @@ class MqttController extends Controller
                         LastUserAmount::insert([
                             'user_id' => $user->id,
                             'device_id' => $device->id,
-                            'last_amount' => 666,
+                            'last_amount' =>
+                                $user->balance - $user->freezed_balance,
                         ]);
                     } else {
-                        $lastAmount->last_amount = 777;
-
+                        $lastAmount->last_amount =
+                            $user->balance - $user->freezed_balance;
                         $lastAmount->save();
                     }
                     $payload = $this->generateHexPayload(1, [
@@ -308,12 +309,10 @@ class MqttController extends Controller
                                 LastUserAmount::insert([
                                     'user_id' => $user->id,
                                     'device_id' => $value2->id,
-                                    'last_amount' =>
-                                        $user->balance - $user->freezed_balance,
+                                    'last_amount' => 100,
                                 ]);
                             } else {
-                                $lastAmountCurrentDevice->last_amount =
-                                    $user->balance - $user->freezed_balance;
+                                $lastAmountCurrentDevice->last_amount = 200;
                                 $lastAmountCurrentDevice->save();
                             }
                             $payload = $this->generateHexPayload(5, [
