@@ -11,9 +11,13 @@
           <th style="padding: 8px; border: 1px solid #ddd;">
             {{ $t('Amount') }}
           </th>
-          <th style="padding: 8px; border: 1px solid #ddd;">ტარიფი</th>
-          <th style="padding: 8px; border: 1px solid #ddd;">ქეშბექი</th>
-          <th style="padding: 8px; border: 1px solid #ddd;">
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+            ტარიფი
+          </th>
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+            ქეშბექი
+          </th>
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             რედაქტ
           </th>
         </tr>
@@ -33,7 +37,7 @@
           <td style="padding: 8px; border: 1px solid #ddd;">
             {{ item.earnings / 100 }}₾
           </td>
-          <td style="padding: 8px; border: 1px solid #ddd;">
+          <td v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             <p v-if="!boolMapper[index]">{{ item.deviceTariff }}</p>
             <input
               @input="changeInput($event, 'deviceTariff')"
@@ -42,7 +46,7 @@
               :value="item.deviceTariff"
             />
           </td>
-          <td style="padding: 8px; border: 1px solid #ddd;">
+          <td v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             <p v-if="!boolMapper[index]">{{ item.cashback }}</p>
             <input
               @input="changeInput($event, 'cashback')"
@@ -53,6 +57,7 @@
           </td>
           <td v-if="isFixed" style="padding: 8px; border: 1px solid #ddd;"></td>
           <td
+            v-if="isAdmin"
             style="
               padding: 8px;
               border: 1px solid #ddd;
@@ -145,6 +150,7 @@ export default {
     editedIndex: -1,
     cashback: 0,
     deviceTariff: 0,
+    isAdmin: false,
     editedItem: {
       name: '',
       phone: 0,
@@ -162,7 +168,9 @@ export default {
     },
     action: {},
   }),
-
+  async created() {
+    this.chackAdminEmail()
+  },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'New user' : 'Edit user'
@@ -207,6 +215,11 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
     changeInput(event, type) {
       if (type == 'cashback') {
         this.cashback = event.target.value
