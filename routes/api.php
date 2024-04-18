@@ -14,20 +14,12 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Controllers\MqttController;
 use App\Http\Middleware\SuperAdminMiddleware;
+use App\Http\Middleware\ComapnyAccsessMiddleware;
 use App\Models\Device;
 
 //  ADMIN ONLY
 
 Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
-    Route::put('/updateUser', [UserController::class, 'update']);
-    Route::apiResource('users', UserController::class);
-
-    Route::get('/change/user/password/admin/{user_id}/{password}', [
-        UserController::class,
-        'changePassword',
-        // s
-    ]);
-
     // FILES
     Route::get('/files', [FileController::class, 'index']);
     Route::delete('/files/{id}', [FileController::class, 'delete']);
@@ -70,6 +62,18 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
     Route::put('/device/manyTariff/{managerId}', [
         DeviceController::class,
         'updateManyDeviceTariff',
+    ]);
+});
+//  company middleware
+
+Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
+    Route::put('/updateUser', [UserController::class, 'update']);
+    Route::apiResource('users', UserController::class);
+
+    Route::get('/change/user/password/admin/{user_id}/{password}', [
+        UserController::class,
+        'changePassword',
+        // sssds
     ]);
 });
 

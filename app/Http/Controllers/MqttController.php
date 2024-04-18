@@ -6,7 +6,6 @@ use App\Models\Device;
 use App\Models\DeviceEarn;
 use App\Models\DeviceError;
 use App\Models\DeviceUser;
-use App\Models\ErrorLogs;
 use App\Models\LastUserAmount;
 use App\Models\UnregisteredDevice;
 use App\Models\UpdatingDevice;
@@ -17,7 +16,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PhpMqtt\Client\MqttClient;
 use Illuminate\Support\Facades\Http;
-use PDO;
 
 class MqttController extends Controller
 {
@@ -28,7 +26,7 @@ class MqttController extends Controller
         $msg = $request->all();
         $date = $msg['payload'];
         $topic = $msg['topic'];
-        $this->ErrorLogger(' შემოვიდა თავში ', '32', $msg['topic']);
+
         $parts = explode('/', $topic);
         $device_id = $parts[1];
         $device = Device::where('dev_id', $parts[1])->first();
@@ -161,15 +159,12 @@ class MqttController extends Controller
                     $data,
                     $device_id
                 );
-                $this->ErrorLogger(' break 1 ', '167', $commandValue);
                 break;
             case 2:
                 $this->accessRequestForRFIDCard($device, $data, $device_id);
-                $this->ErrorLogger(' break 2 ', '175', $commandValue);
                 break;
             case 3:
                 $this->accessWithOneTimeCode($device, $data, $device_id);
-                $this->ErrorLogger(' break 3 ', '183', $commandValue);
                 break;
             case 4:
                 $this->remainedAmountUpdateToApplication(
@@ -177,11 +172,9 @@ class MqttController extends Controller
                     $data,
                     $device_id
                 );
-                $this->ErrorLogger(' break 4 ', '195', $commandValue);
                 break;
             case 253:
                 $this->deviceCurrentSetupPacket($device, $data, $device_id);
-                $this->ErrorLogger(' break 253 ', '202', $commandValue);
                 break;
             case 254:
                 $this->logDeviceError($device, $data, $device_id);
@@ -294,12 +287,6 @@ class MqttController extends Controller
                     ]);
                     $this->publishMessage($device_id, $payload);
                     $user->save();
-                    $this->ErrorLogger(
-                        'before saveORderUpdateEarnigns',
-                        '292',
-                        'user save'
-                    );
-
                     $this->saveOrUpdateEarnings(
                         $device->id,
                         $device->tariff_amount,
@@ -311,7 +298,6 @@ class MqttController extends Controller
                     )->get();
                     foreach ($devices_ids as $key2 => $value2) {
                         if ($value2->op_mode == '1') {
-                            $this->ErrorLogger('შემოვიდა 1 მოდზე ', '310', '');
                             $lastAmountCurrentDevice = LastUserAmount::where(
                                 'user_id',
                                 $user->id
@@ -319,11 +305,6 @@ class MqttController extends Controller
                                 ->where('device_id', $value2->id)
                                 ->first();
 
-                            $this->ErrorLogger(
-                                'დააფდეითა ლასთ ამაოუნთი ',
-                                '322',
-                                ''
-                            );
                             if (empty($lastAmountCurrentDevice->user_id)) {
                                 LastUserAmount::insert([
                                     'user_id' => $user->id,
@@ -331,17 +312,7 @@ class MqttController extends Controller
                                     'last_amount' =>
                                         $user->balance - $user->freezed_balance,
                                 ]);
-                                $this->ErrorLogger(
-                                    'შემოვიდა empty($lastAmountCurrentDevice->user_id)',
-                                    '334',
-                                    ''
-                                );
                             } else {
-                                $this->ErrorLogger(
-                                    'შემოვიდა ელსზე სადაც lastAmountCurrents ააფდეითებს',
-                                    '340',
-                                    ''
-                                );
                                 $lastAmountCurrentDevice->last_amount =
                                     $user->balance - $user->freezed_balance;
                                 $lastAmountCurrentDevice->save();
@@ -370,7 +341,6 @@ class MqttController extends Controller
                         }
                     }
                 } else {
-                    $this->ErrorLogger('ფული არ არის', '374', '');
                     $this->noMoney($device_id);
                 }
             }
@@ -446,11 +416,6 @@ class MqttController extends Controller
                         $user->balance - $user->freezed_balance >=
                         $device->tariff_amount
                     ) {
-                        $this->ErrorLogger(
-                            ' რაღაცაას აფდეითებს აქ ლაინი',
-                            '446',
-                            ''
-                        );
                         $user->freezed_balance =
                             $user->freezed_balance + $device->tariff_amount;
                         $user->save();
@@ -498,11 +463,6 @@ class MqttController extends Controller
                         ->first();
 
                     if (empty($lastAmount->user_id)) {
-                        $this->ErrorLogger(
-                            ' რაღაცაას აფდეითებს აქ ლაინი',
-                            '493',
-                            ''
-                        );
                         LastUserAmount::insert([
                             'user_id' => $user->id,
                             'device_id' => $device->id,
@@ -510,11 +470,6 @@ class MqttController extends Controller
                                 $user->balance - $user->freezed_balance,
                         ]);
                     } else {
-                        $this->ErrorLogger(
-                            ' რაღაცაას აფდეითებს აქ ლაინი',
-                            '500',
-                            ''
-                        );
                         $lastAmount->last_amount =
                             $user->balance - $user->freezed_balance;
                         $lastAmount->save();
@@ -633,11 +588,6 @@ class MqttController extends Controller
                 )->get();
                 foreach ($devices_ids as $key2 => $value2) {
                     if ($value2->op_mode == '1') {
-                        $this->ErrorLogger(
-                            ' შემოვიდა 1 ში accessWithOneTimeCode',
-                            '618',
-                            ''
-                        );
                         $lastAmountCurrentDevice = LastUserAmount::where(
                             'user_id',
                             $user->id
@@ -646,11 +596,6 @@ class MqttController extends Controller
                             ->first();
 
                         if (empty($lastAmountCurrentDevice->user_id)) {
-                            $this->ErrorLogger(
-                                ' შემოვიდა 1 ში accessWithOneTimeCode',
-                                '631',
-                                ''
-                            );
                             LastUserAmount::insert([
                                 'user_id' => $user->id,
                                 'device_id' => $value2->id,
@@ -658,11 +603,6 @@ class MqttController extends Controller
                                     $user->balance - $user->freezed_balance,
                             ]);
                         } else {
-                            $this->ErrorLogger(
-                                ' შემოვიდა 1 ში accessWithOneTimeCode',
-                                '643',
-                                ''
-                            );
                             $lastAmountCurrentDevice->last_amount =
                                 $user->balance - $user->freezed_balance;
                             $lastAmountCurrentDevice->save();
@@ -767,7 +707,6 @@ class MqttController extends Controller
             return;
         }
         $diff = $lastAmount->last_amount - $bigEndianValue;
-        $this->ErrorLogger(' bigEndianValue', '737', $bigEndianValue);
         if ($diff < 0) {
             return;
         }
@@ -776,21 +715,10 @@ class MqttController extends Controller
         $lastAmount->last_amount = $sendPrice;
         $lastAmount->save();
         $user->save();
-        $this->ErrorLogger(
-            'before saveORderUpdateEarnigns რა არის diff ?',
-            '745',
-            $diff
-        );
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
-
         $devices_ids = Device::where('users_id', $device->users_id)->get();
         foreach ($devices_ids as $key2 => $value2) {
             if ($value2->op_mode == '1') {
-                $this->ErrorLogger(
-                    'შემოვიდა 1 ში remainedAmountUpdateToApplication',
-                    '755',
-                    $diff
-                );
                 $lastAmountCurrentDevice = LastUserAmount::where(
                     'user_id',
                     $user->id
@@ -799,22 +727,12 @@ class MqttController extends Controller
                     ->first();
 
                 if (empty($lastAmountCurrentDevice->user_id)) {
-                    $this->ErrorLogger(
-                        '  remainedAmountUpdateToApplication თუ ლასტამაუნთის უსერ აიდი არ არსებობს',
-                        '768',
-                        $diff
-                    );
                     LastUserAmount::insert([
                         'user_id' => $user->id,
                         'device_id' => $value2->id,
                         'last_amount' => $sendPrice,
                     ]);
                 } else {
-                    $this->ErrorLogger(
-                        '  remainedAmountUpdateToApplication თუ ლასტამაუნთის უსერ აიდი არსებობს',
-                        '779',
-                        $lastAmountCurrentDevice->last_amount
-                    );
                     $lastAmountCurrentDevice->last_amount = $sendPrice;
                     $lastAmountCurrentDevice->save();
                 }
@@ -900,65 +818,29 @@ class MqttController extends Controller
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
         // Generate the date for month_year
-        $this->ErrorLogger(
-            'შემოვიდა saveOrUpdateEarnings',
-            '854',
-            $earningsValue
-        );
 
         // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
         $now = Carbon::now();
         $user = User::where('id', $companyId)->first();
         $device = Device::where('id', $deviceId)->first();
-
         // Try to retrieve the entry for the given device and month_year
         $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
             ->where('month', $now->month)
             ->where('year', $now->year)
             ->first();
         if (!empty($deviceEarnings)) {
-            $this->ErrorLogger(
-                'შემოვიდა deviceEarnings თუ არის ცარიელი',
-                '870',
-                $earningsValue
-            );
-
             if ($user && $device) {
-                $this->ErrorLogger(
-                    'შემოვიდა თუ უსერი და დევაისი არსებობს',
-                    '878',
-                    $earningsValue
-                );
-
                 $deviceEarnings->earnings += $earningsValue;
                 $deviceEarnings->cashback = $user->cashback;
                 $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                 $deviceEarnings->save();
             } else {
-                $this->ErrorLogger(
-                    'შემოვიდა თუ უსერი და დევაისი  არ არ არ არსებობს',
-                    '889',
-                    $earningsValue
-                );
-
                 $deviceEarnings->earnings += $earningsValue;
 
                 $deviceEarnings->save();
             }
         } else {
-            $this->ErrorLogger(
-                'შემოვიდა თუ დევაის ერინინგი ცარიელი არ არ არ არის',
-                '900',
-                $earningsValue
-            );
-
             if ($user && $device) {
-                $this->ErrorLogger(
-                    'შემოვიდა თუ უსერი და დევაისი  არსებობს ელსის',
-                    '907',
-                    $earningsValue
-                );
-
                 DeviceEarn::create([
                     'company_id' => $companyId,
                     'device_id' => $deviceId,
@@ -969,12 +851,6 @@ class MqttController extends Controller
                     'deviceTariff' => $device->deviceTariffAmount,
                 ]);
             } else {
-                $this->ErrorLogger(
-                    'შემოვიდა თუ უსერი და დევაისი  არსებობს ელსის ელსის ელსი ',
-                    '923',
-                    $earningsValue
-                );
-
                 DeviceEarn::create([
                     'company_id' => $companyId,
                     'device_id' => $deviceId,
@@ -1058,13 +934,5 @@ class MqttController extends Controller
             'http://localhost:3000/mqtt/general?' . $queryParams
         );
         return $response->json(['data' => ['dasd']]);
-    }
-    public function ErrorLogger($message, $line, $value)
-    {
-        ErrorLogs::create([
-            'errorMessage' => $message,
-            'line' => $line,
-            'value' => $value,
-        ]);
     }
 }
