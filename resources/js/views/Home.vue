@@ -638,6 +638,7 @@ export default {
   },
 
   async created() {
+    this.chackAdminEmail()
     this.getBalance()
     setInterval(() => {
       this.getBalance()
@@ -693,7 +694,15 @@ export default {
     }),
     getTransactions() {
       axios.get('/api/transactions').then(({ data }) => {
-        this.transaction = data
+        this.transaction = data.sort((a, b) => {
+          // Convert the created_at strings to Date objects
+          const dateA = new Date(a.created_at)
+          const dateB = new Date(b.created_at)
+
+          // Sort by descending order
+          return dateB - dateA
+        })
+        console.log(this.transaction)
       })
     },
     getCards() {

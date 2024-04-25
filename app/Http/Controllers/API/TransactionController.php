@@ -28,9 +28,53 @@ class TransactionController extends Controller
 
     public function index()
     {
-        return Transaction::where('user_id', Auth::id())
+        $userId = Auth::id();
+
+        // Get transactions for the user
+        $transactions = Transaction::where('user_id', $userId)
             ->where('status', 'Succeeded')
             ->get();
+
+        // Fetch TbcTransactions for the same user
+        $tbcTransactions = TbcTransaction::where('user_id', $userId)->get();
+
+        // Format transactions
+        $formattedTransactions = $transactions->map(function ($transaction) {
+            return [
+                'id' => $transaction->id,
+                'user_id' => $transaction->user_id,
+                'amount' => $transaction->amount,
+                'status' => $transaction->status,
+                'transaction_id' => $transaction->transaction_id,
+                'created_at' => $transaction->created_at,
+                'updated_at' => $transaction->updated_at,
+                'succeeded' => $transaction->status === 'Succeeded',
+                'type' => 'TBC ონლაინ გადახდა',
+            ];
+        });
+
+        // Format TbcTransactions
+        $formattedTbcTransactions = $tbcTransactions->map(function (
+            $tbcTransaction
+        ) {
+            return [
+                'id' => $tbcTransaction->id + 1000,
+                'user_id' => $tbcTransaction->user_id,
+                'amount' => $tbcTransaction->amount,
+                'transaction_id' => $tbcTransaction->order_id,
+
+                'created_at' => $tbcTransaction->created_at,
+                'updated_at' => $tbcTransaction->updated_at,
+                'type' => 'TBC ჩასარიცხი აპარატი',
+            ];
+        });
+
+        // Combine both arrays into one
+        $combinedTransactions = $formattedTransactions->merge(
+            $formattedTbcTransactions
+        );
+
+        return $combinedTransactions->all();
     }
 
     public function perUserTransaction($id)
@@ -347,6 +391,8 @@ class TransactionController extends Controller
     public function updateUserData($data, $transaction, $order_id, $isFastPay)
     {
         try {
+            Log::debug('აფდეითში შემოსვლა');
+
             $user = User::where('id', $transaction->user_id)
                 ->with('devices')
                 ->first();
@@ -362,25 +408,33 @@ class TransactionController extends Controller
                 intval($user->balance) + $transfer_amount - $sakomisio;
             foreach ($user->devices as $key => $device) {
                 if ($device->op_mode === '0') {
+                    Log::debug('op_mode = 0');
+
                     $subscriptionDate = $device->pivot->subscription
                         ? Carbon::parse($device->pivot->subscription)
                         : null;
                     $currentDay = Carbon::now()->day;
                     if ($currentDay < $device->pay_day) {
                         $nextMonthPayDay = Carbon::now()
+
                             ->startOfMonth()
                             ->addDays($device->pay_day - 1);
+                        Log::debug('შემდეგი თარიღი>>> 1' . $nextMonthPayDay);
                     } else {
                         $nextMonthPayDay = Carbon::now()
                             ->addMonth()
                             ->startOfMonth()
                             ->addDays($device->pay_day - 1);
+
+                        Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
                     }
                     if (
                         is_null($subscriptionDate) ||
                         ($subscriptionDate &&
                             $subscriptionDate->lt($nextMonthPayDay))
                     ) {
+                        Log::debug('is_null');
+
                         if (
                             $user->balance - $user->freezed_balance >=
                             $device->tariff_amount
@@ -388,8 +442,13 @@ class TransactionController extends Controller
                             DeviceUser::where('device_id', $device->id)
                                 ->where('user_id', $user->id)
                                 ->update(['subscription' => $nextMonthPayDay]);
-                            $user->freezed_balance =
-                                $user->freezed_balance + $device->tariff_amount;
+
+                            $user->freezed_balance = $device->tariff_amount;
+                        } elseif ($user->balance >= $device->tariff_amount) {
+                            DeviceUser::where('device_id', $device->id)
+                                ->where('user_id', $user->id)
+                                ->update(['subscription' => $nextMonthPayDay]);
+                            $user->freezed_balance = $device->tariff_amount;
                         }
                     }
                 }

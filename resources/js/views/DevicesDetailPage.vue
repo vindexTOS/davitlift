@@ -1,3 +1,34 @@
+<style>
+.zoom-in-icon {
+  font-size: 50px;
+  cursor: pointer;
+}
+.zoom-in-icon:hover {
+  color: #007bff;
+  font-size: 60px;
+}
+.zoom-in-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  padding: 20px;
+}
+.user-tabe-base {
+  width: 800px;
+  padding: 20px;
+}
+.user-table-hidden {
+  display: none;
+}
+.user-table-zoom {
+  position: absolute;
+  width: 1500px;
+  left: 5px;
+  background-color: white;
+  z-index: 2000;
+}
+</style>
 <template>
   <v-container
     :class="{
@@ -354,12 +385,21 @@
           </v-expansion-panel>
         </v-expansion-panels>
         <!-- <h1 @click="test(data)">TEST</h1> -->
-        <UserTable
-          :deviceId="data.id"
-          @loadDevice="loadItems"
-          :is-fixed="data.op_mode == 0"
-          :server-items="data.users"
-        ></UserTable>
+        <div
+          @click="zoomIn()"
+          :class="isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'"
+        >
+          <i class="mdi mdi-fullscreen zoom-in-icon"></i>
+        </div>
+
+        <div :class="isZoom ? 'user-table-hidden' : 'user-tabe-base'">
+          <UserTable
+            :deviceId="data.id"
+            @loadDevice="loadItems"
+            :is-fixed="data.op_mode == 0"
+            :server-items="usersInfo"
+          ></UserTable>
+        </div>
       </v-card-text>
     </v-card>
   </v-container>
@@ -585,6 +625,21 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <div
+    @click="zoomIn()"
+    :class="!isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'"
+  >
+    <i class="mdi mdi-fullscreen-exit zoom-in-icon"></i>
+  </div>
+
+  <div :class="isZoom ? 'user-table-zoom ' : 'user-table-hidden'">
+    <UserTable
+      :deviceId="data.id"
+      @loadDevice="loadItems"
+      :is-fixed="data.op_mode == 0"
+      :server-items="usersInfo"
+    ></UserTable>
+  </div>
 </template>
 <script>
 import { VDataTable } from 'vuetify/labs/components'
@@ -605,6 +660,8 @@ export default {
   },
   name: 'detailPage',
   data: () => ({
+    usersInfo: { userData: [], pagination: 0 },
+    isZoom: false,
     search: '',
     dialog: false,
     loading: true,
@@ -836,6 +893,9 @@ export default {
   },
 
   methods: {
+    zoomIn() {
+      this.isZoom = !this.isZoom
+    },
     test(test) {
       console.log(test)
     },
@@ -855,6 +915,8 @@ export default {
           this.$nextTick(() => {})
 
           this.data = data
+          this.usersInfo.userData = data.users
+          this.usersInfo.pagination = Math.ceil(data.users.length / 10)
           console.log(data)
         })
         .then(() => {
@@ -917,6 +979,7 @@ export default {
                 position: 'center',
                 allowOutsideClick: false,
               })
+
               this.loadItems()
             })
           } else if (result.isDenied) {

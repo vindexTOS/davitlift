@@ -76,6 +76,10 @@ export default {
           title: 'ჩარიცხული თანხა',
           key: 'amountTax',
         },
+        {
+          title: 'ჩარიცხვის ტიპი',
+          key: 'type',
+        },
       ]
     },
   },

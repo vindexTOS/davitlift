@@ -63,6 +63,7 @@ class DeviceController extends Controller
         $data['deviceActivity'] = $devicesActivity;
         $data['earnings'] = $this->getEarnings($earnings);
         $data['manager'] = $manager;
+         
         if(empty($manager)){
             $data['payedCashback'] = 0;
         } else {
@@ -275,8 +276,29 @@ class DeviceController extends Controller
 
     public function show($device)
     {
-         return Device::where('id', $device)->with('user')->with('users')->with('earnings')->with('errors')->with('withdrawals')->with('company')->with('lastUpdate')->first();
-    }
+ 
+  $device = Device::where('id', $device)
+  ->with('user')
+  ->with('users')
+  ->with('earnings')
+  ->with('errors')
+  ->with('withdrawals')
+  ->with('company')
+  ->with('lastUpdate')
+  ->first();
+
+ 
+if ($device) {
+   $subscriptions =DeviceUser::where('device_id', $device->id)
+      ->pluck('subscription', 'user_id');
+
+ 
+  foreach ($device->users as $user) {
+      $user->subscription = $subscriptions[$user->id] ?? null;
+  }
+}
+
+return $device;    }
 
     public function update( $request,  $device)
     {
