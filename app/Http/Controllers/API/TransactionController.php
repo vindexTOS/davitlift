@@ -99,6 +99,9 @@ class TransactionController extends Controller
         });
 
         $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
+        if (!$tbcTransactions) {
+            return $formattedTransactions->all();
+        }
 
         $formattedTbcTransactions = $tbcTransactions->map(function (
             $tbcTransaction
