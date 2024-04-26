@@ -211,4 +211,94 @@ class UserController extends Controller
     public function neededCashback($user_id)
     {
     }
+
+    public function updateUserSubscription(Request $request)
+    {
+        $validator = $request->validate([
+            'balance' => 'required',
+            'freezed_balance' => 'required',
+            'email' => 'required',
+            'name' => 'required',
+            'phone' => 'required',
+            'id' => 'required',
+            'subscription' => 'required',
+            'role' => 'required',
+        ]);
+
+        $user = User::find($request->id);
+        $deviceUser = DeviceUser::where('user_id', $request->id)->first();
+        if (!$user || !$deviceUser) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $user->update([
+            'balance' => $request->balance,
+            'freezed_balance' => $request->freezed_balance,
+            'email' => $request->email,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'role' => $request->role,
+        ]);
+
+        $deviceUser->update([
+            'subscription' => $request->subscription,
+        ]);
+
+        return response()->json(['message' => $request->freezed_balance]);
+    }
 }
+
+// balance
+// :
+// 2603
+// cards_count
+// :
+// 2
+// cashback
+// :
+// 0
+// created_at
+// :
+// "2023-10-19T12:03:45.000000Z"
+// email
+// :
+// "nica.16@mail.ru"
+// email_verified_at
+// :
+// null
+// freezed_balance
+// :
+// 2400
+// hide_statistic
+// :
+// 0
+// id
+// :
+// 34
+// isBlocked
+// :
+// 0
+// name
+// :
+// "მარიამ"
+// phone
+// :
+// "568446044"
+// pivot
+// :
+// {device_id: 4, user_id: 34, subscription: '2024-04-28 00:00:00'}
+// role
+// :
+// "member"
+// saved_card_status
+// :
+// 0
+// saved_order_id
+// :
+// null
+// subscription
+// :
+// "2024-04-28 00:00:00"
+// updated_at
+// :
+// "2024-03-29T07:12:43.000000Z"

@@ -75,6 +75,11 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
         'changePassword',
         // sssds
     ]);
+
+    Route::put('/update/user/subscription', [
+        UserController::class,
+        'updateUserSubscription',
+    ]);
 });
 
 //  tbc fast pay

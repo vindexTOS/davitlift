@@ -92,6 +92,30 @@ tbody input {
 tr {
   cursor: pointer;
 }
+.display-none {
+  display: none;
+}
+.loading-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 4px solid #f3f3f3; /* Light grey */
+  border-top: 4px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite; /* Spin animation */
+}
+
+@keyframes spin {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
 </style>
 
 <template>
@@ -191,7 +215,45 @@ tr {
     </table>
   </div>
   <!-- pagination -->
-  <div class="pagination">
+  <div
+    style="
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      justify-content: end;
+      padding-top: 10px;
+    "
+  >
+    <button
+      @click="handlePagination('prev')"
+      style="
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      "
+    >
+      Prev
+    </button>
+    <span style="margin: 0 10px;">Page {{ page / 10 }}</span>
+    <button
+      @click="handlePagination('next')"
+      style="
+        padding: 8px 12px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      "
+    >
+      Next
+    </button>
+  </div>
+  <!-- <div class="pagination">
     <button @click="handlePagination('prev')">
       წინა
     </button>
@@ -199,7 +261,8 @@ tr {
     <button @click="handlePagination('next')">
       შემდეგი
     </button>
-  </div>
+  </div> -->
+  <div :class="isEditLoading ? 'loading-circle' : 'display-none'"></div>
 </template>
 
 <script>
@@ -211,6 +274,7 @@ export default {
   data: () => ({
     isAdmin: false,
     isEditOpen: false,
+    isEditLoading: false,
     page: 10,
     prevPage: 0,
     select: null,
@@ -283,8 +347,35 @@ export default {
 
   methods: {
     updateUser(obj, index) {
+      // /update/user/subscription
+      obj.freezed_balance = Number(obj.freezed_balance)
+      obj.balance = Number(obj.balance)
       console.log(obj)
-      this.openEdit(index)
+      this.isEditLoading = true
+      axios
+        .put(`/api/update/user/subscription`, obj)
+        .then((res) => {
+          this.openEdit(index)
+          this.isEditLoading = false
+
+          this.dialogExisted = false
+          console.log(res)
+
+          if (!this.isEditOpen) {
+            this.$emit('loadDevice')
+          }
+        })
+        .catch((err) => {
+          this.isEditLoading = false
+
+          console.log(err)
+          this.$swal.fire({
+            icon: 'error',
+
+            position: 'center',
+            allowOutsideClick: true,
+          })
+        })
     },
     test(test) {
       console.log(test)
@@ -293,7 +384,7 @@ export default {
       this.boolMirror = new Array(10).fill(false)
 
       if (type === 'next') {
-        if (this.page <= this.serverItems.pagination * 10) {
+        if (this.page < this.serverItems.pagination * 10) {
           this.page += 10
           this.prevPage += 10
         } else {
