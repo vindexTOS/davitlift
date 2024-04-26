@@ -101,7 +101,9 @@ class TransactionController extends Controller
 
         // Fetch TbcTransactions for the same user
         $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
-
+        if ($transactions->isEmpty()) {
+            return [];
+        }
         // Check if TbcTransactions is empty
         if ($tbcTransactions->isEmpty()) {
             // Return only formatted transactions for the user if there are no TbcTransactions
