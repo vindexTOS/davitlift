@@ -84,6 +84,7 @@ class TransactionController extends Controller
             ->where('status', 'Succeeded')
             ->get();
 
+        // Format transactions
         $formattedTransactions = $transactions->map(function ($transaction) {
             return [
                 'id' => $transaction->id,
@@ -98,30 +99,36 @@ class TransactionController extends Controller
             ];
         });
 
+        // Fetch TbcTransactions for the same user
         $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
-        if (!$tbcTransactions->isEmpty()) {
-            $formattedTbcTransactions = $tbcTransactions->map(function (
-                $tbcTransaction
-            ) {
-                return [
-                    'id' => $tbcTransaction->id + 1000,
-                    'user_id' => $tbcTransaction->user_id,
-                    'amount' => $tbcTransaction->amount,
-                    'transaction_id' => $tbcTransaction->order_id,
-                    'created_at' => $tbcTransaction->created_at,
-                    'updated_at' => $tbcTransaction->updated_at,
-                    'type' => 'TBC ჩასარიცხი აპარატი',
-                ];
-            });
 
-            $combinedTransactions = $formattedTransactions->merge(
-                $formattedTbcTransactions
-            );
-        } else {
-            $combinedTransactions = $formattedTransactions;
+        // Check if TbcTransactions is empty
+        if ($tbcTransactions->isEmpty()) {
+            // Return only formatted transactions for the user if there are no TbcTransactions
+            return $formattedTransactions->all();
         }
 
-        return $combinedTransactions;
+        // Format TbcTransactions and merge with formatted transactions
+        $formattedTbcTransactions = $tbcTransactions->map(function (
+            $tbcTransaction
+        ) {
+            return [
+                'id' => $tbcTransaction->id + 1000,
+                'user_id' => $tbcTransaction->user_id,
+                'amount' => $tbcTransaction->amount,
+                'transaction_id' => $tbcTransaction->order_id,
+                'created_at' => $tbcTransaction->created_at,
+                'updated_at' => $tbcTransaction->updated_at,
+                'type' => 'TBC ჩასარიცხი აპარატი',
+            ];
+        });
+
+        // Merge formatted transactions with formatted TbcTransactions
+        $combinedTransactions = $formattedTransactions->merge(
+            $formattedTbcTransactions
+        );
+
+        return $combinedTransactions->all();
     }
     public function createTransaction($amount, $userId)
     {
