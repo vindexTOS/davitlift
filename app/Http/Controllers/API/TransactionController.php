@@ -36,9 +36,6 @@ class TransactionController extends Controller
             ->get();
 
         // Fetch TbcTransactions for the same user
-        $tbcTransactions = TbcTransaction::where('user_id', $userId)->get();
-
-        // Format transactions
         $formattedTransactions = $transactions->map(function ($transaction) {
             return [
                 'id' => $transaction->id,
@@ -53,7 +50,18 @@ class TransactionController extends Controller
             ];
         });
 
-        // Format TbcTransactions
+        // Fetch TbcTransactions for the same user
+        $tbcTransactions = TbcTransaction::where('user_id', $userId)->get();
+        if ($transactions->isEmpty() && $tbcTransactions->isEmpty()) {
+            return [];
+        }
+        // Check if TbcTransactions is empty
+        if ($tbcTransactions->isEmpty()) {
+            // Return only formatted transactions for the user if there are no TbcTransactions
+            return $formattedTransactions->all();
+        }
+
+        // Format TbcTransactions and merge with formatted transactions
         $formattedTbcTransactions = $tbcTransactions->map(function (
             $tbcTransaction
         ) {
@@ -62,14 +70,16 @@ class TransactionController extends Controller
                 'user_id' => $tbcTransaction->user_id,
                 'amount' => $tbcTransaction->amount,
                 'transaction_id' => $tbcTransaction->order_id,
-
                 'created_at' => $tbcTransaction->created_at,
                 'updated_at' => $tbcTransaction->updated_at,
                 'type' => 'TBC ჩასარიცხი აპარატი',
             ];
         });
-
-        // Combine both arrays into one
+        if ($transactions->isEmpty()) {
+            // Return only formatted transactions for the user if there are no TbcTransactions
+            return $formattedTbcTransactions->all();
+        }
+        // Merge formatted transactions with formatted TbcTransactions
         $combinedTransactions = $formattedTransactions->merge(
             $formattedTbcTransactions
         );
