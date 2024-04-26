@@ -99,30 +99,30 @@ class TransactionController extends Controller
         });
 
         $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
-        if (!$tbcTransactions) {
-            return $formattedTransactions->all();
+        if (!$tbcTransactions->isEmpty()) {
+            $formattedTbcTransactions = $tbcTransactions->map(function (
+                $tbcTransaction
+            ) {
+                return [
+                    'id' => $tbcTransaction->id + 1000,
+                    'user_id' => $tbcTransaction->user_id,
+                    'amount' => $tbcTransaction->amount,
+                    'transaction_id' => $tbcTransaction->order_id,
+                    'created_at' => $tbcTransaction->created_at,
+                    'updated_at' => $tbcTransaction->updated_at,
+                    'type' => 'TBC ჩასარიცხი აპარატი',
+                ];
+            });
+
+            $combinedTransactions = $formattedTransactions->merge(
+                $formattedTbcTransactions
+            );
+        } else {
+            $combinedTransactions = $formattedTransactions;
         }
 
-        $formattedTbcTransactions = $tbcTransactions->map(function (
-            $tbcTransaction
-        ) {
-            return [
-                'id' => $tbcTransaction->id + 1000,
-                'user_id' => $tbcTransaction->user_id,
-                'amount' => $tbcTransaction->amount,
-                'transaction_id' => $tbcTransaction->order_id,
-
-                'created_at' => $tbcTransaction->created_at,
-                'updated_at' => $tbcTransaction->updated_at,
-                'type' => 'TBC ჩასარიცხი აპარატი',
-            ];
-        });
-        $combinedTransactions = $formattedTransactions->merge(
-            $formattedTbcTransactions
-        );
-        return $combinedTransactions->all();
+        return $combinedTransactions;
     }
-
     public function createTransaction($amount, $userId)
     {
         if ($amount < 0.5 || $amount > 200) {
