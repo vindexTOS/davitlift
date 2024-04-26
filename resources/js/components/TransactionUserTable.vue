@@ -22,6 +22,9 @@
       <template v-slot:item.amountTax="{ item }">
         {{ getUntaxedAmount(item.raw.amount) }}ლარი
       </template>
+      <template v-slot:item.type="{ item }">
+        {{ getItemType(item.raw.type) }}
+      </template>
     </v-data-table>
   </div>
 </template>
@@ -108,6 +111,11 @@ export default {
       const tax = amount * 0.02
 
       return (amount - tax).toFixed(2)
+    },
+
+    getItemType(type) {
+      console.log(type)
+      return type
     },
   },
 }

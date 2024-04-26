@@ -446,7 +446,7 @@ import VueApexCharts from 'vue3-apexcharts'
 
 import router from '@/router'
 import Swal from 'sweetalert2'
-import TransactionUserTable from '@/components/TransactionUserTable.vue'
+import TransactionUserTable from '../components/TransactionUserTable.vue'
 
 export default {
   components: { TransactionUserTable, SignalIcon, apexchart: VueApexCharts },

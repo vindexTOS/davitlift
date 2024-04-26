@@ -79,9 +79,27 @@ class TransactionController extends Controller
 
     public function perUserTransaction($id)
     {
-        return Transaction::where('user_id', $id)
+        // Fetch transactions for the user
+        $transactions = Transaction::where('user_id', $id)
             ->where('status', 'Succeeded')
             ->get();
+
+        // Format transactions
+        $formattedTransactions = $transactions->map(function ($transaction) {
+            return [
+                'id' => $transaction->id,
+                'user_id' => $transaction->user_id,
+                'amount' => $transaction->amount,
+                'status' => $transaction->status,
+                'transaction_id' => $transaction->transaction_id,
+                'created_at' => $transaction->created_at,
+                'updated_at' => $transaction->updated_at,
+                'succeeded' => $transaction->status === 'Succeeded',
+                'type' => 'TBC ონლაინ გადახდა', // Set the type here
+            ];
+        });
+
+        return $formattedTransactions->all();
     }
 
     public function createTransaction($amount, $userId)
