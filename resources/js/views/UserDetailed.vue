@@ -610,6 +610,7 @@ export default {
         .get('/api/per/user/transactions/' + this.$route.params.id)
         .then(({ data }) => {
           this.transaction = data
+          console.log(data)
         })
     },
     getCards() {
