@@ -609,8 +609,15 @@ export default {
       axios
         .get('/api/per/user/transactions/' + this.$route.params.id)
         .then(({ data }) => {
-          this.transaction = data
-          console.log(data)
+          this.transaction = data.sort((a, b) => {
+            // Convert the created_at strings to Date objects
+            const dateA = new Date(a.created_at)
+            const dateB = new Date(b.created_at)
+
+            // Sort by descending order
+            return dateB - dateA
+          })
+          console.log(this.transaction)
         })
     },
     getCards() {

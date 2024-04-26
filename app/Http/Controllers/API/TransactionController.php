@@ -84,7 +84,6 @@ class TransactionController extends Controller
             ->where('status', 'Succeeded')
             ->get();
 
-        // Format transactions
         $formattedTransactions = $transactions->map(function ($transaction) {
             return [
                 'id' => $transaction->id,
@@ -95,11 +94,30 @@ class TransactionController extends Controller
                 'created_at' => $transaction->created_at,
                 'updated_at' => $transaction->updated_at,
                 'succeeded' => $transaction->status === 'Succeeded',
-                'type' => 'TBC ონლაინ გადახდა', // Set the type here
+                'type' => 'TBC ონლაინ გადახდა',
             ];
         });
 
-        return $formattedTransactions->all();
+        $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
+
+        $formattedTbcTransactions = $tbcTransactions->map(function (
+            $tbcTransaction
+        ) {
+            return [
+                'id' => $tbcTransaction->id + 1000,
+                'user_id' => $tbcTransaction->user_id,
+                'amount' => $tbcTransaction->amount,
+                'transaction_id' => $tbcTransaction->order_id,
+
+                'created_at' => $tbcTransaction->created_at,
+                'updated_at' => $tbcTransaction->updated_at,
+                'type' => 'TBC ჩასარიცხი აპარატი',
+            ];
+        });
+        $combinedTransactions = $formattedTransactions->merge(
+            $formattedTbcTransactions
+        );
+        return $combinedTransactions->all();
     }
 
     public function createTransaction($amount, $userId)
