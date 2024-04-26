@@ -101,7 +101,7 @@ class TransactionController extends Controller
 
         // Fetch TbcTransactions for the same user
         $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
-        if ($transactions->isEmpty()) {
+        if ($transactions->isEmpty() && $tbcTransactions->isEmpty()) {
             return [];
         }
         // Check if TbcTransactions is empty
@@ -124,7 +124,10 @@ class TransactionController extends Controller
                 'type' => 'TBC ჩასარიცხი აპარატი',
             ];
         });
-
+        if ($transactions->isEmpty()) {
+            // Return only formatted transactions for the user if there are no TbcTransactions
+            return $formattedTbcTransactions->all();
+        }
         // Merge formatted transactions with formatted TbcTransactions
         $combinedTransactions = $formattedTransactions->merge(
             $formattedTbcTransactions
