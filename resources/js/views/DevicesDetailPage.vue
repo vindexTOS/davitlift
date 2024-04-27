@@ -1,12 +1,28 @@
 <style>
+@media (max-width: 600px) {
+  .zoom-in-icon {
+    display: none;
+  }
+  .user-tabe-base {
+    width: 350px;
+    overflow-x: scroll;
+  }
+}
+.user-tabe-base {
+  width: 100%;
+  padding: 20px;
+  background-color: white;
+}
 .zoom-in-icon {
   font-size: 50px;
   cursor: pointer;
 }
+
 .zoom-in-icon:hover {
   color: #007bff;
   font-size: 60px;
 }
+
 .zoom-in-wrapper {
   width: 100%;
   display: flex;
@@ -14,13 +30,11 @@
   justify-content: end;
   padding: 20px;
 }
-.user-tabe-base {
-  width: 800px;
-  padding: 20px;
-}
+
 .user-table-hidden {
   display: none;
 }
+
 .user-table-zoom {
   position: absolute;
   width: 1500px;
@@ -385,21 +399,6 @@
           </v-expansion-panel>
         </v-expansion-panels>
         <!-- <h1 @click="test(data)">TEST</h1> -->
-        <div
-          @click="zoomIn()"
-          :class="isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'"
-        >
-          <i class="mdi mdi-fullscreen zoom-in-icon"></i>
-        </div>
-
-        <div :class="isZoom ? 'user-table-hidden' : 'user-tabe-base'">
-          <UserTable
-            :deviceId="data.id"
-            @loadDevice="loadItems"
-            :is-fixed="data.op_mode == 0"
-            :server-items="usersInfo"
-          ></UserTable>
-        </div>
       </v-card-text>
     </v-card>
   </v-container>
@@ -633,6 +632,22 @@
   </div>
 
   <div :class="isZoom ? 'user-table-zoom ' : 'user-table-hidden'">
+    <UserTable
+      :deviceId="data.id"
+      @loadDevice="loadItems"
+      :is-fixed="data.op_mode == 0"
+      :server-items="usersInfo"
+    ></UserTable>
+  </div>
+  <!-- meore -->
+  <div
+    @click="zoomIn()"
+    :class="isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'"
+  >
+    <i class="mdi mdi-fullscreen zoom-in-icon"></i>
+  </div>
+
+  <div :class="isZoom ? 'user-table-hidden' : 'user-tabe-base'">
     <UserTable
       :deviceId="data.id"
       @loadDevice="loadItems"

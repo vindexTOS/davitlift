@@ -1,18 +1,30 @@
 <style>
 .main-div {
-  widows: 100%;
+  width: 100%;
   border-collapse: collapse;
-  border: 1px solid #ccc;
-
-  overflow-x: scroll;
+  border: 1px solid #ffffff;
+  overflow-x: auto; /* Changed to auto for horizontal scrolling on smaller screens */
+}
+@media (max-width: 600px) {
+  * {
+    padding: 0;
+  }
+  .main-div {
+    width: 350px;
+    border-collapse: collapse;
+    border: 1px solid #ffffff;
+    overflow-x: scroll; /* Changed to auto for horizontal scrolling on smaller screens */
+  }
 }
 
 .v-data-table {
   width: 100%;
 }
+
 thead {
-  overflow-x: scroll;
+  overflow-x: auto; /* Changed to auto for horizontal scrolling on smaller screens */
 }
+
 .v-data-table th,
 .v-data-table td {
   padding: 10px;
@@ -25,17 +37,10 @@ thead {
   font-weight: bold;
 }
 
-.paid-chip {
-  background-color: #4caf50;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-
+/* Updated chip styles for responsiveness */
+.paid-chip,
 .unpaid-chip {
-  background-color: #f44336;
-  color: #fff;
-  padding: 5px 10px;
+  padding: 5px;
   border-radius: 5px;
 }
 
@@ -46,30 +51,22 @@ thead {
 .delete-icon:hover {
   color: red;
 }
-/* paginaiton */
+
+/* pagination styles */
 .pagination {
   margin-top: 20px;
   text-align: center;
 }
 
-.pagination button {
-  border: none;
-  background-color: #f2f2f2;
-  color: #333;
-  padding: 8px 16px;
+.pagination button,
+.pagination span {
+  padding: 8px 12px;
+  border-radius: 5px;
   cursor: pointer;
 }
 
 .pagination button:hover {
   background-color: #ddd;
-}
-
-.pagination span {
-  border: 1px solid #ccc;
-  background-color: #fff;
-  color: #333;
-  padding: 8px 16px;
-  cursor: pointer;
 }
 
 .pagination span.active {
@@ -83,55 +80,25 @@ thead {
   cursor: not-allowed;
 }
 
-tbody input {
-  background-color: #4caf4f8e;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  width: 120px;
-}
-tr {
-  cursor: pointer;
-}
-.display-none {
-  display: none;
-}
-.loading-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border: 4px solid #f3f3f3; /* Light grey */
-  border-top: 4px solid #3498db; /* Blue */
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite; /* Spin animation */
-}
-
-@keyframes spin {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-}
-
+/* Input container styles */
 .input-container {
   position: relative;
-  margin: 20px;
+  margin: 10px; /* Decreased margin for smaller screens */
 }
+
 .input-container input {
-  width: 300px;
+  width: 100%; /* Make input width 100% to fit smaller screens */
   padding: 10px;
   border: 1px solid #bdbdbd;
   border-radius: 4px;
   outline: none;
   font-size: 16px;
 }
+
 .input-container input:focus {
   border-color: #1976d2;
 }
+
 .input-container label {
   position: absolute;
   top: 50%;
@@ -141,90 +108,92 @@ tr {
   transition: all 0.3s ease;
   pointer-events: none;
 }
+
 .input-container input:valid + label,
 .input-container input:focus + label {
   top: 5px;
   font-size: 12px;
   color: #1976d2;
 }
+
+/* Search and user add wrapper styles */
 .search-and-user-add-wrapper {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column; /* Changed to column for smaller screens */
+  align-items: stretch; /* Changed to stretch for smaller screens */
 }
 </style>
 
 <template>
-  <div class="main-div">
-    <div class="search-and-user-add-wrapper">
-      <div class="input-container">
-        <input v-model="search" type="text" id="search" required />
-        <label for="search">Search...</label>
-      </div>
-      <v-menu>
-        <template v-slot:activator="{ props }">
-          <v-icon
-            class="ma-3"
-            v-if="$store.state.auth.user.lvl >= 2"
-            size="large"
-            icon="mdi-dots-vertical"
-            v-bind="props"
-          ></v-icon>
-        </template>
-        <v-card width="250" class="pa-0 ma-0">
-          <v-dialog v-model="dialogExisted" max-width="500px">
-            <template v-slot:activator="{ props }">
-              <v-btn
-                style="width: 100%;"
-                dark
-                class="mb-2"
-                v-bind="props"
-                v-if="$store.state.auth.user.lvl >= 2"
-              >
-                {{ $t('Add user') }}
-              </v-btn>
-            </template>
-            <v-card>
-              <v-card-title>
-                <span class="text-h5">
-                  {{ $t('Add user') }}
-                </span>
-              </v-card-title>
-
-              <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col cols="12">
-                      <v-text-field
-                        v-model="existUser"
-                        :label="$t('Email or phone')"
-                        class="text-capitalize"
-                        required
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  color="blue-darken-1"
-                  variant="text"
-                  @click="dialogExisted = false"
-                >
-                  {{ $t('Close') }}
-                </v-btn>
-                <v-btn color="blue-darken-1" variant="text" @click="save">
-                  {{ $t('Save') }}
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-        </v-card>
-      </v-menu>
+  <div class="search-and-user-add-wrapper">
+    <div class="input-container">
+      <input v-model="search" type="text" id="search" required />
+      <label for="search">Search...</label>
     </div>
+    <v-menu>
+      <template v-slot:activator="{ props }">
+        <v-icon
+          class="ma-3"
+          v-if="$store.state.auth.user.lvl >= 2"
+          size="large"
+          icon="mdi-dots-vertical"
+          v-bind="props"
+        ></v-icon>
+      </template>
+      <v-card width="250" class="pa-0 ma-0">
+        <v-dialog v-model="dialogExisted" max-width="500px">
+          <template v-slot:activator="{ props }">
+            <v-btn
+              style="width: 100%;"
+              dark
+              class="mb-2"
+              v-bind="props"
+              v-if="$store.state.auth.user.lvl >= 2"
+            >
+              {{ $t('Add user') }}
+            </v-btn>
+          </template>
+          <v-card>
+            <v-card-title>
+              <span class="text-h5">
+                {{ $t('Add user') }}
+              </span>
+            </v-card-title>
+
+            <v-card-text>
+              <v-container>
+                <v-row>
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="existUser"
+                      :label="$t('Email or phone')"
+                      class="text-capitalize"
+                      required
+                    ></v-text-field>
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn
+                color="blue-darken-1"
+                variant="text"
+                @click="dialogExisted = false"
+              >
+                {{ $t('Close') }}
+              </v-btn>
+              <v-btn color="blue-darken-1" variant="text" @click="save">
+                {{ $t('Save') }}
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-card>
+    </v-menu>
+  </div>
+  <div class="main-div">
     <table class="v-data-table">
       <thead>
         <tr>
