@@ -362,29 +362,46 @@ export default {
         chart: {
           type: 'treemap',
         },
+        tooltip: {
+          style: {
+            fontSize: '16px', // Increase font size for tooltip
+          },
+        },
+        plotOptions: {
+          treemap: {
+            style: {
+              fontSize: '24px', // Increase font size for treemap elements
+            },
+            dataLabels: {
+              style: {
+                fontSize: '28px', // Set font size for text inside treemap boxes
+              },
+            },
+          },
+        },
       },
       treemapChartSeries: [
         {
           data: [
             {
-              x: 'North America',
+              x: 'თავისუფალი პარკირება: 8',
               y: 500,
+              fillColor: '#96d1f8', // Custom color for the first circle
             },
             {
-              x: 'Europe',
+              x: 'გახსენი შლაგბაუმი',
               y: 300,
+              fillColor: '#6bac8e', // Custom color for the second circle
             },
             {
-              x: 'Asia',
+              x: 'შლაგბაუმი დაკეტილია',
               y: 400,
+              fillColor: '#ff1b1e', // Custom color for the third circle
             },
             {
-              x: 'Africa',
-              y: 100,
-            },
-            {
-              x: 'South America',
-              y: 200,
+              x: 'შევსებული პატკირება:  20',
+              y: 400,
+              fillColor: '#F7EE14', // Custom color for the fourth circle
             },
           ],
         },
