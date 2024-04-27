@@ -81,21 +81,29 @@
       <div class="row-gap">
         <div class="custom-col">
           <h1 style="margin-left: 30px;">შლაგბაუმი</h1>
-
-          <apexchart
-            type="treemap"
-            :options="treemapChartOptions"
-            :series="treemapChartSeries"
-          ></apexchart>
+          <div class="chart-container">
+            <apexchart
+              type="treemap"
+              :options="treemapChartOptions"
+              :series="treemapChartSeries"
+            ></apexchart>
+            <button @click="btnClick()" class="custom-button">
+              გახსენი შლაგბაუმი
+            </button>
+          </div>
         </div>
         <div class="custom-col">
           <h1 style="margin-left: 30px;">დომოფონი</h1>
-
-          <apexchart
-            type="treemap"
-            :options="treemapChartOptionsTwo"
-            :series="treemapChartSeriesTwo"
-          ></apexchart>
+          <div class="chart-container">
+            <apexchart
+              type="treemap"
+              :options="treemapChartOptionsTwo"
+              :series="treemapChartSeriesTwo"
+            ></apexchart>
+            <button @click="btnClick()" class="custom-button">
+              გახსენი კარი
+            </button>
+          </div>
         </div>
       </div>
 
@@ -118,7 +126,9 @@
               ></apexchart>
             </div>
           </div>
-
+          <button @click="btnClick()" class="call-lift-btn">
+            გამოიძახე ლიფტი
+          </button>
           <div class="custom-col">
             <h1 style="margin-left: 30px;">შემოსავლები</h1>
 
@@ -243,20 +253,20 @@ export default {
               y: 500,
               fillColor: '#96d1f8', // Custom color for the first circle
             },
-            {
-              x: 'გახსენი შლაგბაუმი',
-              y: 300,
-              fillColor: '#6bac8e', // Custom color for the second circle
-            },
+            // {
+            //   x: 'გახსენი შლაგბაუმი',
+            //   y: 300,
+            //   fillColor: '#6bac8e', // Custom color for the second circle
+            // },
             {
               x: 'შლაგბაუმი დაკეტილია',
-              y: 400,
+              y: 500,
               fillColor: '#ff1b1e', // Custom color for the third circle
             },
             {
               x: 'შევსებული პატკირება:  20',
               y: 400,
-              fillColor: '#F7EE14', // Custom color for the fourth circle
+              fillColor: '#FAD5A5', // Custom color for the fourth circle
             },
           ],
         },
@@ -275,11 +285,11 @@ export default {
               y: 500,
               fillColor: '#e33b26', // Custom color for the first circle
             },
-            {
-              x: 'გააღე კარი',
-              y: 500,
-              fillColor: '#31c312',
-            },
+            // {
+            //   x: 'გააღე კარი',
+            //   y: 500,
+            //   fillColor: '#31c312',
+            // },
           ],
         },
       ],
@@ -493,6 +503,15 @@ export default {
       ],
     }
   },
+  methods: {
+    btnClick() {
+      this.$swal.fire({
+        icon: 'success',
+        position: 'center',
+        allowOutsideClick: false,
+      })
+    },
+  },
 }
 </script>
 
@@ -556,18 +575,62 @@ section {
 .pie-chart {
   width: 450px; /* Default width */
 }
-
+@media (min-width: 600px) {
+  .call-lift-btn {
+    display: none;
+  }
+}
 @media (max-width: 600px) {
   .pie-chart {
     width: 380px; /* Adjusted width for phone screens */
   }
   .custom-col {
     width: 380px;
-    height: 300px;
-    background-color: white;
+    height: 330px;
+    margin-right: 20px;
+    background-color: rgb(249, 249, 249);
     border-radius: 10px; /* Adjust the radius as needed */
     box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* Adjust the shadow as needed */
     padding: 2px; /* Adjust the padding as needed */
   }
+  .row-gap-card-system {
+    margin-right: 50px;
+    background-color: none;
+    background: none;
+    box-shadow: none;
+  }
+}
+/* btn */
+.chart-container {
+  position: relative;
+}
+
+.custom-button {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4caf50; /* Green color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.call-lift-btn {
+  width: 95%;
+  background-color: #4caf50; /* Green color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.custom-button:hover {
+  background-color: #45a049; /* Darker green color on hover */
 }
 </style>
