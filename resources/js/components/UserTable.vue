@@ -166,7 +166,7 @@ tr {
         <template v-slot:activator="{ props }">
           <v-icon
             class="ma-3"
-            v-if="$store.state.auth.user.lvl >= 2"
+            v-if="isAdmin || role == 'company' || role == 'manager'"
             size="large"
             icon="mdi-dots-vertical"
             v-bind="props"
@@ -238,8 +238,10 @@ tr {
           <th v-if="isAdmin">ფრიზ ბალანსი</th>
           <th v-if="isAdmin">ბალანსი</th>
           <th v-if="isAdmin">საბსქრიბშენ თარიღი</th>
-          <th>რედაქტირება</th>
-          <th>❌წაშლა❌</th>
+          <th v-if="isAdmin">რედაქტირება</th>
+          <th v-if="isAdmin || role == 'company' || role == 'manager'">
+            ❌წაშლა❌
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -312,7 +314,7 @@ tr {
           </td>
           <td>
             <div
-              v-if="isAdmin"
+              v-if="isAdmin || role == 'company' || role == 'manager'"
               class="delete-icon"
               @click="deleteItem(item.id)"
             >
@@ -385,7 +387,7 @@ export default {
     isAdmin: false,
     isEditOpen: false,
     isEditLoading: false,
-
+    role: '',
     page: 10,
     prevPage: 0,
     select: null,
@@ -468,6 +470,12 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+      this.role = JSON.parse(token).auth.user.role
+    },
     handleInputChange() {
       if (this.search === '') {
         this.userData.userData = this.serverItems.userData.slice() // Copy original data
@@ -552,11 +560,7 @@ export default {
     cancelEdit(index) {
       this.$set(this.boolMirror, index, false)
     },
-    chackAdminEmail() {
-      const token = localStorage.getItem('vuex')
-      let email = JSON.parse(token).auth.user.email
-      this.isAdmin = email === 'info@eideas.io'
-    },
+
     deleteItem(id) {
       this.$swal
         .fire({
