@@ -166,7 +166,7 @@ tr {
         <template v-slot:activator="{ props }">
           <v-icon
             class="ma-3"
-            v-if="isAdmin || role == 'company' || role == 'manager'"
+            v-if="$store.state.auth.user.lvl >= 2"
             size="large"
             icon="mdi-dots-vertical"
             v-bind="props"
