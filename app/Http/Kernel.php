@@ -20,6 +20,8 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\SuperAdminMiddleware::class,
         'ComapnyAccsessMiddleware' =>
             \App\Http\Middleware\ComapnyAccsessMiddleware::class,
+        'ComapnyAndManagerAccsessMiddleware' =>
+            \App\Http\Middleware\ComapnyAndManagerAccsessMiddleware::class,
     ];
 
     protected $middleware = [

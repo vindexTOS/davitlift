@@ -15,6 +15,7 @@ use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Controllers\MqttController;
 use App\Http\Middleware\SuperAdminMiddleware;
 use App\Http\Middleware\ComapnyAccsessMiddleware;
+use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
 use App\Models\Device;
 
 //  ADMIN ONLY
@@ -63,12 +64,6 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         DeviceController::class,
         'updateManyDeviceTariff',
     ]);
-
-    // delete  user
-    Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
-        UserController::class,
-        'removeToDevice',
-    ]);
 });
 //  company middleware
 
@@ -87,6 +82,23 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
         'updateUserSubscription',
     ]);
 });
+
+//  company and manager middle ware
+
+Route::middleware(['auth:api', 'ComapnyAndManagerAccsessMiddleware'])->group(
+    function () {
+        // delete  user
+        Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
+            UserController::class,
+            'removeToDevice',
+        ]);
+        // add user to device
+        Route::get('/userToDevice/{user_search}/{device_id}', [
+            UserController::class,
+            'addToDevice',
+        ]);
+    }
+);
 
 //  tbc fast pay
 Route::post('/transaction/checkuser', [
@@ -162,10 +174,6 @@ Route::middleware(['auth:api'])->group(function () {
     ]);
     //  USERS
     Route::get('user', [AuthController::class, 'user']);
-    Route::get('/userToDevice/{user_search}/{device_id}', [
-        UserController::class,
-        'addToDevice',
-    ]);
 
     Route::post('/password/change', [
         UserController::class,

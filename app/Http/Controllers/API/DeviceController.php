@@ -298,7 +298,9 @@ if ($device) {
   }
 }
 
-return $device;    }
+return  $device;  
+
+}
 
     public function update( $request,  $device)
     {
