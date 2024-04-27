@@ -116,10 +116,115 @@ tr {
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
+
+.input-container {
+  position: relative;
+  margin: 20px;
+}
+.input-container input {
+  width: 300px;
+  padding: 10px;
+  border: 1px solid #bdbdbd;
+  border-radius: 4px;
+  outline: none;
+  font-size: 16px;
+}
+.input-container input:focus {
+  border-color: #1976d2;
+}
+.input-container label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 10px;
+  color: #757575;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+.input-container input:valid + label,
+.input-container input:focus + label {
+  top: 5px;
+  font-size: 12px;
+  color: #1976d2;
+}
+.search-and-user-add-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
 </style>
 
 <template>
   <div class="main-div">
+    <div class="search-and-user-add-wrapper">
+      <div class="input-container">
+        <input v-model="search" type="text" id="search" required />
+        <label for="search">Search...</label>
+      </div>
+      <v-menu>
+        <template v-slot:activator="{ props }">
+          <v-icon
+            class="ma-3"
+            v-if="$store.state.auth.user.lvl >= 2"
+            size="large"
+            icon="mdi-dots-vertical"
+            v-bind="props"
+          ></v-icon>
+        </template>
+        <v-card width="250" class="pa-0 ma-0">
+          <v-dialog v-model="dialogExisted" max-width="500px">
+            <template v-slot:activator="{ props }">
+              <v-btn
+                style="width: 100%;"
+                dark
+                class="mb-2"
+                v-bind="props"
+                v-if="$store.state.auth.user.lvl >= 2"
+              >
+                {{ $t('Add user') }}
+              </v-btn>
+            </template>
+            <v-card>
+              <v-card-title>
+                <span class="text-h5">
+                  {{ $t('Add user') }}
+                </span>
+              </v-card-title>
+
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="existUser"
+                        :label="$t('Email or phone')"
+                        class="text-capitalize"
+                        required
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="blue-darken-1"
+                  variant="text"
+                  @click="dialogExisted = false"
+                >
+                  {{ $t('Close') }}
+                </v-btn>
+                <v-btn color="blue-darken-1" variant="text" @click="save">
+                  {{ $t('Save') }}
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </v-card>
+      </v-menu>
+    </div>
     <table class="v-data-table">
       <thead>
         <tr>
@@ -140,13 +245,14 @@ tr {
       <tbody>
         <tr
           title="რედაქტირება ✏️"
-          @dblclick="openEdit(index)"
-          v-for="(item, index) in serverItems.userData.slice(prevPage, page)"
+          v-for="(item, index) in filteredUserData.slice(prevPage, page)"
           :key="item.id"
         >
           <td>
             <p v-if="!boolMirror[index]">
-              {{ item.name }}
+              <RouterLink :to="`/user/${item.id}`">
+                {{ item.name }}
+              </RouterLink>
             </p>
             <input v-model="item.name" v-if="boolMirror[index]" />
           </td>
@@ -193,7 +299,7 @@ tr {
             <input v-model="item.subscription" v-if="boolMirror[index]" />
           </td>
           <td>
-            <div style="display: flex; flex-direction: row;">
+            <div v-if="isAdmin" style="display: flex; flex-direction: row;">
               <p @click="openEdit(index)" v-if="!boolMirror[index]">✏️</p>
               <p @click="openEdit(index)" v-if="!boolMirror[index]">
                 რედაქტირება
@@ -205,7 +311,11 @@ tr {
             </div>
           </td>
           <td>
-            <div class="delete-icon" @click="deleteItem(item.id)">
+            <div
+              v-if="isAdmin"
+              class="delete-icon"
+              @click="deleteItem(item.id)"
+            >
               <i class="mdi mdi-delete"></i>
               წაშლა
             </div>
@@ -275,6 +385,7 @@ export default {
     isAdmin: false,
     isEditOpen: false,
     isEditLoading: false,
+
     page: 10,
     prevPage: 0,
     select: null,
@@ -306,12 +417,23 @@ export default {
       protein: 0,
     },
     action: {},
+    userData: {},
   }),
 
   async created() {
     this.chackAdminEmail()
+    this.userData = this.serverItems
   },
   computed: {
+    filteredUserData() {
+      if (this.search === '') {
+        return this.serverItems.userData.slice() // Return original data if search term is empty
+      } else {
+        return this.serverItems.userData.filter((val) => {
+          return val.name.toLowerCase().includes(this.search.toLowerCase())
+        })
+      }
+    },
     formTitle() {
       return this.editedIndex === -1 ? 'New user' : 'Edit user'
     },
@@ -346,6 +468,15 @@ export default {
   },
 
   methods: {
+    handleInputChange() {
+      if (this.search === '') {
+        this.userData.userData = this.serverItems.userData.slice() // Copy original data
+      } else {
+        this.userData.userData = this.serverItems.userData.filter((val) => {
+          return val.name.toLowerCase().includes(this.search.toLowerCase())
+        })
+      }
+    },
     updateUser(obj, index) {
       // /update/user/subscription
       obj.freezed_balance = Number(obj.freezed_balance)

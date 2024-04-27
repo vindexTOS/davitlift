@@ -63,6 +63,12 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         DeviceController::class,
         'updateManyDeviceTariff',
     ]);
+
+    // delete  user
+    Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
+        UserController::class,
+        'removeToDevice',
+    ]);
 });
 //  company middleware
 
@@ -166,10 +172,6 @@ Route::middleware(['auth:api'])->group(function () {
         'changeUserPassword',
     ]);
 
-    Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
-        UserController::class,
-        'removeToDevice',
-    ]);
     // FILES
 
     Route::get('/get/pay/cashback/{company_id}/{manager_id}/', [
