@@ -267,6 +267,7 @@
           required
         ></v-text-field>
         <v-text-field
+          v-if="isAdmin"
           v-model="user.balance"
           :label="$t('Balance')"
           required
