@@ -300,8 +300,8 @@ tr {
             <p v-if="!boolMirror[index]">{{ item.subscription }}</p>
             <input v-model="item.subscription" v-if="boolMirror[index]" />
           </td>
-          <td>
-            <div v-if="isAdmin" style="display: flex; flex-direction: row;">
+          <td v-if="isAdmin">
+            <div style="display: flex; flex-direction: row;">
               <p @click="openEdit(index)" v-if="!boolMirror[index]">✏️</p>
               <p @click="openEdit(index)" v-if="!boolMirror[index]">
                 რედაქტირება
@@ -312,12 +312,8 @@ tr {
               <p v-if="boolMirror[index]" @click="openEdit(index)">❌</p>
             </div>
           </td>
-          <td>
-            <div
-              v-if="isAdmin || role == 'company' || role == 'manager'"
-              class="delete-icon"
-              @click="deleteItem(item.id)"
-            >
+          <td v-if="isAdmin || role == 'company' || role == 'manager'">
+            <div class="delete-icon" @click="deleteItem(item.id)">
               <i class="mdi mdi-delete"></i>
               წაშლა
             </div>
