@@ -126,7 +126,7 @@
               ></apexchart>
             </div>
           </div>
-          <button @click="btnClick()" class="call-lift-btn">
+          <button @click="btnClick()" class="call-lift-btn btn-hidden">
             გამოიძახე ლიფტი
           </button>
           <div class="custom-col">
@@ -282,7 +282,7 @@ export default {
           data: [
             {
               x: 'კარი დაკეტილია',
-              y: 500,
+              y: 800,
               fillColor: '#e33b26', // Custom color for the first circle
             },
             // {
@@ -576,8 +576,22 @@ section {
   width: 450px; /* Default width */
 }
 @media (min-width: 600px) {
-  .call-lift-btn {
+  .btn-hidden {
     display: none;
+  }
+  .custom-button {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4caf50; /* Green color */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
   }
 }
 @media (max-width: 600px) {
@@ -599,26 +613,23 @@ section {
     background: none;
     box-shadow: none;
   }
+  .custom-button {
+    width: 100%;
+    background-color: #4caf50; /* Green color */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
 }
 /* btn */
 .chart-container {
   position: relative;
 }
 
-.custom-button {
-  position: absolute;
-  bottom: 0px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #4caf50; /* Green color */
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-}
 .call-lift-btn {
   width: 95%;
   background-color: #4caf50; /* Green color */
