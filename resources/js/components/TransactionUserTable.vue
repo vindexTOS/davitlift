@@ -20,7 +20,12 @@
         {{ formatMyDate(item.raw.updated_at) }}
       </template>
       <template v-slot:item.amountTax="{ item }">
-        {{ getUntaxedAmount(item.raw.amount) }}ლარი
+        {{
+          item.raw.type === 'TBC ჩასარიცხი აპარატი'
+            ? item.raw.amount
+            : getUntaxedAmount(item.raw.amount)
+        }}
+        ლარი
       </template>
       <template v-slot:item.type="{ item }">
         {{ getItemType(item.raw.type) }}
