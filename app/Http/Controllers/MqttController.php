@@ -823,6 +823,10 @@ class MqttController extends Controller
         $now = Carbon::now();
         $user = User::where('id', $companyId)->first();
         $device = Device::where('id', $deviceId)->first();
+
+        if ($user->cashback == 0) {
+            $user = User::where('id', $device->users_id);
+        }
         // Try to retrieve the entry for the given device and month_year
         $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
             ->where('month', $now->month)
