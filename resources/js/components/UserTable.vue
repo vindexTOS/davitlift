@@ -245,10 +245,17 @@ thead {
             <span
               v-if="new Date(item.subscription) > new Date()"
               class="paid-chip"
+              style="background-color: green; color: white;"
             >
               {{ $t('Yes') }}
             </span>
-            <span v-else class="unpaid-chip">{{ $t('No') }}</span>
+            <span
+              style="background-color: red; color: white;"
+              v-else
+              class="unpaid-chip"
+            >
+              {{ $t('No') }}
+            </span>
           </td>
           <td v-if="isAdmin">
             <p v-if="!boolMirror[index]">{{ item.role }}</p>
