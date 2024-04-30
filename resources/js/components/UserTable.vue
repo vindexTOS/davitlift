@@ -115,7 +115,10 @@ thead {
   font-size: 12px;
   color: #1976d2;
 }
-
+tbody input {
+  background-color: green;
+  color: white;
+}
 /* Search and user add wrapper styles */
 .search-and-user-add-wrapper {
   display: flex;
