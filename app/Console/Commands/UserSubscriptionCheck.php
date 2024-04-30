@@ -91,6 +91,9 @@ class UserSubscriptionCheck extends Command
             }
 
             $user = User::where('id', $device->users_id)->first();
+            if ($user->cashback == 0) {
+                $user = User::where('id', $device->company_id);
+            }
             $device = Device::where('id', $device->id)->first();
             $deviceEarn = DeviceEarn::where('device_id', $device->id)
                 ->where('month', $currentMonth)
