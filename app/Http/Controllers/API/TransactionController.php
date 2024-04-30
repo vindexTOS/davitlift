@@ -461,17 +461,11 @@ class TransactionController extends Controller
             $sakomisio = 0;
             if ($isFastPay == 'e_com') {
                 $sakomisio = $transfer_amount * 0.02;
-                Log::debug('საკომისიო 2 procenti chamachra');
 
                 $sakomisio = number_format($sakomisio, 2, '.', '');
-                $user->balance =
-                    intval($user->balance) + $transfer_amount - $sakomisio;
-            } elseif ($isFastPay == 'fast_pay') {
-                $sakomisio = 0;
-                Log::debug('საკომისიო არ ჩამოაჭრა ');
-                $user->balance = intval($user->balance) + $transfer_amount;
             }
-
+            $user->balance =
+                intval($user->balance) + $transfer_amount - $sakomisio;
             foreach ($user->devices as $key => $device) {
                 if ($device->op_mode === '0') {
                     Log::debug('op_mode = 0');

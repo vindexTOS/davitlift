@@ -227,7 +227,7 @@
                     item.op_mode == 0 ? 'გადახდის რიცხვი: ' + item.pay_day : ''
                   }}
                 </b>
-                <hr />
+                <!-- <hr />
 
                 <b>
                   {{
@@ -235,11 +235,13 @@
                       ? 'ტარიფი :' + item.deviceTariffAmount + ' ლარი'
                       : ''
                   }}
-                </b>
+                </b> -->
                 <hr />
                 <div v-if="isAdmin">
                   <div>
-                    <b>ლიფტის ტარიფი {{ item.deviceTariffAmount }} ₾</b>
+                    <b>
+                      მინიმალური ლიფტის ტარიფი {{ item.deviceTariffAmount }} ₾
+                    </b>
                     <v-icon
                       @click="openSingleDeviceTariffAmount(index)"
                       size="xs"
