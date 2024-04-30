@@ -203,7 +203,7 @@ thead {
           <th v-if="!isEditOpen">{{ $t('Balance') }}</th>
           <th v-if="!isEditOpen">{{ $t('Count of cards') }}</th>
           <th v-if="isFixed">{{ $t('has paid') }}</th>
-          <th>როლი</th>
+          <th v-if="isAdmin">როლი</th>
           <th v-if="isAdmin">ფრიზ ბალანსი</th>
           <th v-if="isAdmin">ბალანსი</th>
           <th v-if="isAdmin">საბსქრიბშენ თარიღი</th>
@@ -250,7 +250,7 @@ thead {
             </span>
             <span v-else class="unpaid-chip">{{ $t('No') }}</span>
           </td>
-          <td>
+          <td v-if="isAdmin">
             <p v-if="!boolMirror[index]">{{ item.role }}</p>
             <input v-model="item.role" v-if="boolMirror[index]" />
           </td>
@@ -298,11 +298,30 @@ thead {
       display: flex;
       align-items: center;
       width: 100%;
-      justify-content: end;
+      justify-content: flex-end;
       padding-top: 10px;
     "
   >
+    <select
+      @change="handleAmountPerPage($event)"
+      style="
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+        margin-right: 10px;
+        cursor: pointer;
+        appearance: none; /* Remove default arrow */
+        -webkit-appearance: none; /* Safari and Chrome */
+        -moz-appearance: none; /* Firefox */
+      "
+    >
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="all">ყველა</option>
+    </select>
     <button
+      :disabled="pageItemsSelector === 'all'"
       @click="handlePagination('prev')"
       style="
         padding: 8px 12px;
@@ -311,12 +330,19 @@ thead {
         border: none;
         border-radius: 5px;
         cursor: pointer;
+        margin-right: 5px;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
       "
     >
-      Prev
+      <span style="margin-right: 5px;">&#8249;</span>
+      უკან
     </button>
-    <span style="margin: 0 10px;">Page {{ page / 10 }}</span>
+    <span style="margin: 0 10px;">
+      Page
+      {{ pageItemsSelector === 'all' ? 0 : page / 10 }}
+    </span>
     <button
+      :disabled="pageItemsSelector === 'all'"
       @click="handlePagination('next')"
       style="
         padding: 8px 12px;
@@ -325,9 +351,11 @@ thead {
         border: none;
         border-radius: 5px;
         cursor: pointer;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
       "
     >
-      Next
+      შემდეგი
+      <span style="margin-left: 5px;">&#8250;</span>
     </button>
   </div>
   <!-- <div class="pagination">
@@ -361,6 +389,7 @@ export default {
     expanded: [],
     dialog: false,
     itemsPerPage: 1,
+    pageItemsSelector: '',
     boolMirror: new Array(10).fill(false),
     search: '',
     loading: true,
@@ -440,6 +469,18 @@ export default {
       let email = JSON.parse(token).auth.user.email
       this.isAdmin = email === 'info@eideas.io'
       this.role = JSON.parse(token).auth.user.role
+    },
+    handleAmountPerPage(event) {
+      const val = event.target.value
+      if (val === 'all') {
+        this.prevPage = 0
+        this.page = this.serverItems.length
+        this.pageItemsSelector = 'all'
+      } else {
+        this.pageItemsSelector = ''
+        this.prevPage = 0
+        this.page = val
+      }
     },
     handleInputChange() {
       if (this.search === '') {
