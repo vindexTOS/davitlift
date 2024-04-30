@@ -240,7 +240,8 @@
                 <div v-if="isAdmin">
                   <div>
                     <b>
-                      მინიმალური ლიფტის ტარიფი {{ item.deviceTariffAmount }} ₾
+                      მომსახურების მინიმალური საფასური
+                      {{ item.deviceTariffAmount }} ₾
                     </b>
                     <v-icon
                       @click="openSingleDeviceTariffAmount(index)"
