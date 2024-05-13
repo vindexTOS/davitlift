@@ -1,28 +1,22 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
 
 use App\Models\DeviceUser;
 use Illuminate\Console\Command;
 use App\Models\Device;
 use App\Models\User;
 use App\Models\DeviceEarn;
-
-// Assume this is the name of your device earning model
+use App\Models\Card;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Services\SubscriptionService;
 
-class UserSubscriptionCheck extends Command
-{
-    protected $signature = 'user:subscription-check';
-    protected $description = 'Check user subscriptions and update balances and earnings accordingly';
-    
-    public function __construct()
-    {
-        parent::__construct();
-    }
-    
-    public function handle()
+class TestController extends   Controller 
+{    public function userSubscriptionCheck()
     {
         $today = Carbon::now()->day;
         $currentMonth = Carbon::now()->month;
@@ -32,9 +26,12 @@ class UserSubscriptionCheck extends Command
         $devices = Device::where('pay_day', $today)
         ->where('op_mode', 0)
         ->get();
+        
+        
+        
         foreach ($devices as $device) {
             $deviceEarning = 0;
-            $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
+            $users = $device->users;
             
             foreach ($users as $user) {
                 $subscriptionDate = $user->pivot->subscription
@@ -44,12 +41,17 @@ class UserSubscriptionCheck extends Command
                 ->addMonth()
                 ->startOfMonth()
                 ->addDays($device->pay_day - 1);
+                
+                $cardCount = Card::where("user_id", $user->id)->count();
+                // card counter 
+                
                 if (
-                    $user->balance >= $device->tariff_amount &&
+                    $user->balance >= $device->tariff_amount  &&
                     $user->freezed_balance >= $device->tariff_amount &&
                     !is_null($subscriptionDate) &&
                     $subscriptionDate->lt($nextMonthPayDay)
                     ) {
+                        Log::debug( "sub active" );
                         // Start transaction
                         DB::beginTransaction();
                         try {
@@ -65,8 +67,8 @@ class UserSubscriptionCheck extends Command
                                     ->where('user_id', $user->id)
                                     ->update(['subscription' => $nextMonthPayDay]);
                                     
-                                    $user->freezed_balance =
-                                    $user->freezed_balance + $device->tariff_amount;
+                                    $user->freezed_balance +=
+                                    $device->tariff_amount;
                                 }
                                 
                                 $user->save();
@@ -78,7 +80,7 @@ class UserSubscriptionCheck extends Command
                             } catch (\Exception $e) {
                                 // An error occurred; rollback the transaction
                                 DB::rollback();
-                                $this->error(
+                                Log::error(
                                     'Failed to process user ' .
                                     $user->id .
                                     ' with device ' .
@@ -130,9 +132,9 @@ class UserSubscriptionCheck extends Command
                     }
                 }
                 
-                $this->info(
-                    'User subscriptions have been checked and updated successfully.'
-                );
+                
+                return 'User subscriptions have been checked and updated successfully.';
             }
+            
         }
         
