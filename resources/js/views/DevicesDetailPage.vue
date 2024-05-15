@@ -262,6 +262,11 @@
                   {{ $t('Lari') }}
                 </h4>
                 <h4>{{ $t('Number of users') }}: {{ data.users.length }}</h4>
+                <!--  -->
+                <h4>
+                  უსერების ბალანსის ჯამი: {{ totalUserBalance / 100 }}
+                  {{ $t('Lari') }}
+                </h4>
               </v-card-text>
             </v-card>
           </v-col>
@@ -677,6 +682,8 @@ export default {
   data: () => ({
     usersInfo: { userData: [], pagination: 0 },
     isZoom: false,
+    totalUserBalance: 0,
+
     search: '',
     dialog: false,
     loading: true,
@@ -930,6 +937,11 @@ export default {
           this.$nextTick(() => {})
 
           this.data = data
+
+          this.totalUserBalance = data.users
+            .map((val) => val.balance)
+            .reduce((a, b) => a + b)
+
           this.usersInfo.userData = data.users
           this.usersInfo.pagination = Math.ceil(data.users.length / 10)
           console.log(data)
