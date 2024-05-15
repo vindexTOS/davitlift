@@ -825,7 +825,7 @@ class MqttController extends Controller
         $device = Device::where('id', $deviceId)->first();
 
         if ($user->cashback == 0) {
-            $user = User::where('id', $device->users_id);
+            $user = User::where('id', $device->users_id)->first();
         }
         // Try to retrieve the entry for the given device and month_year
         $deviceEarnings = DeviceEarn::where('device_id', $deviceId)

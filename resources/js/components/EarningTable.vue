@@ -35,7 +35,13 @@
             {{ item.month }}
           </td>
           <td style="padding: 8px; border: 1px solid #ddd;">
-            {{ item.earnings / 100 }}₾
+            <p v-if="!boolMapper[index]">{{ item.earnings / 100 }}₾</p>
+            <input
+              @input="changeInput($event, 'earnings')"
+              style="width: 50px; background-color: greenyellow;"
+              v-if="boolMapper[index]"
+              :value="item.earnings"
+            />
           </td>
           <td v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             <p v-if="!boolMapper[index]">{{ item.deviceTariff }}</p>
@@ -150,6 +156,7 @@ export default {
     editedIndex: -1,
     cashback: 0,
     deviceTariff: 0,
+    earnings: 0,
     isAdmin: false,
     editedItem: {
       name: '',
@@ -223,14 +230,17 @@ export default {
     changeInput(event, type) {
       if (type == 'cashback') {
         this.cashback = event.target.value
-      } else {
+      } else if (type == 'deviceTariff') {
         this.deviceTariff = event.target.value
+      } else if (type == 'earnings') {
+        this.earnings = event.target.value
       }
     },
     updateEarning(body, index) {
       this.toogleEedit(index)
       body.cashback = Number(this.cashback)
       body.deviceTariff = Number(this.deviceTariff)
+      body.earnings = Number(this.earnings)
       console.log(body)
       axios
         .put('/api/deviceEarn/edit/', body)
