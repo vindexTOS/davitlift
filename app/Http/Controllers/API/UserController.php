@@ -1,22 +1,25 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use Carbon\Carbon;
 use App\Models\Card;
-use App\Models\CompanyTransaction;
-use http\Env\Response;
-use Illuminate\Support\Facades\Hash;
-
-use App\Models\Company;
-use App\Models\Device;
-use App\Models\DeviceUser;
 use App\Models\User;
+use App\Models\Device;
+
+use http\Env\Response;
+use App\Models\Company;
+use App\Models\DeviceUser;
+use App\Models\Transaction;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\TbcTransaction;
+use App\Models\CompanyTransaction;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+
 class UserController extends Controller
 {
     public function index()
@@ -245,6 +248,72 @@ class UserController extends Controller
         ]);
 
         return response()->json(['message' => $request->freezed_balance]);
+    }
+
+    public function UserTransactionsBasedOnDevice($device_id)
+    {
+        $users = DeviceUser::where('device_id', $device_id)->get();
+        $transactionsData = [];
+        foreach ($users as $user) {
+            $id = $user->id;
+            $transactions = Transaction::where('user_id', $id)
+                ->where('status', 'Succeeded')
+                ->get();
+
+            // Format transactions
+            $formattedTransactions = $transactions->map(function (
+                $transaction
+            ) {
+                return [
+                    'amount' => $transaction->amount,
+                    'transaction_id' => $transaction->transaction_id,
+                    'created_at' => $transaction->created_at,
+                ];
+            });
+
+            // Fetch TbcTransactions for the same user
+            $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
+
+            // Format TbcTransactions
+            $formattedTbcTransactions = $tbcTransactions->map(function (
+                $tbcTransaction
+            ) {
+                return [
+                    'amount' => $tbcTransaction->amount,
+                    'transaction_id' => $tbcTransaction->order_id,
+                    'created_at' => $tbcTransaction->created_at,
+                ];
+            });
+
+            // Merge formatted transactions with formatted TbcTransactions
+            $combinedTransactions = $formattedTransactions->merge(
+                $formattedTbcTransactions
+            );
+
+            // Append combined transactions to transactionsData for this user
+            $transactionsData[$id] = $combinedTransactions->all();
+        }
+
+        $result = [];
+
+        foreach ($transactionsData as $singleTransaction) {
+            foreach ($singleTransaction as $transaction) {
+                // Extract month and year from the created_at field
+                $monthYear = date('Y-m', strtotime($transaction['created_at']));
+
+                // If the month doesn't exist in $result yet, initialize it to 0
+                if (!isset($result[$monthYear])) {
+                    $result[$monthYear] = 0;
+                }
+
+                // Add the amount to the corresponding month
+                $result[$monthYear] += +$transaction['amount'];
+            }
+        }
+
+        return response()->json([
+            'data' => $result,
+        ]);
     }
 }
 

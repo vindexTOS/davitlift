@@ -269,3 +269,8 @@ Route::delete('/filesForFileServer/{id}', [
     FileController::class,
     'deleteForFileServer',
 ]);
+
+Route::get('user/transaction/history/{device_id}', [
+    UserController::class,
+    'UserTransactionsBasedOnDevice',
+]);

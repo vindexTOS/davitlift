@@ -263,13 +263,58 @@
                 </h4>
                 <h4>{{ $t('Number of users') }}: {{ data.users.length }}</h4>
                 <!--  -->
-                <h4>
-                  უსერების ბალანსის ჯამი: {{ totalUserBalance / 100 }}
+                <h4 v-if="isAdmin">
+                  მომხმარებლების ბალანსების ჯამი: {{ totalUserBalance / 100 }}
                   {{ $t('Lari') }}
                 </h4>
               </v-card-text>
             </v-card>
           </v-col>
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+          "
+          v-if="isAdmin"
+        >
+          <div
+            style="
+              width: 40%;
+
+              flex-direction: column;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 5px;
+              box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.75);
+            "
+          >
+            <h4>ტრანზაქციების ჯამი</h4>
+            <ul
+              style="
+                height: 200px;
+                overflow-y: scroll;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                padding: 50px;
+              "
+            >
+              <li
+                style="font-size: 20px;"
+                v-for="(value, key) in transactionTotalByMonth"
+                :key="key"
+              >
+                {{ key }}:
+                <span style="color: green;">{{ value.toFixed(2) }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
         <v-expansion-panels class="mb-3">
           <v-expansion-panel v-if="$store.state.auth.user.lvl >= 2">
@@ -681,9 +726,10 @@ export default {
   name: 'detailPage',
   data: () => ({
     usersInfo: { userData: [], pagination: 0 },
+    transactionTotalByMonth: [],
     isZoom: false,
     totalUserBalance: 0,
-
+    isAdmin: false,
     search: '',
     dialog: false,
     loading: true,
@@ -887,6 +933,7 @@ export default {
   }),
 
   created() {
+    this.chackAdminEmail()
     this.loadItems()
   },
   computed: {
@@ -915,6 +962,11 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
     zoomIn() {
       this.isZoom = !this.isZoom
     },
@@ -944,7 +996,7 @@ export default {
 
           this.usersInfo.userData = data.users
           this.usersInfo.pagination = Math.ceil(data.users.length / 10)
-          console.log(data)
+          this.getTransactionData()
         })
         .then(() => {
           if (withCong) {
@@ -1019,6 +1071,13 @@ export default {
       this.dialogAppConf = false
       this.dialogExtConf = false
       this.dialog = false
+    },
+    getTransactionData() {
+      axios
+        .get('/api/user/transaction/history/' + this.$route.params.id)
+        .then(({ data }) => {
+          this.transactionTotalByMonth = data.data
+        })
     },
     deleteError(id) {
       this.$swal
