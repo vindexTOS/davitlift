@@ -315,7 +315,7 @@ class UserController extends Controller
         }
 
         $result = [];
-
+        $ids = [];
         // Accumulate transactions outside the loop
 
         foreach ($transactionsData as $singleTransaction) {
@@ -333,7 +333,16 @@ class UserController extends Controller
                     }
 
                     // Add the amount to the corresponding month
-                    $result[$monthYear] += +$transaction['amount'];
+                    if (!in_array($transaction['transaction_id'], $ids)) {
+                        // Add the amount to the corresponding month
+                        if (!isset($result[$monthYear])) {
+                            $result[$monthYear] = 0;
+                        }
+                        $result[$monthYear] += $transaction['amount'];
+
+                        // Add the transaction ID to the $ids array to mark it as processed
+                        $ids[] = $transaction['transaction_id'];
+                    }
                 } catch (\Exception $e) {
                     // Log or handle the error as needed
                     // For now, skipping the transaction
