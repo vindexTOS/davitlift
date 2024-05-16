@@ -5,6 +5,7 @@ use Carbon\Carbon;
 use App\Models\Card;
 use App\Models\User;
 use App\Models\Device;
+use Illuminate\Support\Facades\Log;
 
 use http\Env\Response;
 use App\Models\Company;
@@ -50,8 +51,8 @@ class UserController extends Controller
             );
         }
         $user = User::where('phone', $user_search)
-            ->orWhere('email', $user_search)
-            ->first();
+        ->orWhere('email', $user_search)
+        ->first();
         if (empty($user)) {
             return response()->json(
                 ['message' => 'ასეთი მომხამრებელი არ არსებობს'],
@@ -59,8 +60,8 @@ class UserController extends Controller
             );
         }
         $isAdd = DeviceUser::where('user_id', $user->id)
-            ->where('device_id', $device_id)
-            ->first();
+        ->where('device_id', $device_id)
+        ->first();
         if (!empty($isAdd)) {
             return response()->json(
                 ['message' => 'ასეთი მომხამრებელი უკვე დამატებულია'],
@@ -71,19 +72,19 @@ class UserController extends Controller
             'user_id' => $user->id,
             'device_id' => $device_id,
         ];
-
+        
         $currentDay = Carbon::now()->day;
         if ($device->op_mode == '0') {
             if ($device->tariff_amount <= $user->balance) {
                 if ($currentDay < $device->pay_day) {
                     $create['subscription'] = Carbon::now()
-                        ->startOfMonth()
-                        ->addDays($device->pay_day - 1);
+                    ->startOfMonth()
+                    ->addDays($device->pay_day - 1);
                 } else {
                     $create['subscription'] = Carbon::now()
-                        ->addMonth()
-                        ->startOfMonth()
-                        ->addDays($device->pay_day - 1);
+                    ->addMonth()
+                    ->startOfMonth()
+                    ->addDays($device->pay_day - 1);
                 }
             }
         }
@@ -97,277 +98,306 @@ class UserController extends Controller
     {
         try {
             DeviceUser::where('user_id', $user_id)
-                ->where('device_id', $device_id)
-                ->delete();
+            ->where('device_id', $device_id)
+            ->delete();
             Card::where('user_id', $user_id)
-                ->where('device_id', $device_id)
-                ->delete();
+            ->where('device_id', $device_id)
+            ->delete();
             return response()->json(['a' => 'b'], 200);
         } catch (\Throwable $th) {
             return response()->json(['err' => 'err'], 500);
         }
     }
-
+    
     public function store(Request $request)
     {
         $user = User::create($request->all());
         return response()->json($user, 201);
     }
-
+    
     public function show(User $user)
     {
         return $user;
     }
-
+    
     // public function update(Request $request, User $user)
     // {
-    //     $validated = $request->validate([
-    //         'id' => 'required|exists:users,id',
-    //         'name' => 'string|max:255',
-    //         'email' => 'email|max:255',
-    //         'balance' => 'integer',
-    //         'phone' => 'string|min:5|max:15',
-    //         'role' => 'string',
-    //     ]);
-
-    //     $user = User::findOrFail($validated['id']);
-
-    //     $user->update($validated);
-
-    //     return response()->json(['msg' => 'user updated']);
-    // }
-
-    public function destroy(User $user)
-    {
-        $user->delete();
-        return response()->json(null, 204);
-    }
-    public function generateElevatorCode(Request $request)
-    {
-        $code = Str::random(4); // Generates a random 4-character code
-        $expiresAt = Carbon::now()->addHour(); // Set the expiration timestamp to 1 hour from now
-
-        DB::table('elevator_codes')->insert([
-            'code' => $code,
-            'user_id' => Auth::id(),
-            'device_id' => $request->device,
-            'expires_at' => $expiresAt,
-        ]);
-
-        return $code;
-    }
-    public function changeManager($company_id, $user_id, $new_email)
-    {
-        $newUser = User::where('email', $new_email)->first();
-        $oldUser = User::where('id', $user_id)->first();
-
-        if (empty($newUser)) {
-            return response()->json(
-                ['message' => 'ასეთი მომხმარებელი არ არსებობს'],
-                422
-            );
-        }
-        $newUser->update(['role' => 'manager']);
-        $oldUser->update(['role' => 'member']);
-        $newUser->cashback = $oldUser->cashback;
-        $newUser->save();
-        CompanyTransaction::where('manager_id', $oldUser->id)
-            ->where('company_id', $company_id)
-            ->withTrashed()
-            ->update(['manager_id' => $newUser->id]);
-        return Device::where('users_id', $oldUser->id)
-            ->where('company_id', $company_id)
-            ->withTrashed()
-            ->update(['users_id' => $newUser->id]);
-    }
-    public function changeUserPassword(Request $request)
-    {
-        // Define the validation rules
-        $validator = $request->validate([
-            'old_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $user = Auth::user();
-
-        // Check if the provided old password is correct
-        if (!Hash::check($validator['old_password'], $user->password)) {
-            return response()->json(
-                ['message' => 'ძველი პარაოლი არასწორია'],
-                422
-            );
-        }
-
-        // Set the new password and save the user
-        $user->password = Hash::make($request->password);
-        $user->save();
-        return response()->json(['message' => 'პაროლი შეცვლილია']);
-
-        // Optionally, logout the user
-    }
-    public function changePassword($user_id, $password)
-    {
-        $user = User::where('id', $user_id)->first();
-        $user->password = Hash::make($password);
-        $user->save();
-    }
-    public function neededCashback($user_id)
-    {
-    }
-
-    public function updateUserSubscription(Request $request)
-    {
-        $validator = $request->validate([
-            'balance' => 'required',
-            'freezed_balance' => 'required',
-            'email' => 'required',
-            'name' => 'required',
-            'phone' => 'required',
-            'id' => 'required',
-            'subscription' => 'required',
-            'role' => 'required',
-        ]);
-
-        $user = User::find($request->id);
-        $deviceUser = DeviceUser::where('user_id', $request->id)->first();
-        if (!$user || !$deviceUser) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        $user->update([
-            'balance' => $request->balance,
-            'freezed_balance' => $request->freezed_balance,
-            'email' => $request->email,
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'role' => $request->role,
-        ]);
-
-        $deviceUser->update([
-            'subscription' => $request->subscription,
-        ]);
-
-        return response()->json(['message' => $request->freezed_balance]);
-    }
-
-    public function UserTransactionsBasedOnDevice($device_id)
-    {
-        $users = DeviceUser::where('device_id', $device_id)->get();
-        $transactionsData = [];
-        foreach ($users as $user) {
-            $id = $user->id;
-            $transactions = Transaction::where('user_id', $id)
-                ->where('status', 'Succeeded')
-                ->get();
-
-            // Format transactions
-            $formattedTransactions = $transactions->map(function (
-                $transaction
-            ) {
-                return [
-                    'amount' => $transaction->amount,
-                    'transaction_id' => $transaction->transaction_id,
-                    'created_at' => $transaction->created_at,
-                ];
-            });
-
-            // Fetch TbcTransactions for the same user
-            $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
-
-            // Format TbcTransactions
-            $formattedTbcTransactions = $tbcTransactions->map(function (
-                $tbcTransaction
-            ) {
-                return [
-                    'amount' => $tbcTransaction->amount,
-                    'transaction_id' => $tbcTransaction->order_id,
-                    'created_at' => $tbcTransaction->created_at,
-                ];
-            });
-
-            // Merge formatted transactions with formatted TbcTransactions
-            $combinedTransactions = $formattedTransactions->merge(
-                $formattedTbcTransactions
-            );
-
-            // Append combined transactions to transactionsData for this user
-            $transactionsData[$id] = $combinedTransactions->all();
-        }
-
-        $result = [];
-
-        foreach ($transactionsData as $singleTransaction) {
-            foreach ($singleTransaction as $transaction) {
-                // Extract month and year from the created_at field
-                $monthYear = date('Y-m', strtotime($transaction['created_at']));
-
-                // If the month doesn't exist in $result yet, initialize it to 0
-                if (!isset($result[$monthYear])) {
-                    $result[$monthYear] = 0;
+        //     $validated = $request->validate([
+            //         'id' => 'required|exists:users,id',
+            //         'name' => 'string|max:255',
+            //         'email' => 'email|max:255',
+            //         'balance' => 'integer',
+            //         'phone' => 'string|min:5|max:15',
+            //         'role' => 'string',
+            //     ]);
+            
+            //     $user = User::findOrFail($validated['id']);
+            
+            //     $user->update($validated);
+            
+            //     return response()->json(['msg' => 'user updated']);
+            // }
+            
+            public function destroy(User $user)
+            {
+                $user->delete();
+                return response()->json(null, 204);
+            }
+            public function generateElevatorCode(Request $request)
+            {
+                $code = Str::random(4); // Generates a random 4-character code
+                $expiresAt = Carbon::now()->addHour(); // Set the expiration timestamp to 1 hour from now
+                
+                DB::table('elevator_codes')->insert([
+                    'code' => $code,
+                    'user_id' => Auth::id(),
+                    'device_id' => $request->device,
+                    'expires_at' => $expiresAt,
+                ]);
+                
+                return $code;
+            }
+            public function changeManager($company_id, $user_id, $new_email)
+            {
+                $newUser = User::where('email', $new_email)->first();
+                $oldUser = User::where('id', $user_id)->first();
+                
+                if (empty($newUser)) {
+                    return response()->json(
+                        ['message' => 'ასეთი მომხმარებელი არ არსებობს'],
+                        422
+                    );
                 }
-
-                // Add the amount to the corresponding month
-                $result[$monthYear] += +$transaction['amount'];
+                $newUser->update(['role' => 'manager']);
+                $oldUser->update(['role' => 'member']);
+                $newUser->cashback = $oldUser->cashback;
+                $newUser->save();
+                CompanyTransaction::where('manager_id', $oldUser->id)
+                ->where('company_id', $company_id)
+                ->withTrashed()
+                ->update(['manager_id' => $newUser->id]);
+                return Device::where('users_id', $oldUser->id)
+                ->where('company_id', $company_id)
+                ->withTrashed()
+                ->update(['users_id' => $newUser->id]);
+            }
+            public function changeUserPassword(Request $request)
+            {
+                // Define the validation rules
+                $validator = $request->validate([
+                    'old_password' => 'required|string',
+                    'password' => 'required|string|min:8|confirmed',
+                ]);
+                
+                $user = Auth::user();
+                
+                // Check if the provided old password is correct
+                if (!Hash::check($validator['old_password'], $user->password)) {
+                    return response()->json(
+                        ['message' => 'ძველი პარაოლი არასწორია'],
+                        422
+                    );
+                }
+                
+                // Set the new password and save the user
+                $user->password = Hash::make($request->password);
+                $user->save();
+                return response()->json(['message' => 'პაროლი შეცვლილია']);
+                
+                // Optionally, logout the user
+            }
+            public function changePassword($user_id, $password)
+            {
+                $user = User::where('id', $user_id)->first();
+                $user->password = Hash::make($password);
+                $user->save();
+            }
+            public function neededCashback($user_id)
+            {
+            }
+            
+            public function updateUserSubscription(Request $request)
+            {
+                $validator = $request->validate([
+                    'balance' => 'required',
+                    'freezed_balance' => 'required',
+                    'email' => 'required',
+                    'name' => 'required',
+                    'phone' => 'required',
+                    'id' => 'required',
+                    'subscription' => 'required',
+                    'role' => 'required',
+                ]);
+                
+                $user = User::find($request->id);
+                $deviceUser = DeviceUser::where('user_id', $request->id)->first();
+                if (!$user || !$deviceUser) {
+                    return response()->json(['error' => 'User not found'], 404);
+                }
+                
+                $user->update([
+                    'balance' => $request->balance,
+                    'freezed_balance' => $request->freezed_balance,
+                    'email' => $request->email,
+                    'name' => $request->name,
+                    'phone' => $request->phone,
+                    'role' => $request->role,
+                ]);
+                
+                $deviceUser->update([
+                    'subscription' => $request->subscription,
+                ]);
+                
+                return response()->json(['message' => $request->freezed_balance]);
+            }
+            
+            public function UserTransactionsBasedOnDevice($device_id)
+            {
+                
+                $users = DeviceUser::where('device_id', $device_id)->get();
+                $transactionsData = [];
+                $formattedTransactions =collect();
+                $formattedTbcTransactions = collect();
+                $combinedTransactions = collect();
+                foreach ($users as $user) {
+                    $id = $user->id;
+                    $transactions = Transaction::where('user_id', $id)
+                    ->where('status', 'Succeeded')
+                    ->get();
+                    
+                    // Format transactions
+                    if(!$transactions->isEmpty()){
+                        $formattedTransactionsForUser = $transactions->map(function ($transaction) {
+                            return [
+                                'amount' => +$transaction->amount,
+                                'transaction_id' => $transaction->transaction_id,
+                                'created_at' => $transaction->created_at->format('Y-m-d H:i:s'),
+                            ];
+                        });
+                        
+                        // Append formatted transactions for this user to the accumulated array
+                        $formattedTransactions = $formattedTransactions->merge($formattedTransactionsForUser);
+                        
+                        
+                        
+                    }
+                    
+                    
+                    
+                    
+                    // Fetch TbcTransactions for the same user
+                    $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
+                    if (!$tbcTransactions->isEmpty()) {
+                        // Format TbcTransactions
+                        $formattedTbcTransactionsForUser = $tbcTransactions->map(function ($tbcTransaction) {
+                            // Format and return the transaction data
+                            return [
+                                'amount' => +$tbcTransaction->amount,
+                                'transaction_id' => $tbcTransaction->order_id,
+                                'created_at' => $tbcTransaction->created_at->format('Y-m-d H:i:s'),
+                            ];
+                        });
+                        
+                        
+                        $formattedTbcTransactions =  $formattedTbcTransactions->merge($formattedTbcTransactionsForUser);
+                        if(!$formattedTransactions->isEmpty()){
+                            // Merge formatted transactions with formatted TbcTransactions
+                            $combinedTransactions =   $combinedTransactions->merge($formattedTbcTransactions );
+                            $combinedTransactions =   $combinedTransactions->merge($formattedTransactions );
+                            Log::debug($combinedTransactions);
+                            // Append combined transactions to transactionsData for this user
+                            $transactionsData[$id] = $combinedTransactions ;
+                        }
+                        
+                    }
+                }
+                
+                $result = [];
+                
+                // Accumulate transactions outside the loop
+                
+                foreach ($transactionsData as $singleTransaction) {
+                    
+                    foreach ($singleTransaction as $transaction) {
+                        try {
+                            // Extract month and year from the created_at field
+                            $monthYear = date('Y-m', strtotime($transaction['created_at']));
+                            
+                            
+                            // If the month doesn't exist in $result yet, initialize it to 0
+                            if (!isset($result[$monthYear])) {
+                                $result[$monthYear] = 0;
+                            }
+                            
+                            // Add the amount to the corresponding month
+                            $result[$monthYear] += +$transaction['amount'];
+                            
+                        } catch (\Exception $e) {
+                            // Log or handle the error as needed
+                            // For now, skipping the transaction
+                            continue;
+                        }
+                    }
+                }
+                
+                return response()->json([
+                    'data' => $result,
+                ]);
             }
         }
-
-        return response()->json([
-            'data' => $result,
-        ]);
-    }
-}
-
-// balance
-// :
-// 2603
-// cards_count
-// :
-// 2
-// cashback
-// :
-// 0
-// created_at
-// :
-// "2023-10-19T12:03:45.000000Z"
-// email
-// :
-// "nica.16@mail.ru"
-// email_verified_at
-// :
-// null
-// freezed_balance
-// :
-// 2400
-// hide_statistic
-// :
-// 0
-// id
-// :
-// 34
-// isBlocked
-// :
-// 0
-// name
-// :
-// "მარიამ"
-// phone
-// :
-// "568446044"
-// pivot
-// :
-// {device_id: 4, user_id: 34, subscription: '2024-04-28 00:00:00'}
-// role
-// :
-// "member"
-// saved_card_status
-// :
-// 0
-// saved_order_id
-// :
-// null
-// subscription
-// :
-// "2024-04-28 00:00:00"
-// updated_at
-// :
-// "2024-03-29T07:12:43.000000Z"
+        
+        // balance
+        // :
+        // 2603
+        // cards_count
+        // :
+        // 2
+        // cashback
+        // :
+        // 0
+        // created_at
+        // :
+        // "2023-10-19T12:03:45.000000Z"
+        // email
+        // :
+        // "nica.16@mail.ru"
+        // email_verified_at
+        // :
+        // null
+        // freezed_balance
+        // :
+        // 2400
+        // hide_statistic
+        // :
+        // 0
+        // id
+        // :
+        // 34
+        // isBlocked
+        // :
+        // 0
+        // name
+        // :
+        // "მარიამ"
+        // phone
+        // :
+        // "568446044"
+        // pivot
+        // :
+        // {device_id: 4, user_id: 34, subscription: '2024-04-28 00:00:00'}
+        // role
+        // :
+        // "member"
+        // saved_card_status
+        // :
+        // 0
+        // saved_order_id
+        // :
+        // null
+        // subscription
+        // :
+        // "2024-04-28 00:00:00"
+        // updated_at
+        // :
+        // "2024-03-29T07:12:43.000000Z"
+        

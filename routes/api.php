@@ -22,14 +22,16 @@ use App\Models\Device;
 
 Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
     // FILES
+    
+    
     Route::get('/files', [FileController::class, 'index']);
     Route::delete('/files/{id}', [FileController::class, 'delete']);
-
+    
     Route::get('/files/{name}/{version}', [
         FileController::class,
         'deviceUpdate',
     ]);
-
+    
     Route::post('/send/update/to/selected/devices', [
         FileController::class,
         'deviceUpdateByArray',
@@ -43,13 +45,13 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         UnregisteredDeviceController::class,
         'delete',
     ]);
-
+    
     // DEVICES
     Route::get('/updating-device/last-created', [
         UpdatingDeviceController::class,
         'getLastCreated',
     ]);
-
+    
     Route::get('/updating-device/check-failed/last-created', [
         UpdatingDeviceController::class,
         'checkFailed',
@@ -70,13 +72,13 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
 Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     Route::put('/updateUser', [UserController::class, 'update']);
     Route::apiResource('users', UserController::class);
-
+    
     Route::get('/change/user/password/admin/{user_id}/{password}', [
         UserController::class,
         'changePassword',
         // sssds
     ]);
-
+    
     Route::put('/update/user/subscription', [
         UserController::class,
         'updateUserSubscription',
@@ -144,7 +146,7 @@ Route::middleware(['auth:api'])->group(function () {
         CompanyController::class,
         'hideStatistic',
     ]);
-
+    
     // CARDS
     Route::apiResource('cards', CardController::class);
     Route::get('/user/cards/{id}', [CardController::class, 'getUserCards']);
@@ -174,14 +176,14 @@ Route::middleware(['auth:api'])->group(function () {
     ]);
     //  USERS
     Route::get('user', [AuthController::class, 'user']);
-
+    
     Route::post('/password/change', [
         UserController::class,
         'changeUserPassword',
     ]);
-
+    
     // FILES
-
+    
     Route::get('/get/pay/cashback/{company_id}/{manager_id}/', [
         CompanyController::class,
         'payedCashback',
@@ -199,7 +201,7 @@ Route::middleware(['auth:api'])->group(function () {
         UserController::class,
         'cashback',
     ]);
-
+    
     Route::get('/balance/user', [UserController::class, 'getBalance']);
     Route::get('/bank/transaction/detail/{order_id}', [
         TransactionController::class,
@@ -214,7 +216,7 @@ Route::middleware(['auth:api'])->group(function () {
         'perUserTransaction',
     ]);
     // DEVICES
-
+    
     Route::apiResource('devices', DeviceController::class);
     Route::put('/deviceEarn/edit', [DeviceController::class, 'EditDevicEarn']);
     Route::get('/get/devices/user', [DeviceController::class, 'userDevice']);
