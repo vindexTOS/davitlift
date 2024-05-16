@@ -201,16 +201,16 @@ tbody input {
       <thead>
         <tr>
           <th>{{ $t('Name') }}</th>
-          <th>{{ $t('Email') }}</th>
-          <th>{{ $t('Phone') }}</th>
-          <th v-if="!isEditOpen">{{ $t('Balance') }}</th>
-          <th v-if="!isEditOpen">{{ $t('Count of cards') }}</th>
+          <th v-if="this.role !== 'user'  && this.role !== 'member'" >{{ $t('Email') }}</th>
+          <th  v-if="this.role !== 'user'  && this.role !== 'member'">{{ $t('Phone') }}</th>
+          <th v-if="!isEditOpen && this.role !== 'user'  && this.role !== 'member'">{{ $t('Balance') }}</th>
+          <th v-if="!isEditOpen && this.role !== 'user'  && this.role !== 'member'">{{ $t('Count of cards') }}</th>
           <th v-if="isFixed">{{ $t('has paid') }}</th>
-          <th v-if="isAdmin">როლი</th>
-          <th v-if="isAdmin">ფრიზ ბალანსი</th>
-          <th v-if="isAdmin">ბალანსი</th>
-          <th v-if="isAdmin">საბსქრიბშენ თარიღი</th>
-          <th v-if="isAdmin">რედაქტირება</th>
+          <th v-if="isAdmin && this.role !== 'user'  && this.role !== 'member'">როლი</th>
+          <th v-if="isAdmin && this.role !== 'user'  && this.role !== 'member'">ფრიზ ბალანსი</th>
+          <th v-if="isAdmin && this.role !== 'user'  && this.role !== 'member'">ბალანსი</th>
+          <th v-if="isAdmin && this.role !== 'user'  && this.role !== 'member'">საბსქრიბშენ თარიღი</th>
+          <th v-if="isAdmin && this.role !== 'user'  && this.role !== 'member'">რედაქტირება</th>
           <th v-if="isAdmin || role == 'company' || role == 'manager'">
             ❌წაშლა❌
           </th>
@@ -224,26 +224,30 @@ tbody input {
         >
           <td>
             <p v-if="!boolMirror[index]">
-              <RouterLink :to="`/user/${item.id}`">
+              <RouterLink
+                v-if="this.role !== 'user'  && this.role !== 'member'"
+                :to="`/user/${item.id}`"
+              >
                 {{ item.name }}
               </RouterLink>
+              <p v-if="this.role  == 'user'  || this.role  == 'member'" >    {{ item.name }}</p>
             </p>
             <input v-model="item.name" v-if="boolMirror[index]" />
           </td>
 
-          <td>
-            <p v-if="!boolMirror[index]">{{ item.email }}</p>
+          <td v-if="this.role !== 'user'  && this.role !== 'member'">
+            <p v-if="!boolMirror[index] ">{{ item.email }}</p>
             <input v-model="item.email" v-if="boolMirror[index]" />
           </td>
 
-          <td>
+          <td v-if="this.role !== 'user'  && this.role !== 'member'">
             <p v-if="!boolMirror[index]">{{ item.phone }}</p>
             <input v-model="item.phone" v-if="boolMirror[index]" />
           </td>
 
-          <td v-if="!isEditOpen">{{ item.balance / 100 }} {{ $t('Lari') }}</td>
+          <td  v-if="!isEditOpen && this.role !== 'user'  && this.role !== 'member'">{{ item.balance / 100 }} {{ $t('Lari') }}</td>
 
-          <td v-if="!isEditOpen">{{ item.cards_count }}</td>
+          <td v-if="!isEditOpen && this.role !== 'user'  && this.role !== 'member'">{{ item.cards_count }}</td>
           <td v-if="isFixed">
             <span
               v-if="new Date(item.subscription) > new Date()"
@@ -436,7 +440,7 @@ export default {
         return this.serverItems.userData.slice() // Return original data if search term is empty
       } else {
         return this.serverItems.userData.filter((val) => {
-          return val.name.toLowerCase().includes(this.search.toLowerCase())
+          return val.name.toLowerCase().includes(this.search.toLowerCase()) || val.phone.toLowerCase().includes(this.search.toLowerCase()) || val.email.toLowerCase().includes(this.search.toLowerCase())
         })
       }
     },
