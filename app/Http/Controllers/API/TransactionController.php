@@ -187,6 +187,84 @@ class TransactionController extends Controller
         $transaction->delete();
         return response()->json(null, 204);
     }
+    // LBERTY FAST PAY
+
+    public function makeLbrtFastPayOrder(Request $request)
+    {
+        $validatedData = $request->validate([
+            'phone' => 'required',
+            'order_id' => 'required',
+            'amount' => 'required',
+        ]);
+
+        $phone = $validatedData['phone'];
+        $order_id = $validatedData['order_id'];
+        $amount = $validatedData['amount'];
+
+        //  ვეძებნთ უსერს ტელეფონის ნომრით
+        $data = $request->all();
+
+        try {
+            $user = User::where('phone', $phone)->first();
+            $userId = $user->id;
+            $string = '' . $user->id;
+
+            $deviceId = DeviceUser::where('user_id', $userId)->first();
+            if ($deviceId) {
+                $device = Device::where('id', $deviceId->device_id)->first();
+                $manager = User::where('id', $device->users_id)->first();
+                $company = Company::where('id', $device->company_id)->first();
+                if (
+                    isset($manager) &&
+                    isset($manager->phone) &&
+                    isset($company) &&
+                    isset($company->sk_code)
+                ) {
+                    $string .= '#' . $company->sk_code;
+                    $length = strlen($string);
+
+                    // If the length is greater than 30, truncate the string to 30 characters
+                    if ($length > 30) {
+                        $string = substr($string, 0, 30);
+                    }
+
+                    // Calculate the remaining length available for the manager's name
+                    $remainingLength = 30 - strlen($string);
+
+                    // Append the portion of the manager's name that fits into the remaining length
+                    $string .=
+                        '#' . substr($manager->phone, 0, $remainingLength);
+                }
+            }
+
+            // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
+            $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
+            if ($isOrderExit) {
+                return response(['FileId' => $string, 'code' => 215], 400);
+            }
+
+            $this->createTransactionFastPay(
+                $amount,
+                $userId,
+                $order_id,
+                $string,
+                \App\Enums\TransactionType::LB
+            );
+
+            $this->updateTransactionOrderFastPay($data, $order_id, $amount);
+
+            return response()->json(['FileId' => $string, 'code' => 0], 200);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error(
+                'Error checking user existence: ' . $e->getMessage()
+            );
+
+            return response()->json(
+                ['code' => 300],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 
     //   TBC FAST PAY           //////////////////////////////////////////////////////////////
     public function checkIfUserExists(Request $request)
@@ -262,13 +340,16 @@ class TransactionController extends Controller
         $amount,
         $userId,
         $order_id,
-        $FileId
+        $FileId,
+        $type
     ) {
+        Log::debug($type);
         Tbctransaction::create([
             'user_id' => $userId,
             'amount' => $amount,
             'FileId' => $FileId,
             'order_id' => $order_id,
+            'type' => $type,
         ]);
     }
     public function makeTbcFastPayOrder(Request $request)
@@ -328,7 +409,8 @@ class TransactionController extends Controller
                 $amount,
                 $userId,
                 $order_id,
-                $string
+                $string,
+                'TBC'
             );
 
             $this->updateTransactionOrderFastPay($data, $order_id, $amount);

@@ -10,13 +10,8 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('tbctransactions', function (Blueprint $table) {
-            $table->id();
-            $table->integer('user_id');
-            $table->integer('amount');
-            $table->string('order_id');
-            $table->string('FileId');
-            $table->timestamps();
+        Schema::table('tbctransactions', function (Blueprint $table) {
+            $table->string('type')->default(\App\Enums\TransactionType::TBC);
         });
     }
 
@@ -26,7 +21,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('tbctransactions', function (Blueprint $table) {
-            //
+            $table->dropColumn('type');
         });
     }
 };
