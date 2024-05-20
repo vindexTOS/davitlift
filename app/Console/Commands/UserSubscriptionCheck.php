@@ -2,14 +2,15 @@
 
 namespace App\Console\Commands;
 
-use App\Models\DeviceUser;
-use Illuminate\Console\Command;
-use App\Models\Device;
+use Carbon\Carbon;
+use App\Models\Card;
 use App\Models\User;
+use App\Models\Device;
 use App\Models\DeviceEarn;
 
 // Assume this is the name of your device earning model
-use Carbon\Carbon;
+use App\Models\DeviceUser;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class UserSubscriptionCheck extends Command
@@ -37,6 +38,9 @@ class UserSubscriptionCheck extends Command
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
             
             foreach ($users as $user) {
+                $userFixedBalnce = $user->fixed_card_amount;
+                $userCardAmount = Card::where('user_id', $user->id)->count();
+                $fixedCard = $userFixedBalnce * $userCardAmount;
                 $subscriptionDate = $user->pivot->subscription
                 ? Carbon::parse($user->pivot->subscription)
                 : null;
@@ -45,7 +49,7 @@ class UserSubscriptionCheck extends Command
                 ->startOfMonth()
                 ->addDays($device->pay_day - 1);
                 if (
-                    $user->balance >= $device->tariff_amount &&
+                    $user->balance >= $device->tariff_amount + $fixedCard &&
                     $user->freezed_balance >= $device->tariff_amount &&
                     !is_null($subscriptionDate) &&
                     $subscriptionDate->lt($nextMonthPayDay)
@@ -54,13 +58,30 @@ class UserSubscriptionCheck extends Command
                         DB::beginTransaction();
                         try {
                             // Update User balances
-                            $user->balance -= $device->tariff_amount;
+                            
+                            $user->balance -= $device->tariff_amount + $fixedCard;
+                            
                             $user->freezed_balance -= $device->tariff_amount;
+                            
+                            $deviceTariffWithCardBalance =
+                            $device->tariff_amount + $fixedCard;
                             
                             if (
                                 $user->balance - $user->freezed_balance >=
-                                $device->tariff_amount
+                                $deviceTariffWithCardBalance
                                 ) {
+                                    $currentDay = Carbon::now()->day;
+                                    
+                                    if ($currentDay < $device->pay_day) {
+                                        $nextMonthPayDay = Carbon::now()
+                                        ->startOfMonth()
+                                        ->addDays($device->pay_day - 1);
+                                    } else {
+                                        $nextMonthPayDay = Carbon::now()
+                                        ->addMonth()
+                                        ->startOfMonth()
+                                        ->addDays($device->pay_day - 1);
+                                    }
                                     DeviceUser::where('device_id', $device->id)
                                     ->where('user_id', $user->id)
                                     ->update(['subscription' => $nextMonthPayDay]);
@@ -72,7 +93,7 @@ class UserSubscriptionCheck extends Command
                                 $user->save();
                                 
                                 // Update device earnings
-                                $deviceEarning += $device->tariff_amount;
+                                $deviceEarning += $deviceTariffWithCardBalance;
                                 // Commit the transaction
                                 DB::commit();
                             } catch (\Exception $e) {

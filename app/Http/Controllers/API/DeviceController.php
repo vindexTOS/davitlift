@@ -429,15 +429,15 @@ return  $device;
     }
 
     public function EditDevicEarn (Request $request){
-         $id = $request->id;
+    $id = $request->id;
 
-         $deviceEarn = DeviceEarn::where("id", $id);
+    $deviceEarn = DeviceEarn::where("id", $id);
          
     $deviceEarn->cashback = $request->cashback;
-  
-    $deviceEarn->update([
+     $deviceEarn->update([
         'cashback' =>  $request->cashback ,
         'deviceTariff' => $request->deviceTariff,
+        "earnings" => $request->earnings
     ]);
         return response()->json(["data"=>  "item updated" ]);
      } 

@@ -95,9 +95,7 @@
                   @click="editItem(data, 'bussines')"
                   small
                 >
-                  <v-icon size="small">
-                    mdi-pencil
-                  </v-icon>
+                  <v-icon size="small">mdi-pencil</v-icon>
                   {{ $t('Edit') }}
                 </v-btn>
                 <v-btn
@@ -106,9 +104,7 @@
                   @click="deleteItem(data)"
                   small
                 >
-                  <v-icon size="small">
-                    mdi-delete
-                  </v-icon>
+                  <v-icon size="small">mdi-delete</v-icon>
                   {{ $t('Delete') }}
                 </v-btn>
 
@@ -118,15 +114,11 @@
                   @click="setConfToDevice(data)"
                   small
                 >
-                  <v-icon size="small">
-                    mdi-save
-                  </v-icon>
+                  <v-icon size="small">mdi-save</v-icon>
                   {{ $t('App Configuration') }}
                 </v-btn>
                 <v-btn style="width: 100%;" @click="setExtToDevice(data)" small>
-                  <v-icon size="small">
-                    mdi-save
-                  </v-icon>
+                  <v-icon size="small">mdi-save</v-icon>
                   {{ $t('Extend Configuration') }}
                 </v-btn>
                 <v-btn
@@ -135,9 +127,7 @@
                   @click="resetDevice(data)"
                   small
                 >
-                  <v-icon size="small">
-                    mdi-refresh
-                  </v-icon>
+                  <v-icon size="small">mdi-refresh</v-icon>
                   {{ $t('Factory Reset') }}
                 </v-btn>
               </v-card>
@@ -206,9 +196,7 @@
                     @click="setConfToDevice(data)"
                     small
                   >
-                    <v-icon size="small">
-                      mdi-save
-                    </v-icon>
+                    <v-icon size="small">mdi-save</v-icon>
                     {{ $t('App Configuration') }}
                   </v-btn>
                   <v-btn
@@ -216,9 +204,7 @@
                     @click="setExtToDevice(data)"
                     small
                   >
-                    <v-icon size="small">
-                      mdi-save
-                    </v-icon>
+                    <v-icon size="small">mdi-save</v-icon>
                     {{ $t('Extend Configuration') }}
                   </v-btn>
                   <v-btn
@@ -258,13 +244,72 @@
               <v-card-text>
                 <h3>{{ $t('Statistics') }}</h3>
                 <h4>
-                  {{ $t('Total amount earned') }}: {{ earnings / 100 }}
+                  {{ $t('Total amount earned') }}:
+                  {{ earnings / 100 }}
                   {{ $t('Lari') }}
                 </h4>
-                <h4>{{ $t('Number of users') }}: {{ data.users.length }}</h4>
+                <h4>
+                  {{ $t('Number of users') }}:
+                  {{ data.users.length }}
+                </h4>
+                <!--  -->
+                <h4 v-if="isAdmin">
+                  მომხმარებლების ბალანსების ჯამი:
+                  {{ totalUserBalance / 100 }}
+                  {{ $t('Lari') }}
+                </h4>
+                <h4 v-if="isAdmin">
+                  მომხმარებლების ტოტალური ტრანსაქციები:
+                  {{ transactionTotalByMonthTotalledInOne.toFixed(2) }}
+                </h4>
               </v-card-text>
             </v-card>
           </v-col>
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+          "
+          v-if="isAdmin"
+        >
+          <div
+            style="
+              width: 40%;
+
+              flex-direction: column;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 5px;
+              box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.75);
+            "
+          >
+            <h4>ტრანზაქციების ჯამი</h4>
+            <ul
+              style="
+                height: 200px;
+                overflow-y: scroll;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                padding: 50px;
+              "
+            >
+              <li
+                style="font-size: 20px;"
+                v-for="(value, key) in transactionTotalByMonth"
+                :key="key"
+              >
+                {{ key }}:
+                <span style="color: green;">{{ value.toFixed(2) }}</span>
+              </li>
+            </ul>
+          </div>
         </div>
         <v-expansion-panels class="mb-3">
           <v-expansion-panel v-if="$store.state.auth.user.lvl >= 2">
@@ -284,7 +329,10 @@
               </h4>
               <h4>{{ $t('გადახდის თარიღი') }}: {{ data.pay_day }}</h4>
               <h4>{{ $t('Received signal strength') }}: {{ data.signal }}%</h4>
-              <h4>{{ $t('Number of cards per user') }}: {{ data.limit }}</h4>
+              <h4>
+                {{ $t('Number of cards per user') }}:
+                {{ data.limit }}
+              </h4>
               <h4 v-if="$store.state.auth.user.lvl >= 4">
                 {{ $t('Lift storage') }}:
                 {{ data.storage_disable ? $t('Turned off') : $t('Turned on') }}
@@ -328,7 +376,8 @@
                 {{ englishToGeorgian(data.validity_msg_L2) }}
               </h4>
               <h4>
-                {{ $t('sim_card_number') }} {{ data.sim_card_number ?? '-' }}
+                {{ $t('sim_card_number') }}
+                {{ data.sim_card_number ?? '-' }}
               </h4>
               <h4>
                 {{ $t('Software version') }}:
@@ -529,7 +578,8 @@
             </v-col>
             <v-col v-if="dialogAppConf" cols="11">
               <span>
-                {{ $t('LCD brightness') }}: {{ editedItem.lcd_brightness }}
+                {{ $t('LCD brightness') }}:
+                {{ editedItem.lcd_brightness }}
               </span>
               <v-slider
                 v-model="editedItem.lcd_brightness"
@@ -540,7 +590,8 @@
             </v-col>
             <v-col v-if="dialogAppConf" cols="11">
               <span>
-                {{ $t('LED brightness') }}: {{ editedItem.led_brightness }}
+                {{ $t('LED brightness') }}:
+                {{ editedItem.led_brightness }}
               </span>
               <v-slider
                 v-model="editedItem.led_brightness"
@@ -563,7 +614,8 @@
             </v-col>
             <v-col v-if="dialogAppConf" cols="11">
               <span>
-                {{ $t('Relay pulse time') }}: {{ editedItem.relay_pulse_time }}
+                {{ $t('Relay pulse time') }}:
+                {{ editedItem.relay_pulse_time }}
               </span>
               <v-slider
                 v-model="editedItem.relay_pulse_time"
@@ -574,7 +626,8 @@
             </v-col>
             <v-col v-if="dialogAppConf" cols="11">
               <span>
-                {{ $t('Card reading time') }}: {{ editedItem.card_read_delay }}
+                {{ $t('Card reading time') }}:
+                {{ editedItem.card_read_delay }}
               </span>
               <v-slider
                 v-model="editedItem.card_read_delay"
@@ -585,7 +638,8 @@
             </v-col>
             <v-col v-if="dialogBussines" cols="11">
               <span>
-                {{ $t('Number of cards per user') }}: {{ editedItem.limit }}
+                {{ $t('Number of cards per user') }}:
+                {{ editedItem.limit }}
               </span>
               <v-slider
                 v-model="editedItem.limit"
@@ -676,7 +730,11 @@ export default {
   name: 'detailPage',
   data: () => ({
     usersInfo: { userData: [], pagination: 0 },
+    transactionTotalByMonth: [],
+    transactionTotalByMonthTotalledInOne: 0,
     isZoom: false,
+    totalUserBalance: 0,
+    isAdmin: false,
     search: '',
     dialog: false,
     loading: true,
@@ -880,6 +938,7 @@ export default {
   }),
 
   created() {
+    this.chackAdminEmail()
     this.loadItems()
   },
   computed: {
@@ -908,6 +967,11 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@eideas.io'
+    },
     zoomIn() {
       this.isZoom = !this.isZoom
     },
@@ -930,9 +994,14 @@ export default {
           this.$nextTick(() => {})
 
           this.data = data
+
+          this.totalUserBalance = data.users
+            .map((val) => val.balance)
+            .reduce((a, b) => a + b)
+
           this.usersInfo.userData = data.users
           this.usersInfo.pagination = Math.ceil(data.users.length / 10)
-          console.log(data)
+          this.getTransactionData()
         })
         .then(() => {
           if (withCong) {
@@ -1007,6 +1076,26 @@ export default {
       this.dialogAppConf = false
       this.dialogExtConf = false
       this.dialog = false
+    },
+    getTransactionData() {
+      if (this.isAdmin) {
+        axios
+          .get('/api/user/transaction/history/' + this.$route.params.id)
+          .then(({ data }) => {
+            this.transactionTotalByMonth = data.data
+            this.transactionTotalByMonthTotalledInOne = this.calculateTotal(
+              this.transactionTotalByMonth,
+            )
+          })
+          .catch((err) => console.log(err))
+      }
+    },
+    calculateTotal(transactionTotalByMonth) {
+      let total = 0
+      for (const month in transactionTotalByMonth) {
+        total += transactionTotalByMonth[month]
+      }
+      return total
     },
     deleteError(id) {
       this.$swal

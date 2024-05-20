@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Tbctransaction extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'amount', 'order_id', 'FileId'];
+    protected $fillable = ['user_id', 'amount', 'order_id', 'FileId', 'type'];
 }

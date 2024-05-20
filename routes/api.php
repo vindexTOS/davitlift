@@ -23,6 +23,7 @@ use App\Models\Device;
 
 Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
     // FILES
+    
     Route::get('/files', [FileController::class, 'index']);
     Route::delete('/files/{id}', [FileController::class, 'delete']);
     
@@ -102,6 +103,8 @@ Route::middleware(['auth:api', 'ComapnyAndManagerAccsessMiddleware'])->group(
 );
 
 //  tbc fast pay
+
+// this works for both liberty and tbc
 Route::post('/transaction/checkuser', [
     TransactionController::class,
     'checkIfUserExists',
@@ -110,6 +113,11 @@ Route::post('/transaction/checkuser', [
 Route::post('/transaction/tbcfastpay', [
     TransactionController::class,
     'makeTbcFastPayOrder',
+]);
+//  liberty bank
+Route::post('/transaction/lbfastpay', [
+    TransactionController::class,
+    'makeLbrtFastPayOrder',
 ]);
 
 // USER ONLY OR SHARED
@@ -271,12 +279,7 @@ Route::delete('/filesForFileServer/{id}', [
     'deleteForFileServer',
 ]);
 
-
-
-
-
-
-// TEST 
-
-
-Route::get("/testfirst",[TestController::class, "UserSubscriptionCheck"]);
+Route::get('user/transaction/history/{device_id}', [
+    UserController::class,
+    'UserTransactionsBasedOnDevice',
+]);
