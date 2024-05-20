@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpFoundation\Response;
+use App\Models\Card;
 
 class TransactionController extends Controller
 {
@@ -248,7 +249,7 @@ class TransactionController extends Controller
                 $userId,
                 $order_id,
                 $string,
-                \App\Enums\TransactionType::LB
+                'LB'
             );
 
             $this->updateTransactionOrderFastPay($data, $order_id, $amount);
@@ -548,6 +549,8 @@ class TransactionController extends Controller
             }
             $user->balance =
                 intval($user->balance) + $transfer_amount - $sakomisio;
+            $userCardAmount = Card::where('user_id', $user->id)->count();
+
             foreach ($user->devices as $key => $device) {
                 if ($device->op_mode === '0') {
                     Log::debug('op_mode = 0');
@@ -577,16 +580,21 @@ class TransactionController extends Controller
                     ) {
                         Log::debug('is_null');
 
+                        $cardAmount =
+                            $userCardAmount * $user->fixed_card_amount;
                         if (
                             $user->balance - $user->freezed_balance >=
-                            $device->tariff_amount
+                            $device->tariff_amount + $cardAmount
                         ) {
                             DeviceUser::where('device_id', $device->id)
                                 ->where('user_id', $user->id)
                                 ->update(['subscription' => $nextMonthPayDay]);
 
                             $user->freezed_balance = $device->tariff_amount;
-                        } elseif ($user->balance >= $device->tariff_amount) {
+                        } elseif (
+                            $user->balance >=
+                            $device->tariff_amount + $cardAmount
+                        ) {
                             DeviceUser::where('device_id', $device->id)
                                 ->where('user_id', $user->id)
                                 ->update(['subscription' => $nextMonthPayDay]);
