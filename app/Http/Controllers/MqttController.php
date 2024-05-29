@@ -733,7 +733,11 @@ class MqttController extends Controller
 
         foreach ($devices_ids as $key2 => $value2) {
             if ($value2->op_mode == '1') {
-                // $this->Logsaver($value2->id, 'დევაისი აიდები', $value2->id);
+                $this->Logsaver(
+                    $value2->id,
+                    $user->balance,
+                    $lastAmount->last_amount
+                );
                 $lastAmountCurrentDevice = LastUserAmount::where(
                     'user_id',
                     $user->id

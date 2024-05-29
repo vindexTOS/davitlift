@@ -42,7 +42,6 @@ class MqttService
                 $parts = explode('/', $topic);
                 $date = $this->parseHexPayload($payload);
                 $device_id = $parts[1];
-                $this->Logsaver($device_id, 'კონტროლი', 'შემოსვლა სერვიში ');
 
                 $device = Device::where('dev_id', $parts[1])->first();
 
@@ -505,7 +504,7 @@ class MqttService
         print_r($diff);
         //  უსერის ბალანს აადეითბს რაც სერვერზე უნდა იყოს ისევ 10 თეთრი, 10 - 10 = 0
         $user->balance = $user->balance - $diff;
-        $this->Logsaver('ლოკალური ბაზიდან შემოსვლა', '507', $diff);
+        // $this->Logsaver('ლოკალური ბაზიდან შემოსვლა', '507', $diff);
         // აადეითბს ასევე ბოლო ცნობილ თანხასაც ბაზაზე რაც იქნება 0
         $lastAmount->last_amount = $unpacked_data['two_bytes']; // two_bytes არის სავარაუდოდ დევაისის ბაზის ბალანსი
         $lastAmount->save();
