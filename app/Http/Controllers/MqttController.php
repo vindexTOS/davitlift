@@ -718,7 +718,7 @@ class MqttController extends Controller
             ->where('device_id', $device->id)
             ->first();
 
-        $this->Logsaver('721', $device->id, 'laastamount ნახვა');
+        $this->Logsaver('721', $lastAmount, 'laastamount ნახვა');
 
         if ($bigEndianValue >= $lastAmount) {
             $this->Logsaver('724', $device->id, 'სისულელე if');
