@@ -701,7 +701,7 @@ class MqttController extends Controller
 
     private function remainedAmountUpdateToApplication($device, $data)
     {
-        $this->Logsaver('პრობლემური', 'დევაისი', 'შემოსვლა');
+        $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
 
         $bigEndianValue = $data['amount'];
         $cardNumber = $data['card'];
@@ -717,9 +717,9 @@ class MqttController extends Controller
         $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
             ->first();
-        // if ($bigEndianValue >= $lastAmount->last_amount) {
-        //     return;
-        // }
+        if ($bigEndianValue >= $lastAmount) {
+            return;
+        }
         $diff = $lastAmount->last_amount - $bigEndianValue;
         if ($diff < 0) {
             return;
