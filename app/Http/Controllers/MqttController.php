@@ -752,10 +752,8 @@ class MqttController extends Controller
         // );
 
         $lastAmount->save();
-        $this->Logsaver('757', $device->id, 'ლესთ ემაუნთი დასეივდა');
 
         $user->save();
-        $this->Logsaver('760', $device->id, 'უსერი დასეივდა');
 
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
@@ -867,6 +865,7 @@ class MqttController extends Controller
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
         // Generate the date for month_year
+        $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
 
         // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
         $now = Carbon::now();
@@ -874,26 +873,49 @@ class MqttController extends Controller
         $device = Device::where('id', $deviceId)->first();
 
         if ($user->cashback == 0) {
+            $this->Logsaver('876', $user->cashback, 'უსერის ქეშბექი');
+
             $user = User::where('id', $device->users_id)->first();
         }
+
+        $this->Logsaver('881', $user->id, 'მენეჯერის id');
+
         // Try to retrieve the entry for the given device and month_year
         $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
             ->where('month', $now->month)
             ->where('year', $now->year)
             ->first();
         if (!empty($deviceEarnings)) {
+            $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
+
             if ($user && $device) {
+                $this->Logsaver(
+                    '892',
+                    $user->id,
+                    'უსერი და დევაისი არსებოსბ ?'
+                );
+
                 $deviceEarnings->earnings += $earningsValue;
                 $deviceEarnings->cashback = $user->cashback;
                 $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                 $deviceEarnings->save();
             } else {
+                $this->Logsaver(
+                    '899',
+                    $user->id,
+                    'უსერი და დევაისი არსებოსბ ? ELSE ELSE'
+                );
+
                 $deviceEarnings->earnings += $earningsValue;
 
                 $deviceEarnings->save();
             }
         } else {
+            $this->Logsaver('906', $user->id, 'BIG ELSE');
+
             if ($user && $device) {
+                $this->Logsaver('909', $user->id, 'user && device 2 ');
+
                 DeviceEarn::create([
                     'company_id' => $companyId,
                     'device_id' => $deviceId,
@@ -904,6 +926,8 @@ class MqttController extends Controller
                     'deviceTariff' => $device->deviceTariffAmount,
                 ]);
             } else {
+                $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
+
                 DeviceEarn::create([
                     'company_id' => $companyId,
                     'device_id' => $deviceId,
