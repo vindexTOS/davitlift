@@ -1,21 +1,23 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Card;
-use App\Models\Device;
-use App\Models\DeviceEarn;
-use App\Models\DeviceError;
-use App\Models\DeviceUser;
-use App\Models\LastUserAmount;
-use App\Models\UnregisteredDevice;
-use App\Models\UpdatingDevice;
-use App\Models\User;
 use Carbon\Carbon;
+use App\Models\Card;
+use App\Models\User;
+use App\Models\Device;
+use App\Models\ErrorLogs;
+use App\Models\DeviceEarn;
+use App\Models\DeviceUser;
+use App\Models\DeviceError;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Models\LastUserAmount;
+use App\Models\UpdatingDevice;
 use PhpMqtt\Client\MqttClient;
+use App\Models\UnregisteredDevice;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class MqttController extends Controller
 {
@@ -122,6 +124,14 @@ class MqttController extends Controller
         return response()->json(['message' => 'General event processed'], 200);
     }
 
+    public function Logsaver($errorMessage, $line, $value)
+    {
+        ErrorLogs::create([
+            'error_message' => $errorMessage,
+            'line' => $line,
+            'value' => $value,
+        ]);
+    }
     // Handle heartbeat events
     public function handleHeartbeatEvent(
         Request $request
@@ -152,6 +162,8 @@ class MqttController extends Controller
         $device_id,
         $commandValue
     ) {
+        $this->Logsaver($device_id, 'კონტროლი', $commandValue);
+
         switch ($commandValue) {
             case 1:
                 $this->accessRequestForCellularRemoteNumber(
