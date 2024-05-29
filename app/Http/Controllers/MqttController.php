@@ -889,15 +889,15 @@ class MqttController extends Controller
             $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
 
             if ($user && $device) {
+                $this->Logsaver(
+                    $earningsValue,
+                    $user->cashback,
+                    $device->deviceTariffAmount
+                );
                 $deviceEarnings->earnings += $earningsValue;
                 $deviceEarnings->cashback = $user->cashback;
                 $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                 $deviceEarnings->save();
-                $this->Logsaver(
-                    '898',
-                    $user->id,
-                    'უსერი და დევაისი არსებოსბ ?'
-                );
             } else {
                 $this->Logsaver(
                     '899',
