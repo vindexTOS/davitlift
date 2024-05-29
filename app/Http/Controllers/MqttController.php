@@ -718,10 +718,6 @@ class MqttController extends Controller
             ->where('device_id', $device->id)
             ->first();
 
-        $this->Logsaver('721', $lastAmount, 'laastamount ნახვა');
-        if ($bigEndianValue >= $lastAmount) {
-            $this->Logsaver('724', $device->id, 'სისულელე if შემოსვლა');
-        }
         if ($bigEndianValue >= $lastAmount) {
             $this->Logsaver('724', $device->id, 'სისულელე if');
 
@@ -732,9 +728,6 @@ class MqttController extends Controller
             $this->Logsaver('730', $device->id, 'diff');
 
             return;
-        }
-        if ($diff < 0) {
-            $this->Logsaver('737', $device->id, 'დდიფფფიიე');
         }
 
         // $this->Logsaver(
@@ -757,11 +750,16 @@ class MqttController extends Controller
         //     $lastAmount->last_amount,
         //     'მეოთხე ლაინი'
         // );
-        $this->Logsaver('757', $device->id, 'დასეივებამდე');
 
         $lastAmount->save();
+        $this->Logsaver('757', $device->id, 'ლესთ ემაუნთი დასეივდა');
+
         $user->save();
+        $this->Logsaver('760', $device->id, 'უსერი დასეივდა');
+
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
+        $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
+
         $devices_ids = Device::where('users_id', $device->users_id)->get();
         // $this->Logsaver($device_id, '178', $commandValue);
         $this->Logsaver('760', $device->id, 'დევაისი არსებობს');
