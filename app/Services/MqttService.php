@@ -18,6 +18,7 @@ use App\Models\Transaction;
 use App\Models\DeviceEarn;
 use Carbon\Carbon;
 use App\Models\ElevatorUse;
+use App\Models\ErrorLogs;
 use Illuminate\Support\Facades\Log;
 use App\Models\UnregisteredDevice;
 use function PHPUnit\Framework\exactly;
@@ -327,7 +328,9 @@ class MqttService
             ]);
             $this->publishMessage($device->dev_id, $payload);
         } else {
+            // უსერის ნახავა
             $user = User::where('id', $card->user_id)->first();
+            /////////////////////////////////////
             if ($device->op_mode == 0) {
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
@@ -396,12 +399,14 @@ class MqttService
                         $this->noMoney($device->dev_id);
                     }
                 }
-            } else {
+            }
+            ///////////////////////////////////////////////////////////////////////
+            else {
                 if ((int) $user->balance > $device->tariff_amount) {
                     $lastAmount = LastUserAmount::where('user_id', $user->id)
                         ->where('device_id', $device->id)
                         ->first();
-
+                    //   ბალანსი არის 30
                     if (empty($lastAmount->user_id)) {
                         LastUserAmount::insert([
                             'user_id' => $user->id,
@@ -411,6 +416,7 @@ class MqttService
                     } else {
                         $lastAmount->last_amount = $user->balance;
                         $lastAmount->save();
+                        // შეინახა ლესთ ემაუნთი 30 თეთრი
                     }
                     $payload = $this->generateHexPayload(3, [
                         [
@@ -470,9 +476,17 @@ class MqttService
             }
         }
     }
-
+    public function Logsaver($errorMessage, $line, $value)
+    {
+        ErrorLogs::create([
+            'error_message' => $errorMessage,
+            'line' => $line,
+            'value' => $value,
+        ]);
+    }
     private function remainedAmountUpdateToApplication($device, $data)
     {
+        // აჭრის უსერს
         $unpacked_data = unpack('ntwo_bytes/A*card_number', $data['payload']);
         print_r($unpacked_data);
         $card = Card::where('card_number', $unpacked_data['card_number'])
@@ -483,13 +497,21 @@ class MqttService
             ->where('device_id', $device->id)
             ->first();
         print_r($lastAmount);
-        $diff = $lastAmount->last_amount - $unpacked_data['two_bytes'];
+        // აკლებს თანხას ლასთ ამაუNთს
+        //  ბოლო არსებული თანხა შესაძლოა იყოს 10 თეთრი , two_bytes  შეიძლება იყოს 0 თეთრი
+        // ?? კითხვა ??  დევაის ლოკალური ბაზის ბალანსი გადაყავს მინუსში ?
+        $diff = $lastAmount->last_amount - $unpacked_data['two_bytes']; // 10 - 0 = 10
         print_r($diff);
+        //  უსერის ბალანს აადეითბს რაც სერვერზე უნდა იყოს ისევ 10 თეთრი, 10 - 10 = 0
         $user->balance = $user->balance - $diff;
-        $lastAmount->last_amount = $unpacked_data['two_bytes'];
+        $this->Logsaver('ლოკალური ბაზიდან შემოსვლა', '507', $diff);
+        // აადეითბს ასევე ბოლო ცნობილ თანხასაც ბაზაზე რაც იქნება 0
+        $lastAmount->last_amount = $unpacked_data['two_bytes']; // two_bytes არის სავარაუდოდ დევაისის ბაზის ბალანსი
         $lastAmount->save();
+        // უსერის ბალანსიც და ლესთ ემაუნთიც ორივე არის 0
+
         $user->save();
-        $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
+        $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id); // დევაის ერნინგზე კი წავა 10 თეთრი
     }
 
     private function deviceCurrentSetupPacket($device, $data)
@@ -558,6 +580,9 @@ class MqttService
             'Lift/' . $device_id . '/commands/general',
             $payload,
             MqttClient::QOS_AT_LEAST_ONCE
+            //     ეხლა უშვებს მინიმუმ ერთხელ
+            //  მეორეს შემთხვევაში გაუშვებს მაქსიმუმ ერთხელ
+            // MqttClient::QOS_AT_MOST_ONCE
         );
     }
 
