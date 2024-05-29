@@ -732,6 +732,7 @@ class MqttController extends Controller
         // $this->Logsaver($device_id, '178', $commandValue);
 
         foreach ($devices_ids as $key2 => $value2) {
+            $this->Logsaver($value2->id, 'pop 2', 'op');
             if ($value2->op_mode == '1') {
                 $this->Logsaver(
                     $value2->id,
