@@ -715,9 +715,9 @@ class MqttController extends Controller
         $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
             ->first();
-        if ($bigEndianValue >= $lastAmount->last_amount) {
-            return;
-        }
+        // if ($bigEndianValue >= $lastAmount->last_amount) {
+        //     return;
+        // }
         $diff = $lastAmount->last_amount - $bigEndianValue;
         if ($diff < 0) {
             return;
