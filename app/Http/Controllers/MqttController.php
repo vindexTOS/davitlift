@@ -717,11 +717,18 @@ class MqttController extends Controller
         $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
             ->first();
+
+        $this->Logsaver('721', $device->id, 'laastamount ნახვა');
+
         if ($bigEndianValue >= $lastAmount) {
+            $this->Logsaver('724', $device->id, 'სისულელე if');
+
             return;
         }
         $diff = $lastAmount->last_amount - $bigEndianValue;
         if ($diff < 0) {
+            $this->Logsaver('730', $device->id, 'diff');
+
             return;
         }
 
@@ -750,8 +757,11 @@ class MqttController extends Controller
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         $devices_ids = Device::where('users_id', $device->users_id)->get();
         // $this->Logsaver($device_id, '178', $commandValue);
+        $this->Logsaver('760', $device->id, 'დევაისი არსებობს');
 
         foreach ($devices_ids as $key2 => $value2) {
+            $this->Logsaver('763', $value2->id, 'ლუპში შესვლა');
+
             if ($value2->op_mode == '1') {
                 $lastAmountCurrentDevice = LastUserAmount::where(
                     'user_id',
