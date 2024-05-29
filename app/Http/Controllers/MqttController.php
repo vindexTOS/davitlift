@@ -892,7 +892,7 @@ class MqttController extends Controller
                 $this->Logsaver(
                     $earningsValue,
                     $user->cashback,
-                    $device->deviceTariffAmount
+                    'device->deviceTariffAmount'
                 );
                 $deviceEarnings->earnings += $earningsValue;
                 $deviceEarnings->cashback = $user->cashback;
