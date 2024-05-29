@@ -733,6 +733,9 @@ class MqttController extends Controller
 
             return;
         }
+        if ($diff < 0) {
+            $this->Logsaver('737', $device->id, 'დდიფფფიიე');
+        }
 
         // $this->Logsaver(
         //     'პირველი ლაინი bigEnd and lastAmount',
@@ -754,6 +757,8 @@ class MqttController extends Controller
         //     $lastAmount->last_amount,
         //     'მეოთხე ლაინი'
         // );
+        $this->Logsaver('757', $device->id, 'დასეივებამდე');
+
         $lastAmount->save();
         $user->save();
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
