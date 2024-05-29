@@ -722,9 +722,22 @@ class MqttController extends Controller
         if ($diff < 0) {
             return;
         }
+        $this->Logsaver(
+            '$value2->id',
+            $bigEndianValue,
+            $lastAmount->last_amount,
+            'პირველი ლაინი'
+        );
         $user->balance = $user->balance - $diff;
+        $this->Logsaver('$value2->id', $user->balance, $diff, 'მეორე ლაინი');
         $sendPrice = $user->balance - $user->freezed_balance;
+        $this->Logsaver('$value2->id', $sendPrice, 'მესამე ლაინი');
         $lastAmount->last_amount = $sendPrice;
+        $this->Logsaver(
+            '$value2->id',
+            $lastAmount->last_amount,
+            'მეოთხე ლაინი'
+        );
         $lastAmount->save();
         $user->save();
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
@@ -732,13 +745,7 @@ class MqttController extends Controller
         // $this->Logsaver($device_id, '178', $commandValue);
 
         foreach ($devices_ids as $key2 => $value2) {
-            $this->Logsaver($value2->id, 'pop 2', 'op');
             if ($value2->op_mode == '1') {
-                $this->Logsaver(
-                    $value2->id,
-                    $user->balance,
-                    $lastAmount->last_amount
-                );
                 $lastAmountCurrentDevice = LastUserAmount::where(
                     'user_id',
                     $user->id
