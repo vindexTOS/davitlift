@@ -727,13 +727,8 @@ class MqttController extends Controller
             $bigEndianValue,
             $lastAmount->last_amount
         );
-        $isUserMinus = $user->balance - $diff;
+        $user->balance = $user->balance - $diff;
 
-        if ($isUserMinus < 0) {
-            return;
-        }
-
-        $user->balance = $isUserMinus;
         $this->Logsaver(
             'მეორე ლაინი userBalance and diff',
             $user->balance,
