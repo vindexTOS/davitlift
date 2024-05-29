@@ -24,7 +24,7 @@ class MqttController extends Controller
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
-        $this->Logsaver('', 'htpp shemosvla', '');
+        // $this->Logsaver('', 'htpp shemosvla', '');
 
         // Process the general event data
         $msg = $request->all();
@@ -164,8 +164,6 @@ class MqttController extends Controller
         $device_id,
         $commandValue
     ) {
-        $this->Logsaver($device_id, 'კონტროლი', $commandValue);
-
         switch ($commandValue) {
             case 1:
                 $this->accessRequestForCellularRemoteNumber(
@@ -735,7 +733,7 @@ class MqttController extends Controller
 
         foreach ($devices_ids as $key2 => $value2) {
             if ($value2->op_mode == '1') {
-                $this->Logsaver($value2->id, 'დევაისი აიდები', $value2->id);
+                // $this->Logsaver($value2->id, 'დევაისი აიდები', $value2->id);
                 $lastAmountCurrentDevice = LastUserAmount::where(
                     'user_id',
                     $user->id

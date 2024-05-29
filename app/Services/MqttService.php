@@ -42,6 +42,7 @@ class MqttService
                 $parts = explode('/', $topic);
                 $date = $this->parseHexPayload($payload);
                 $device_id = $parts[1];
+                $this->Logsaver($device_id, 'კონტროლი', 'შემოსვლა სერვიში ');
 
                 $device = Device::where('dev_id', $parts[1])->first();
 
@@ -174,8 +175,6 @@ class MqttService
         $device_id,
         $commandValue
     ) {
-        $this->Logsaver($device_id, '178', $commandValue);
-
         switch ($commandValue) {
             case 1:
                 $this->accessRequestForCellularRemoteNumber(
