@@ -24,6 +24,8 @@ class MqttController extends Controller
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
+        $this->Logsaver('', 'htpp shemosvla', '');
+
         // Process the general event data
         $msg = $request->all();
         $date = $msg['payload'];
@@ -729,6 +731,8 @@ class MqttController extends Controller
         $user->save();
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         $devices_ids = Device::where('users_id', $device->users_id)->get();
+        // $this->Logsaver($device_id, '178', $commandValue);
+
         foreach ($devices_ids as $key2 => $value2) {
             if ($value2->op_mode == '1') {
                 $lastAmountCurrentDevice = LastUserAmount::where(
