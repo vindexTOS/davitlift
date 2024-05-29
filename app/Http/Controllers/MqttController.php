@@ -720,29 +720,31 @@ class MqttController extends Controller
         // }
         $diff = $lastAmount->last_amount - $bigEndianValue;
         if ($diff < 0) {
+            $this->Logsaver('დიფფ', $diff, 'დიფფ');
+
             return;
         }
-        $this->Logsaver(
-            'პირველი ლაინი bigEnd and lastAmount',
-            $bigEndianValue,
-            $lastAmount->last_amount
-        );
+
+        // $this->Logsaver(
+        //     'პირველი ლაინი bigEnd and lastAmount',
+        //     $bigEndianValue,
+        //     $lastAmount->last_amount
+        // );
         $user->balance = $user->balance - $diff;
 
-        $this->Logsaver(
-            'მეორე ლაინი userBalance and diff',
-            $user->balance,
-            $diff
-        );
+        // $this->Logsaver(
+        //     'მეორე ლაინი userBalance and diff',
+        //     $user->balance,
+        //     $diff
+        // );
 
         $sendPrice = $user->balance - $user->freezed_balance;
-        $this->Logsaver('მესამე ლაინი', $sendPrice, 'მეოთხე ლაინი');
         $lastAmount->last_amount = $sendPrice;
-        $this->Logsaver(
-            'მეოთხე ლაინი',
-            $lastAmount->last_amount,
-            'მეოთხე ლაინი'
-        );
+        // $this->Logsaver(
+        //     'მეოთხე ლაინი',
+        //     $lastAmount->last_amount,
+        //     'მეოთხე ლაინი'
+        // );
         $lastAmount->save();
         $user->save();
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
