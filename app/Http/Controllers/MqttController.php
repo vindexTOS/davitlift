@@ -129,7 +129,7 @@ class MqttController extends Controller
     public function Logsaver($errorMessage, $line, $value)
     {
         ErrorLogs::create([
-            'error_message' => $errorMessage,
+            'errorMessage' => $errorMessage,
             'line' => $line,
             'value' => $value,
         ]);
@@ -723,18 +723,21 @@ class MqttController extends Controller
             return;
         }
         $this->Logsaver(
-            '$value2->id',
+            'პირველი ლაინი bigEnd and lastAmount',
             $bigEndianValue,
-            $lastAmount->last_amount,
-            'პირველი ლაინი'
+            $lastAmount->last_amount
         );
         $user->balance = $user->balance - $diff;
-        $this->Logsaver('$value2->id', $user->balance, $diff, 'მეორე ლაინი');
+        $this->Logsaver(
+            'მეორე ლაინი userBalance and diff',
+            $user->balance,
+            $diff
+        );
         $sendPrice = $user->balance - $user->freezed_balance;
-        $this->Logsaver('$value2->id', $sendPrice, 'მესამე ლაინი');
+        $this->Logsaver('მესამე ლაინი', $sendPrice, 'მეოთხე ლაინი');
         $lastAmount->last_amount = $sendPrice;
         $this->Logsaver(
-            '$value2->id',
+            'მეოთხე ლაინი',
             $lastAmount->last_amount,
             'მეოთხე ლაინი'
         );
