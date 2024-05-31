@@ -915,6 +915,12 @@ class MqttController extends Controller
                     $deviceEarnings->earnings += $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
+
+                    $this->Logsaver(
+                        '920',
+                        $deviceEarnings->earnings,
+                        ' devise tarrif null '
+                    );
                 }
             } else {
                 $deviceEarnings->earnings += $earningsValue;
