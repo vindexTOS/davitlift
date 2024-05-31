@@ -876,7 +876,7 @@ class MqttController extends Controller
 
             $user = User::where('id', $device->users_id)->first();
         }
-        $this->Logsaver('879', $user->id, ' ერნიგნები');
+        $this->Logsaver('879', $earningsValue, ' ერნიგნები');
 
         // $this->Logsaver('881', $user->id, 'მენეჯერის id');
 
@@ -887,7 +887,11 @@ class MqttController extends Controller
             ->first();
         if (!empty($deviceEarnings)) {
             // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
-            $this->Logsaver('890', $user->id, ' ცარიელი არ არის ერნინგები ');
+            $this->Logsaver(
+                '890',
+                $earningsValue,
+                ' ცარიელი არ არის ერნინგები '
+            );
 
             if ($user && $device) {
                 // $this->Logsaver(
@@ -901,6 +905,12 @@ class MqttController extends Controller
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
+
+                    $this->Logsaver(
+                        '890',
+                        $deviceEarnings->earnings,
+                        ' ცარიელი არ არის ერნინგები '
+                    );
                 } else {
                     $deviceEarnings->earnings += $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
