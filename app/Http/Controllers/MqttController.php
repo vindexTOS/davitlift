@@ -754,6 +754,7 @@ class MqttController extends Controller
         $lastAmount->save();
 
         $user->save();
+        $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
 
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
