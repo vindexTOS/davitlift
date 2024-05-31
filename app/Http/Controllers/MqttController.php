@@ -887,11 +887,7 @@ class MqttController extends Controller
             ->first();
         if (!empty($deviceEarnings)) {
             // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
-            $this->Logsaver(
-                '890',
-                $earningsValue,
-                ' ცარიელი არ არის ერნინგები '
-            );
+            $this->Logsaver('890', $earningsValue, $user->id);
 
             if ($user && $device) {
                 // $this->Logsaver(
@@ -909,7 +905,7 @@ class MqttController extends Controller
                     $this->Logsaver(
                         '890',
                         $deviceEarnings->earnings,
-                        ' ცარიელი არ არის ერნინგები '
+                        $user->id
                     );
                 } else {
                     $deviceEarnings->earnings += $earningsValue;
@@ -919,7 +915,7 @@ class MqttController extends Controller
                     $this->Logsaver(
                         '920',
                         $deviceEarnings->earnings,
-                        ' devise tarrif null '
+                        $user->id
                     );
                 }
             } else {
