@@ -736,6 +736,7 @@ class MqttController extends Controller
         //     $lastAmount->last_amount
         // );
         $user->balance = $user->balance - $diff;
+        $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
 
         // $this->Logsaver(
         //     'მეორე ლაინი userBalance and diff',
@@ -754,7 +755,6 @@ class MqttController extends Controller
         $lastAmount->save();
 
         $user->save();
-        $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
 
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
