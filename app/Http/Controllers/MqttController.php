@@ -701,7 +701,7 @@ class MqttController extends Controller
 
     private function remainedAmountUpdateToApplication($device, $data)
     {
-        $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
+        // $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
 
         $bigEndianValue = $data['amount'];
         $cardNumber = $data['card'];
@@ -763,7 +763,7 @@ class MqttController extends Controller
         // $this->Logsaver('760', $device->id, 'დევაისი არსებობს');
 
         foreach ($devices_ids as $key2 => $value2) {
-            $this->Logsaver('763', $value2->id, 'ლუპში შესვლა');
+            // $this->Logsaver('763', $value2->id, 'ლუპში შესვლა');
 
             if ($value2->op_mode == '1') {
                 $lastAmountCurrentDevice = LastUserAmount::where(
@@ -906,21 +906,15 @@ class MqttController extends Controller
                     $deviceEarnings->save();
                 }
             } else {
-                $this->Logsaver(
-                    '899',
-                    $user->id,
-                    'უსერი და დევაისი არსებოსბ ? ELSE ELSE'
-                );
-
                 $deviceEarnings->earnings += $earningsValue;
 
                 $deviceEarnings->save();
             }
         } else {
-            $this->Logsaver('906', $user->id, 'BIG ELSE');
+            // $this->Logsaver('906', $user->id, 'BIG ELSE');
 
             if ($user && $device) {
-                $this->Logsaver('909', $user->id, 'user && device 2 ');
+                // $this->Logsaver('909', $user->id, 'user && device 2 ');
 
                 DeviceEarn::create([
                     'company_id' => $companyId,
@@ -932,7 +926,7 @@ class MqttController extends Controller
                     'deviceTariff' => $device->deviceTariffAmount,
                 ]);
             } else {
-                $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
+                // $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
 
                 DeviceEarn::create([
                     'company_id' => $companyId,
