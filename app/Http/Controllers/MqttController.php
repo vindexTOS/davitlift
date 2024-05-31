@@ -866,7 +866,6 @@ class MqttController extends Controller
     {
         // Generate the date for month_year
         // $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
-
         // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
         $now = Carbon::now();
         $user = User::where('id', $companyId)->first();
@@ -877,6 +876,7 @@ class MqttController extends Controller
 
             $user = User::where('id', $device->users_id)->first();
         }
+        $this->Logsaver('879', $user->id, ' ერნიგნები');
 
         // $this->Logsaver('881', $user->id, 'მენეჯერის id');
 
@@ -887,6 +887,7 @@ class MqttController extends Controller
             ->first();
         if (!empty($deviceEarnings)) {
             // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
+            $this->Logsaver('890', $user->id, ' ცარიელი არ არის ერნინგები ');
 
             if ($user && $device) {
                 // $this->Logsaver(
@@ -907,14 +908,25 @@ class MqttController extends Controller
                 }
             } else {
                 $deviceEarnings->earnings += $earningsValue;
+                $this->Logsaver(
+                    '911',
+                    $user->id,
+                    '  უსერი და დევაისი არ არსებობს '
+                );
 
                 $deviceEarnings->save();
             }
         } else {
             // $this->Logsaver('906', $user->id, 'BIG ELSE');
+            $this->Logsaver('917', $user->id, ' ერნიგები ცარიელია');
 
             if ($user && $device) {
                 // $this->Logsaver('909', $user->id, 'user && device 2 ');
+                $this->Logsaver(
+                    '921',
+                    $user->id,
+                    ' უსერი და დევაისი  არსებობს ცარიელიში'
+                );
 
                 DeviceEarn::create([
                     'company_id' => $companyId,
@@ -927,6 +939,11 @@ class MqttController extends Controller
                 ]);
             } else {
                 // $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
+                $this->Logsaver(
+                    '934',
+                    $user->id,
+                    'უსერი და დევაისი არ არსებობს ცარიელშ'
+                );
 
                 DeviceEarn::create([
                     'company_id' => $companyId,
