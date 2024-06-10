@@ -718,16 +718,17 @@ class MqttController extends Controller
             ->where('device_id', $device->id)
             ->first();
 
-        if ($bigEndianValue >= $lastAmount) {
-            // $this->Logsaver('724', $device->id, 'სისულელე if');
+        $deviceTarff = $device->tariff_amount;
+        $userBalance = $user->balance;
 
-            return;
-        }
         $diff = $lastAmount->last_amount - $bigEndianValue;
-        if ($diff < 0) {
+        if ($diff <= 0 || $diff == 0) {
             // $this->Logsaver('730', $device->id, 'diff');
-
-            return;
+            if ($userBalance >= $deviceTarff) {
+                $diff = $deviceTarff;
+            } else {
+                return;
+            }
         }
 
         // $this->Logsaver(
@@ -898,7 +899,8 @@ class MqttController extends Controller
                 // );
 
                 if ($device->deviceTariffAmount != null) {
-                    $deviceEarnings->earnings += $earningsValue;
+                    $deviceEarnings->earnings =
+                        $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
@@ -909,7 +911,8 @@ class MqttController extends Controller
                         $user->id
                     );
                 } else {
-                    $deviceEarnings->earnings += $earningsValue;
+                    $deviceEarnings->earnings =
+                        $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
 
