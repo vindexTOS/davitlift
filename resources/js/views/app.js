@@ -20,7 +20,7 @@ const generalTopic = 'Lift/+/events/general';
 const heartbeatTopic = 'Lift/+/events/heartbeat';
 
 const client = mqtt.connect('mqtt://138.197.229.66', {
-    port: 1884
+    port: 1883
 });
 app.get('/mqtt/general/force',(req,res) => {
     const data = req.query;
