@@ -489,7 +489,7 @@ class TransactionController extends Controller
                                             'extra2' => $string,
                                             'merchantPaymentId' => $string,
                                             'extra' => substr($string, 0, 25),
-                                            'returnurl' => 'https://lift.eideas.io/',
+                                            'returnurl' => 'https://138.197.229.66/',
                                             'installmentProducts' => [
                                                 [
                                                     'Price' => $amount,
@@ -497,7 +497,7 @@ class TransactionController extends Controller
                                                 ],
                                             ],
                                             'callbackUrl' =>
-                                            'https://lift.eideas.io/api/bank/transaction/callback',
+                                            'https://138.197.229.66/api/bank/transaction/callback',
                                         ]);
                                         return json_decode($response->body(), true);
                                     }
