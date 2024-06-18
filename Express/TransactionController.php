@@ -824,7 +824,7 @@ class TransactionController extends Controller
                                                                                         ];
                                                                                         $queryParams = http_build_query($data);
                                                                                         $response = Http::get(
-                                                                                            'http://localhost:3000/mqtt/general?' . $queryParams
+                                                                                            'http://3.85.126.112:3000/mqtt/general?' . $queryParams
                                                                                         );
                                                                                         return $response->json(['data' => ['dasd']]);
                                                                                     }

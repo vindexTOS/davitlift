@@ -248,7 +248,7 @@ class FileController extends Controller
             'payload' => $payload
         ];
         $queryParams = http_build_query($data);
-        $response = Http::get('http://3.85.126.112:3000/mqtt/general?' . $queryParams);
+        $response = Http::get('http://3.85.126.112/mqtt/general?' . $queryParams);
         return $response->json(['data' => ['dasd']]);
 
     }
