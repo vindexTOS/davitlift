@@ -489,7 +489,7 @@ class TransactionController extends Controller
                                             'extra2' => $string,
                                             'merchantPaymentId' => $string,
                                             'extra' => substr($string, 0, 25),
-                                            'returnurl' => 'http://3.85.126.112/',
+                                            'returnurl' => 'http://3.71.18.216/',
                                             'installmentProducts' => [
                                                 [
                                                     'Price' => $amount,
@@ -497,7 +497,7 @@ class TransactionController extends Controller
                                                 ],
                                             ],
                                             'callbackUrl' =>
-                                            'http://3.85.126.112/api/bank/transaction/callback',
+                                            'http://3.71.18.216/api/bank/transaction/callback',
                                         ]);
                                         return json_decode($response->body(), true);
                                     }
@@ -824,7 +824,7 @@ class TransactionController extends Controller
                                                                                         ];
                                                                                         $queryParams = http_build_query($data);
                                                                                         $response = Http::get(
-                                                                                            'http://3.85.126.112/mqtt/general?' . $queryParams
+                                                                                            'http://3.71.18.216/mqtt/general?' . $queryParams
                                                                                         );
                                                                                         return $response->json(['data' => ['dasd']]);
                                                                                     }
