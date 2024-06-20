@@ -1041,7 +1041,7 @@ class MqttController extends Controller
         ];
         $queryParams = http_build_query($data);
         $response = Http::get(
-            'http://3.71.18.216/mqtt/general?' . $queryParams
+            'http://localhost:3000/mqtt/general?' . $queryParams
         );
         return $response->json(['data' => ['dasd']]);
     }
