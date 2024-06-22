@@ -22,11 +22,11 @@ class MqttConnectionService {
     // Constructor is private
     private function __construct() {
 
-        $this->server = config('mqtt.server');
-        $this->port = config('mqtt.port');
+        $this->server = config('3.71.18.216');
+        $this->port = config('1883');
         $this->clientId = rand(5, 15);
-        $this->username = config('mqtt.username');
-        $this->password = config('mqtt.password');
+        $this->username = config('username');
+        $this->password = config('12345678');
         $this->mqtt_version = MqttClient::MQTT_3_1_1;
     }
 
