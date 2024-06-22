@@ -332,13 +332,27 @@ return  $device;
 
     }
     public function setAppConf(Request $request, Device $device) {
-        $this->update($request,$device);
+        $this->update($request, $device);
+    
         $mqttService = app(MqttConnectionService::class);
         $mqtt = $mqttService->connect();
-
-        $this->publishMessage( $device->dev_id, $this->sendDeviceParameters($device));
-        $mqtt->loop(true, true);
-
+    
+        try {
+            $this->publishMessage($device->dev_id, $this->sendDeviceParameters($device));
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error("Failed to publish message: " . $e->getMessage());
+            return response()->json(['error' => 'Failed to publish message'], 500);
+        }
+    
+        try {
+            $mqtt->loop(true, 1000); // Adjust the timeout as needed
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error("MQTT loop error: " . $e->getMessage());
+            return response()->json(['error' => 'MQTT loop error'], 500);
+        }
+    
         return $device;
     }
     public function setExtConf(Request $request, Device $device) {
