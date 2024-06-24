@@ -51,7 +51,7 @@ client.on('message', (topic, message) => {
             msgJson.card = payload.toString('utf8', 2, 10)
 
         }
-        axios.get('https://lift.eideas.io/api/mqtt/general', {
+        axios.get('https://3.71.18.216/api/mqtt/general', {
             params:{
                 payload: msgJson,
                 topic: topic
@@ -61,7 +61,7 @@ client.on('message', (topic, message) => {
             })
             .catch(error => console.error('Error sending general event', error));
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
-        axios.get('https://lift.eideas.io/api/mqtt/heartbeat', {
+        axios.get('https://3.71.18.216/api/mqtt/heartbeat', {
             params:{
                 payload: msgJson,
                 topic: topic
