@@ -15,7 +15,7 @@ return [
     | any other location as required by the application or its packages.
     |
     */
-    'super_admin_email' => env('SUPER_ADMIN_EMAIL', 'info@eideas.io'),
+    'super_admin_email' => env('SUPER_ADMIN_EMAIL', 'info@3.71.18.216'),
 
     'name' => env('APP_NAME', 'Laravel'),
 

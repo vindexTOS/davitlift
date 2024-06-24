@@ -981,7 +981,7 @@ export default {
     chackAdminEmail() {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
-      this.isAdmin = email === 'info@eideas.io'
+      this.isAdmin = email === 'info@3.71.18.216'
     },
     zoomIn() {
       this.isZoom = !this.isZoom

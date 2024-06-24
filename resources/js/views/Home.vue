@@ -678,7 +678,7 @@ export default {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
       let role = JSON.parse(token).auth.user.role
-      this.isAdmin = email === 'info@eideas.io'
+      this.isAdmin = email === 'info@3.71.18.216'
       this.role = role
     },
     getBalance() {

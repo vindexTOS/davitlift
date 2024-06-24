@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="icon" href="https://eideas.io/red1-fotor-bg-remover-20230614133716.png">
+        <link rel="icon" href="https://3.71.18.216/red1-fotor-bg-remover-20230614133716.png">
         <title>lift eideas</title>
         @laravelPWA
         @vite('resources/css/app.css')
