@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -17,6 +18,10 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'SuperAdminMiddleware' =>
             \App\Http\Middleware\SuperAdminMiddleware::class,
+        'ComapnyAccsessMiddleware' =>
+            \App\Http\Middleware\ComapnyAccsessMiddleware::class,
+        'ComapnyAndManagerAccsessMiddleware' =>
+            \App\Http\Middleware\ComapnyAndManagerAccsessMiddleware::class,
     ];
 
     protected $middleware = [

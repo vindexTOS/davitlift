@@ -1,22 +1,26 @@
 <?php
 
 namespace App\Http\Controllers\API;
+use Carbon\Carbon;
 use App\Models\Card;
-use App\Models\CompanyTransaction;
-use http\Env\Response;
-use Illuminate\Support\Facades\Hash;
-
-use App\Models\Company;
-use App\Models\Device;
-use App\Models\DeviceUser;
 use App\Models\User;
+use App\Models\Device;
+use Illuminate\Support\Facades\Log;
+
+use http\Env\Response;
+use App\Models\Company;
+use App\Models\DeviceUser;
+use App\Models\Transaction;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\TbcTransaction;
+use App\Models\CompanyTransaction;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+
 class UserController extends Controller
 {
     public function index()
@@ -116,23 +120,23 @@ class UserController extends Controller
         return $user;
     }
 
-    public function update(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'id' => 'required|exists:users,id',
-            'name' => 'string|max:255',
-            'email' => 'email|max:255',
-            'balance' => 'integer',
-            'phone' => 'string|min:5|max:15',
-            'role' => 'string',
-        ]);
+    // public function update(Request $request, User $user)
+    // {
+    //     $validated = $request->validate([
+    //         'id' => 'required|exists:users,id',
+    //         'name' => 'string|max:255',
+    //         'email' => 'email|max:255',
+    //         'balance' => 'integer',
+    //         'phone' => 'string|min:5|max:15',
+    //         'role' => 'string',
+    //     ]);
 
-        $user = User::findOrFail($validated['id']);
+    //     $user = User::findOrFail($validated['id']);
 
-        $user->update($validated);
+    //     $user->update($validated);
 
-        return response()->json(['msg' => 'user updated']);
-    }
+    //     return response()->json(['msg' => 'user updated']);
+    // }
 
     public function destroy(User $user)
     {
@@ -211,4 +215,199 @@ class UserController extends Controller
     public function neededCashback($user_id)
     {
     }
+
+    public function updateUserSubscription(Request $request)
+    {
+        $validator = $request->validate([
+            'balance' => 'required',
+            'freezed_balance' => 'required',
+            'email' => 'required',
+            'name' => 'required',
+            'phone' => 'required',
+            'id' => 'required',
+            'subscription' => 'required',
+            'role' => 'required',
+        ]);
+
+        $user = User::find($request->id);
+        $deviceUser = DeviceUser::where('user_id', $request->id)->first();
+        if (!$user || !$deviceUser) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $user->update([
+            'balance' => $request->balance,
+            'freezed_balance' => $request->freezed_balance,
+            'email' => $request->email,
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'role' => $request->role,
+        ]);
+
+        $deviceUser->update([
+            'subscription' => $request->subscription,
+        ]);
+
+        return response()->json(['message' => $request->freezed_balance]);
+    }
+
+    public function UserTransactionsBasedOnDevice($device_id)
+    {
+        $users = DeviceUser::where('device_id', $device_id)->get();
+        $transactionsData = [];
+        $formattedTransactions = collect();
+        $formattedTbcTransactions = collect();
+        $combinedTransactions = collect();
+        foreach ($users as $user) {
+            $id = $user->id;
+            $transactions = Transaction::where('user_id', $id)
+                ->where('status', 'Succeeded')
+                ->get();
+            // Format transactions
+            $formattedTransactionsForUser = $transactions->map(function (
+                $transaction
+            ) {
+                return [
+                    'amount' => +$transaction->amount,
+                    'transaction_id' => $transaction->transaction_id,
+                    'created_at' => $transaction->created_at->format(
+                        'Y-m-d H:i:s'
+                    ),
+                ];
+            });
+
+            // Append formatted transactions for this user to the accumulated array
+            $formattedTransactions = $formattedTransactions->merge(
+                $formattedTransactionsForUser
+            );
+
+            // Fetch TbcTransactions for the same user
+            $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
+
+            // Format TbcTransactions
+            $formattedTbcTransactionsForUser = $tbcTransactions->map(function (
+                $tbcTransaction
+            ) {
+                // Format and return the transaction data
+                return [
+                    'amount' => +$tbcTransaction->amount,
+                    'transaction_id' => $tbcTransaction->order_id,
+                    'created_at' => $tbcTransaction->created_at->format(
+                        'Y-m-d H:i:s'
+                    ),
+                ];
+            });
+
+            $formattedTbcTransactions = $formattedTbcTransactions->merge(
+                $formattedTbcTransactionsForUser
+            );
+            if (!$formattedTransactions->isEmpty()) {
+                // Merge formatted transactions with formatted TbcTransactions
+                $combinedTransactions = $combinedTransactions->merge(
+                    $formattedTbcTransactions
+                );
+                $combinedTransactions = $combinedTransactions->merge(
+                    $formattedTransactions
+                );
+                // Append combined transactions to transactionsData for this user
+                $transactionsData[$id] = $combinedTransactions;
+            }
+        }
+
+        $result = [];
+        $ids = [];
+        // Accumulate transactions outside the loop
+
+        foreach ($transactionsData as $singleTransaction) {
+            foreach ($singleTransaction as $transaction) {
+                try {
+                    // Extract month and year from the created_at field
+                    $monthYear = date(
+                        'Y-m',
+                        strtotime($transaction['created_at'])
+                    );
+
+                    // If the month doesn't exist in $result yet, initialize it to 0
+                    if (!isset($result[$monthYear])) {
+                        $result[$monthYear] = 0;
+                    }
+
+                    // Add the amount to the corresponding month
+                    if (!in_array($transaction['transaction_id'], $ids)) {
+                        // Add the amount to the corresponding month
+                        if (!isset($result[$monthYear])) {
+                            $result[$monthYear] = 0;
+                        }
+                        $result[$monthYear] += $transaction['amount'];
+
+                        // Add the transaction ID to the $ids array to mark it as processed
+                        $ids[] = $transaction['transaction_id'];
+                    }
+                } catch (\Exception $e) {
+                    // Log or handle the error as needed
+                    // For now, skipping the transaction
+                    continue;
+                }
+            }
+        }
+
+        return response()->json([
+            'data' => $result,
+        ]);
+    }
 }
+
+// balance
+// :
+// 2603
+// cards_count
+// :
+// 2
+// cashback
+// :
+// 0
+// created_at
+// :
+// "2023-10-19T12:03:45.000000Z"
+// email
+// :
+// "nica.16@mail.ru"
+// email_verified_at
+// :
+// null
+// freezed_balance
+// :
+// 2400
+// hide_statistic
+// :
+// 0
+// id
+// :
+// 34
+// isBlocked
+// :
+// 0
+// name
+// :
+// "მარიამ"
+// phone
+// :
+// "568446044"
+// pivot
+// :
+// {device_id: 4, user_id: 34, subscription: '2024-04-28 00:00:00'}
+// role
+// :
+// "member"
+// saved_card_status
+// :
+// 0
+// saved_order_id
+// :
+// null
+// subscription
+// :
+// "2024-04-28 00:00:00"
+// updated_at
+// :
+// "2024-03-29T07:12:43.000000Z"

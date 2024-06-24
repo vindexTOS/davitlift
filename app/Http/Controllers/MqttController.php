@@ -1,27 +1,31 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Card;
-use App\Models\Device;
-use App\Models\DeviceEarn;
-use App\Models\DeviceError;
-use App\Models\DeviceUser;
-use App\Models\LastUserAmount;
-use App\Models\UnregisteredDevice;
-use App\Models\UpdatingDevice;
-use App\Models\User;
 use Carbon\Carbon;
+use App\Models\Card;
+use App\Models\User;
+use App\Models\Device;
+use App\Models\ErrorLogs;
+use App\Models\DeviceEarn;
+use App\Models\DeviceUser;
+use App\Models\DeviceError;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Models\LastUserAmount;
+use App\Models\UpdatingDevice;
 use PhpMqtt\Client\MqttClient;
+use App\Models\UnregisteredDevice;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class MqttController extends Controller
 {
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
+        // $this->Logsaver('', 'htpp shemosvla', '');
+
         // Process the general event data
         $msg = $request->all();
         $date = $msg['payload'];
@@ -122,6 +126,14 @@ class MqttController extends Controller
         return response()->json(['message' => 'General event processed'], 200);
     }
 
+    public function Logsaver($errorMessage, $line, $value)
+    {
+        ErrorLogs::create([
+            'errorMessage' => $errorMessage,
+            'line' => $line,
+            'value' => $value,
+        ]);
+    }
     // Handle heartbeat events
     public function handleHeartbeatEvent(
         Request $request
@@ -689,6 +701,8 @@ class MqttController extends Controller
 
     private function remainedAmountUpdateToApplication($device, $data)
     {
+        // $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
+
         $bigEndianValue = $data['amount'];
         $cardNumber = $data['card'];
         $deviceIds = Device::where('users_id', $device->users_id)
@@ -703,21 +717,56 @@ class MqttController extends Controller
         $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
             ->first();
-        if ($bigEndianValue >= $lastAmount) {
-            return;
-        }
+
+        $deviceTarff = $device->tariff_amount;
+        $userBalance = $user->balance;
+
         $diff = $lastAmount->last_amount - $bigEndianValue;
-        if ($diff < 0) {
-            return;
+        if ($diff <= 0 || $diff == 0) {
+            // $this->Logsaver('730', $device->id, 'diff');
+            if ($userBalance >= $deviceTarff) {
+                $diff = $deviceTarff;
+            } else {
+                return;
+            }
         }
+
+        // $this->Logsaver(
+        //     'პირველი ლაინი bigEnd and lastAmount',
+        //     $bigEndianValue,
+        //     $lastAmount->last_amount
+        // );
         $user->balance = $user->balance - $diff;
+        $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
+
+        // $this->Logsaver(
+        //     'მეორე ლაინი userBalance and diff',
+        //     $user->balance,
+        //     $diff
+        // );
+
         $sendPrice = $user->balance - $user->freezed_balance;
         $lastAmount->last_amount = $sendPrice;
+        // $this->Logsaver(
+        //     'მეოთხე ლაინი',
+        //     $lastAmount->last_amount,
+        //     'მეოთხე ლაინი'
+        // );
+
         $lastAmount->save();
+
         $user->save();
+
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
+        // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
+
         $devices_ids = Device::where('users_id', $device->users_id)->get();
+        // $this->Logsaver($device_id, '178', $commandValue);
+        // $this->Logsaver('760', $device->id, 'დევაისი არსებობს');
+
         foreach ($devices_ids as $key2 => $value2) {
+            // $this->Logsaver('763', $value2->id, 'ლუპში შესვლა');
+
             if ($value2->op_mode == '1') {
                 $lastAmountCurrentDevice = LastUserAmount::where(
                     'user_id',
@@ -818,29 +867,83 @@ class MqttController extends Controller
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
         // Generate the date for month_year
-
+        // $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
         // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
         $now = Carbon::now();
         $user = User::where('id', $companyId)->first();
         $device = Device::where('id', $deviceId)->first();
+
+        if ($user->cashback == 0) {
+            // $this->Logsaver('876', $user->cashback, 'უსერის ქეშბექი');
+
+            $user = User::where('id', $device->users_id)->first();
+        }
+        $this->Logsaver('879', $earningsValue, ' ერნიგნები');
+
+        // $this->Logsaver('881', $user->id, 'მენეჯერის id');
+
         // Try to retrieve the entry for the given device and month_year
         $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
             ->where('month', $now->month)
             ->where('year', $now->year)
             ->first();
         if (!empty($deviceEarnings)) {
+            // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
+            $this->Logsaver('890', $earningsValue, $user->id);
+
             if ($user && $device) {
-                $deviceEarnings->earnings += $earningsValue;
-                $deviceEarnings->cashback = $user->cashback;
-                $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
-                $deviceEarnings->save();
+                // $this->Logsaver(
+                //     $earningsValue,
+                //     $user->cashback,
+                //     'device->deviceTariffAmount'
+                // );
+
+                if ($device->deviceTariffAmount != null) {
+                    $deviceEarnings->earnings =
+                        $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->cashback = $user->cashback;
+                    $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
+                    $deviceEarnings->save();
+
+                    $this->Logsaver(
+                        '890',
+                        $deviceEarnings->earnings,
+                        $user->id
+                    );
+                } else {
+                    $deviceEarnings->earnings =
+                        $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->cashback = $user->cashback;
+                    $deviceEarnings->save();
+
+                    $this->Logsaver(
+                        '920',
+                        $deviceEarnings->earnings,
+                        $user->id
+                    );
+                }
             } else {
                 $deviceEarnings->earnings += $earningsValue;
+                $this->Logsaver(
+                    '911',
+                    $user->id,
+                    '  უსერი და დევაისი არ არსებობს '
+                );
 
                 $deviceEarnings->save();
             }
         } else {
+            // $this->Logsaver('906', $user->id, 'BIG ELSE');
+            $this->Logsaver('917', $user->id, ' ერნიგები ცარიელია');
+
             if ($user && $device) {
+                // $this->Logsaver('909', $user->id, 'user && device 2 ');
+                $this->Logsaver(
+                    '921',
+                    $user->id,
+                    ' უსერი და დევაისი  არსებობს ცარიელიში'
+                );
+
                 DeviceEarn::create([
                     'company_id' => $companyId,
                     'device_id' => $deviceId,
@@ -851,6 +954,13 @@ class MqttController extends Controller
                     'deviceTariff' => $device->deviceTariffAmount,
                 ]);
             } else {
+                // $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
+                $this->Logsaver(
+                    '934',
+                    $user->id,
+                    'უსერი და დევაისი არ არსებობს ცარიელშ'
+                );
+
                 DeviceEarn::create([
                     'company_id' => $companyId,
                     'device_id' => $deviceId,

@@ -13,30 +13,25 @@ use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Controllers\MqttController;
+use App\Http\Controllers\TestController;
 use App\Http\Middleware\SuperAdminMiddleware;
+use App\Http\Middleware\ComapnyAccsessMiddleware;
+use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
 use App\Models\Device;
 
 //  ADMIN ONLY
 
 Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
-    Route::put('/updateUser', [UserController::class, 'update']);
-    Route::apiResource('users', UserController::class);
-
-    Route::get('/change/user/password/admin/{user_id}/{password}', [
-        UserController::class,
-        'changePassword',
-        // s
-    ]);
-
     // FILES
+    
     Route::get('/files', [FileController::class, 'index']);
     Route::delete('/files/{id}', [FileController::class, 'delete']);
-
+    
     Route::get('/files/{name}/{version}', [
         FileController::class,
         'deviceUpdate',
     ]);
-
+    
     Route::post('/send/update/to/selected/devices', [
         FileController::class,
         'deviceUpdateByArray',
@@ -50,13 +45,13 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         UnregisteredDeviceController::class,
         'delete',
     ]);
-
+    
     // DEVICES
     Route::get('/updating-device/last-created', [
         UpdatingDeviceController::class,
         'getLastCreated',
     ]);
-
+    
     Route::get('/updating-device/check-failed/last-created', [
         UpdatingDeviceController::class,
         'checkFailed',
@@ -72,8 +67,44 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         'updateManyDeviceTariff',
     ]);
 });
+//  company middleware
+
+Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
+    Route::put('/updateUser', [UserController::class, 'update']);
+    Route::apiResource('users', UserController::class);
+    
+    Route::get('/change/user/password/admin/{user_id}/{password}', [
+        UserController::class,
+        'changePassword',
+        // sssds
+    ]);
+    
+    Route::put('/update/user/subscription', [
+        UserController::class,
+        'updateUserSubscription',
+    ]);
+});
+
+//  company and manager middle ware
+
+Route::middleware(['auth:api', 'ComapnyAndManagerAccsessMiddleware'])->group(
+    function () {
+        // delete  user
+        Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
+            UserController::class,
+            'removeToDevice',
+        ]);
+        // add user to device
+        Route::get('/userToDevice/{user_search}/{device_id}', [
+            UserController::class,
+            'addToDevice',
+        ]);
+    }
+);
 
 //  tbc fast pay
+
+// this works for both liberty and tbc
 Route::post('/transaction/checkuser', [
     TransactionController::class,
     'checkIfUserExists',
@@ -83,6 +114,12 @@ Route::post('/transaction/tbcfastpay', [
     TransactionController::class,
     'makeTbcFastPayOrder',
 ]);
+//  liberty bank
+Route::post('/transaction/lbfastpay', [
+    TransactionController::class,
+    'makeLbrtFastPayOrder',
+]);
+
 // USER ONLY OR SHARED
 
 Route::middleware(['auth:api'])->group(function () {
@@ -116,7 +153,7 @@ Route::middleware(['auth:api'])->group(function () {
         CompanyController::class,
         'hideStatistic',
     ]);
-
+    
     // CARDS
     Route::apiResource('cards', CardController::class);
     Route::get('/user/cards/{id}', [CardController::class, 'getUserCards']);
@@ -135,29 +172,25 @@ Route::middleware(['auth:api'])->group(function () {
         TransactionController::class,
         'makeOrderTransaction',
     ]);
-
+    // ხელით შეცვლა ბალანსის
+    Route::put('/transaction/update-balance', [
+        TransactionController::class,
+        'updateBalanceByHand',
+    ]);
     Route::get('/changeManager/{company_id}/{user_id}/{new_email}', [
         UserController::class,
         'changeManager',
     ]);
     //  USERS
     Route::get('user', [AuthController::class, 'user']);
-    Route::get('/userToDevice/{user_search}/{device_id}', [
-        UserController::class,
-        'addToDevice',
-    ]);
-
+    
     Route::post('/password/change', [
         UserController::class,
         'changeUserPassword',
     ]);
-
-    Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
-        UserController::class,
-        'removeToDevice',
-    ]);
+    
     // FILES
-
+    
     Route::get('/get/pay/cashback/{company_id}/{manager_id}/', [
         CompanyController::class,
         'payedCashback',
@@ -175,7 +208,7 @@ Route::middleware(['auth:api'])->group(function () {
         UserController::class,
         'cashback',
     ]);
-
+    
     Route::get('/balance/user', [UserController::class, 'getBalance']);
     Route::get('/bank/transaction/detail/{order_id}', [
         TransactionController::class,
@@ -190,7 +223,7 @@ Route::middleware(['auth:api'])->group(function () {
         'perUserTransaction',
     ]);
     // DEVICES
-
+    
     Route::apiResource('devices', DeviceController::class);
     Route::put('/deviceEarn/edit', [DeviceController::class, 'EditDevicEarn']);
     Route::get('/get/devices/user', [DeviceController::class, 'userDevice']);
@@ -244,4 +277,9 @@ Route::post('/uploadForHttp', [FileController::class, 'uploadForHttp']);
 Route::delete('/filesForFileServer/{id}', [
     FileController::class,
     'deleteForFileServer',
+]);
+
+Route::get('user/transaction/history/{device_id}', [
+    UserController::class,
+    'UserTransactionsBasedOnDevice',
 ]);

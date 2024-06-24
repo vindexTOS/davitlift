@@ -61,7 +61,7 @@
         >
           <div>{{ $t('Elevator cards') }}</div>
           <!-- კარტების დამატება -->
-          <v-btn v-if="isAdmin" @click="showElevator = true">
+          <v-btn v-if="role !== 'user'" @click="showElevator = true">
             {{ $t('Add card') }}
           </v-btn>
         </v-card-title>
@@ -559,6 +559,7 @@ export default {
           data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
       ],
+      role: '',
       transaction: [],
       totalMoney: 0,
       dialog: false,
@@ -637,6 +638,7 @@ export default {
   },
 
   async created() {
+    this.chackAdminEmail()
     this.getBalance()
     setInterval(() => {
       this.getBalance()
@@ -675,7 +677,9 @@ export default {
     chackAdminEmail() {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
-      this.isAdmin = email === 'info@eideas.io'
+      let role = JSON.parse(token).auth.user.role
+      this.isAdmin = email === 'info@3.71.18.216'
+      this.role = role
     },
     getBalance() {
       axios.get('/api/balance/user').then(({ data }) => {
@@ -690,7 +694,15 @@ export default {
     }),
     getTransactions() {
       axios.get('/api/transactions').then(({ data }) => {
-        this.transaction = data
+        this.transaction = data.sort((a, b) => {
+          // Convert the created_at strings to Date objects
+          const dateA = new Date(a.created_at)
+          const dateB = new Date(b.created_at)
+
+          // Sort by descending order
+          return dateB - dateA
+        })
+        console.log(this.transaction)
       })
     },
     getCards() {

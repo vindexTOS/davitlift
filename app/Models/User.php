@@ -27,10 +27,12 @@ class User extends Authenticatable implements JWTSubject
         'phone',
         'balance',
         'cashback',
+        'freezed_balance',
         'saved_card_status',
         'saved_order_id',
         'hide_statistic',
         'role',
+        'fixed_card_amount',
     ];
 
     /**

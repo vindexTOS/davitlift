@@ -227,7 +227,7 @@
                     item.op_mode == 0 ? 'გადახდის რიცხვი: ' + item.pay_day : ''
                   }}
                 </b>
-                <hr />
+                <!-- <hr />
 
                 <b>
                   {{
@@ -235,11 +235,14 @@
                       ? 'ტარიფი :' + item.deviceTariffAmount + ' ლარი'
                       : ''
                   }}
-                </b>
+                </b> -->
                 <hr />
                 <div v-if="isAdmin">
                   <div>
-                    <b>ლიფტის ტარიფი {{ item.deviceTariffAmount }} ₾</b>
+                    <b>
+                      მომსახურების მინიმალური საფასური
+                      {{ item.deviceTariffAmount }} ₾
+                    </b>
                     <v-icon
                       @click="openSingleDeviceTariffAmount(index)"
                       size="xs"
@@ -488,7 +491,7 @@ export default {
     chackAdminEmail() {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
-      this.isAdmin = email === 'info@eideas.io'
+      this.isAdmin = email === 'info@3.71.18.216'
     },
     handleLiftAmountTariffInput(event) {
       this.liftTariffValue = event.target.value

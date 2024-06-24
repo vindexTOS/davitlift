@@ -20,7 +20,15 @@
         {{ formatMyDate(item.raw.updated_at) }}
       </template>
       <template v-slot:item.amountTax="{ item }">
-        {{ getUntaxedAmount(item.raw.amount) }}ლარი
+        {{
+          item.raw.type === 'TBC ჩასარიცხი აპარატი'
+            ? item.raw.amount
+            : getUntaxedAmount(item.raw.amount)
+        }}
+        ლარი
+      </template>
+      <template v-slot:item.type="{ item }">
+        {{ getItemType(item.raw.type) }}
       </template>
     </v-data-table>
   </div>
@@ -76,6 +84,10 @@ export default {
           title: 'ჩარიცხული თანხა',
           key: 'amountTax',
         },
+        {
+          title: 'ჩარიცხვის ტიპი',
+          key: 'type',
+        },
       ]
     },
   },
@@ -104,6 +116,11 @@ export default {
       const tax = amount * 0.02
 
       return (amount - tax).toFixed(2)
+    },
+
+    getItemType(type) {
+      console.log(type)
+      return type
     },
   },
 }

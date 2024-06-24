@@ -11,9 +11,13 @@
           <th style="padding: 8px; border: 1px solid #ddd;">
             {{ $t('Amount') }}
           </th>
-          <th style="padding: 8px; border: 1px solid #ddd;">ტარიფი</th>
-          <th style="padding: 8px; border: 1px solid #ddd;">ქეშბექი</th>
-          <th style="padding: 8px; border: 1px solid #ddd;">
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+            ტარიფი
+          </th>
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+            ქეშბექი
+          </th>
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             რედაქტ
           </th>
         </tr>
@@ -31,9 +35,15 @@
             {{ item.month }}
           </td>
           <td style="padding: 8px; border: 1px solid #ddd;">
-            {{ item.earnings / 100 }}₾
+            <p v-if="!boolMapper[index]">{{ item.earnings / 100 }}₾</p>
+            <input
+              @input="changeInput($event, 'earnings')"
+              style="width: 50px; background-color: greenyellow;"
+              v-if="boolMapper[index]"
+              :value="item.earnings"
+            />
           </td>
-          <td style="padding: 8px; border: 1px solid #ddd;">
+          <td v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             <p v-if="!boolMapper[index]">{{ item.deviceTariff }}</p>
             <input
               @input="changeInput($event, 'deviceTariff')"
@@ -42,7 +52,7 @@
               :value="item.deviceTariff"
             />
           </td>
-          <td style="padding: 8px; border: 1px solid #ddd;">
+          <td v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             <p v-if="!boolMapper[index]">{{ item.cashback }}</p>
             <input
               @input="changeInput($event, 'cashback')"
@@ -53,6 +63,7 @@
           </td>
           <td v-if="isFixed" style="padding: 8px; border: 1px solid #ddd;"></td>
           <td
+            v-if="isAdmin"
             style="
               padding: 8px;
               border: 1px solid #ddd;
@@ -145,6 +156,8 @@ export default {
     editedIndex: -1,
     cashback: 0,
     deviceTariff: 0,
+    earnings: 0,
+    isAdmin: false,
     editedItem: {
       name: '',
       phone: 0,
@@ -162,7 +175,9 @@ export default {
     },
     action: {},
   }),
-
+  async created() {
+    this.chackAdminEmail()
+  },
   computed: {
     formTitle() {
       return this.editedIndex === -1 ? 'New user' : 'Edit user'
@@ -207,17 +222,25 @@ export default {
   },
 
   methods: {
+    chackAdminEmail() {
+      const token = localStorage.getItem('vuex')
+      let email = JSON.parse(token).auth.user.email
+      this.isAdmin = email === 'info@3.71.18.216'
+    },
     changeInput(event, type) {
       if (type == 'cashback') {
         this.cashback = event.target.value
-      } else {
+      } else if (type == 'deviceTariff') {
         this.deviceTariff = event.target.value
+      } else if (type == 'earnings') {
+        this.earnings = event.target.value
       }
     },
     updateEarning(body, index) {
       this.toogleEedit(index)
       body.cashback = Number(this.cashback)
       body.deviceTariff = Number(this.deviceTariff)
+      body.earnings = Number(this.earnings)
       console.log(body)
       axios
         .put('/api/deviceEarn/edit/', body)
