@@ -49,7 +49,7 @@ class UserSubscriptionCheck extends Command
                     ->startOfMonth()
                     ->addDays($device->pay_day - 1);
                 // როცა დევაისის ტარიფი უდრის ნულს
-                if ($device->tariff_amunt == 0) {
+                if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
                     $fixedCard;
 
