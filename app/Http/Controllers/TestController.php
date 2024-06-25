@@ -36,11 +36,13 @@ class TestController extends   Controller
 
             $deviceEarning = 0;
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
-
+Log::debug("Garet");
             foreach ($users as $user) {
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
-                $fixedCard = $userFixedBalnce * $userCardAmount;
+                $fixedCard = $userFixedBalnce * $userCardAmount * 100;
+
+                Log::debug($fixedCard);
 
                 $subscriptionDate = $user->pivot->subscription
                     ? Carbon::parse($user->pivot->subscription)
@@ -54,6 +56,7 @@ class TestController extends   Controller
               
                 if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
+                    Log::debug("ifshi"); 
                   
        
                     if (
