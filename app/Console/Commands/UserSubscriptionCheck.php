@@ -34,17 +34,19 @@ class UserSubscriptionCheck extends Command
             ->where('op_mode', 0)
             ->get();
          
-               
+                Log::debug("SHemovedi subsshi");
             
         foreach ($devices as $device) {
 
             $deviceEarning = 0;
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
+            Log::debug("pirveli loop");
 
             foreach ($users as $user) {
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
                 $fixedCard = $userFixedBalnce * $userCardAmount * 100;
+                Log::debug($fixedCard);
 
                 $subscriptionDate = $user->pivot->subscription
                     ? Carbon::parse($user->pivot->subscription)
