@@ -33,7 +33,11 @@ class UserSubscriptionCheck extends Command
         $devices = Device::where('pay_day', $today)
             ->where('op_mode', 0)
             ->get();
+         
+               
+            
         foreach ($devices as $device) {
+
             $deviceEarning = 0;
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
 
@@ -41,6 +45,7 @@ class UserSubscriptionCheck extends Command
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
                 $fixedCard = $userFixedBalnce * $userCardAmount;
+
                 $subscriptionDate = $user->pivot->subscription
                     ? Carbon::parse($user->pivot->subscription)
                     : null;
@@ -49,10 +54,12 @@ class UserSubscriptionCheck extends Command
                     ->startOfMonth()
                     ->addDays($device->pay_day - 1);
                 // როცა დევაისის ტარიფი უდრის ნულს
+
+              
                 if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
-                    $fixedCard;
-
+                  
+       
                     if (
                         $userBalance >= $fixedCard &&
                         !is_null($subscriptionDate) &&
@@ -61,7 +68,9 @@ class UserSubscriptionCheck extends Command
                         DB::beginTransaction();
 
                         try {
-                            $user->balance -= $fixedCard;
+                            $user->balance -= $fixedCard * 100;
+                            
+
                             $currentDay = Carbon::now()->day;
 
                             if ($currentDay < $device->pay_day) {
@@ -177,14 +186,26 @@ class UserSubscriptionCheck extends Command
                 ->first();
             if (empty($deviceEarn)) {
                 if ($user && $device) {
-                    DeviceEarn::create([
-                        'device_id' => $device->id,
-                        'month' => $currentMonth,
-                        'year' => $currentYear,
-                        'earnings' => $deviceEarning,
-                        'cashback' => $user->cashback,
-                        'deviceTariff' => $device->deviceTariffAmount,
-                    ]);
+                    if( $device->deviceTariffAmount !== null           ){
+                        DeviceEarn::create([
+                            'device_id' => $device->id,
+                            'month' => $currentMonth,
+                            'year' => $currentYear,
+                            'earnings' => $deviceEarning,
+                            'cashback' => $user->cashback,
+                            'deviceTariff' => $device->deviceTariffAmount,
+                        ]);
+                    }else{
+                        DeviceEarn::create([
+                            'device_id' => $device->id,
+                            'month' => $currentMonth,
+                            'year' => $currentYear,
+                            'earnings' => $deviceEarning,
+                            'cashback' => $user->cashback,
+                            'deviceTariff' => 0,
+                        ]);
+                    }
+                
                 } else {
                     DeviceEarn::create([
                         'device_id' => $device->id,

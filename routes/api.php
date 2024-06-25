@@ -283,3 +283,6 @@ Route::get('user/transaction/history/{device_id}', [
     UserController::class,
     'UserTransactionsBasedOnDevice',
 ]);
+
+
+Route::get("/testing", [TestController::class, 'TestFixedCard']);
