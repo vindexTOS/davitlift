@@ -44,7 +44,7 @@ class UserSubscriptionCheck extends Command
             foreach ($users as $user) {
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
-                $fixedCard = $userFixedBalnce * $userCardAmount;
+                $fixedCard = $userFixedBalnce * $userCardAmount * 100;
 
                 $subscriptionDate = $user->pivot->subscription
                     ? Carbon::parse($user->pivot->subscription)
@@ -68,7 +68,7 @@ class UserSubscriptionCheck extends Command
                         DB::beginTransaction();
 
                         try {
-                            $user->balance -= $fixedCard * 100;
+                            $user->balance -= $fixedCard  ;
                             
 
                             $currentDay = Carbon::now()->day;
@@ -108,7 +108,7 @@ class UserSubscriptionCheck extends Command
                     //  როცა დვაისის ტარიფი ნოლზე მეტია
                 } else {
                     if (
-                        $user->balance >= $device->tariff_amount + $fixedCard &&
+                        $user->balance >= $device->tariff_amount + $fixedCard    &&
                         $user->freezed_balance >= $device->tariff_amount &&
                         !is_null($subscriptionDate) &&
                         $subscriptionDate->lt($nextMonthPayDay)
