@@ -40,7 +40,8 @@ class TestController extends   Controller
             foreach ($users as $user) {
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
-                $fixedCard = $userFixedBalnce * $userCardAmount * 100;
+                $fixedCard = $userFixedBalnce * $userCardAmount ;
+                $fixedCard = $fixedCard * 100;
 
                 Log::debug($fixedCard);
 
@@ -67,7 +68,7 @@ class TestController extends   Controller
                         DB::beginTransaction();
 
                         try {
-                            $user->balance -= $fixedCard * 100;
+                            $user->balance -= $fixedCard ;
                             
 
                             $currentDay = Carbon::now()->day;

@@ -24,8 +24,7 @@ class UserSubscriptionCheck extends Command
     }
 
     public function handle()
-    {
-        $today = Carbon::now()->day;
+    { $today = Carbon::now()->day;
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
@@ -34,20 +33,18 @@ class UserSubscriptionCheck extends Command
             ->where('op_mode', 0)
             ->get();
          
-                Log::debug("SHemovedi subsshi");
-            
+             
         foreach ($devices as $device) {
 
             $deviceEarning = 0;
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
-            Log::debug("pirveli loop");
-
             foreach ($users as $user) {
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
-                $fixedCard = $userFixedBalnce * $userCardAmount * 100;
-                Log::debug($fixedCard);
+                $fixedCard = $userFixedBalnce * $userCardAmount ;
+                $fixedCard = $fixedCard * 100;
 
+ 
                 $subscriptionDate = $user->pivot->subscription
                     ? Carbon::parse($user->pivot->subscription)
                     : null;
@@ -60,7 +57,7 @@ class UserSubscriptionCheck extends Command
               
                 if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
-                  
+                   
        
                     if (
                         $userBalance >= $fixedCard &&
@@ -70,7 +67,7 @@ class UserSubscriptionCheck extends Command
                         DB::beginTransaction();
 
                         try {
-                            $user->balance -= $fixedCard  ;
+                            $user->balance -= $fixedCard ;
                             
 
                             $currentDay = Carbon::now()->day;
@@ -110,7 +107,7 @@ class UserSubscriptionCheck extends Command
                     //  როცა დვაისის ტარიფი ნოლზე მეტია
                 } else {
                     if (
-                        $user->balance >= $device->tariff_amount + $fixedCard    &&
+                        $user->balance >= $device->tariff_amount + $fixedCard &&
                         $user->freezed_balance >= $device->tariff_amount &&
                         !is_null($subscriptionDate) &&
                         $subscriptionDate->lt($nextMonthPayDay)

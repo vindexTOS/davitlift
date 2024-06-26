@@ -285,4 +285,4 @@ Route::get('user/transaction/history/{device_id}', [
 ]);
 
 
-Route::get("/testing", [TestController::class, 'TestFixedCard']);
+Route::post("/testing-fix", [TestController::class, 'TestFixedCard']);
