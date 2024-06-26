@@ -24,7 +24,9 @@ class UserSubscriptionCheck extends Command
     }
 
     public function handle()
-    {  $today = Carbon::now()->day;
+    { 
+        Log::debug("Shemosvla user subscriptinshi >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        $today = Carbon::now()->day;
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
