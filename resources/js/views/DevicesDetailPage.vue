@@ -197,6 +197,7 @@
                     small
                   >
                     <v-icon size="small">mdi-save</v-icon>
+                    #
                     {{ $t('App Configuration') }}
                   </v-btn>
                   <v-btn
@@ -261,6 +262,14 @@
                 <h4 v-if="isAdmin">
                   მომხმარებლების ტოტალური ტრანსაქციები:
                   {{ transactionTotalByMonthTotalledInOne.toFixed(2) }}
+                </h4>
+                <h4 v-if="isAdmin">
+                  აქტიური უსერები:
+                  {{ activeSubscriptions }}
+                </h4>
+                <h4 v-if="isAdmin">
+                  ფიქსირებული ბარათების ჯამი:
+                  {{ combinedCardPay }}
                 </h4>
               </v-card-text>
             </v-card>
@@ -731,6 +740,8 @@ export default {
   data: () => ({
     usersInfo: { userData: [], pagination: 0 },
     transactionTotalByMonth: [],
+    activeSubscriptions: 0,
+    combinedCardPay: 0,
     transactionTotalByMonthTotalledInOne: 0,
     isZoom: false,
     totalUserBalance: 0,
@@ -1001,6 +1012,17 @@ export default {
 
           this.usersInfo.userData = data.users
           this.usersInfo.pagination = Math.ceil(data.users.length / 10)
+
+          this.activeSubscriptions = this.usersInfo.userData.filter(
+            (item) => new Date(item.subscription) > new Date(),
+          ).length
+
+          this.combinedCardPay = this.usersInfo.userData
+            .map((val) => {
+              return val.cards_count * (val.fixed_card_amount / 100)
+            })
+            .reduce((a, b) => a + b)
+
           this.getTransactionData()
         })
         .then(() => {

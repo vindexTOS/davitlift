@@ -33,14 +33,10 @@ class UserSubscriptionCheck extends Command
         $devices = Device::where('pay_day', $today)
         ->where('op_mode', 0)
         ->get();
-        
-        Log::debug("SHemovedi subsshi");
-        
         foreach ($devices as $device) {
             
             $deviceEarning = 0;
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
-            Log::debug("pirveli loop");
             
             foreach ($users as $user) {
                 $userFixedBalnce = $user->fixed_card_amount;
@@ -56,11 +52,9 @@ class UserSubscriptionCheck extends Command
                 ->startOfMonth()
                 ->addDays($device->pay_day - 1);
                 // როცა დევაისის ტარიფი უდრის ნულს
-                
-                
                 if (false) {
                     $userBalance = $user->balance;
-                    
+                    $fixedCard;
                     
                     if (
                         $userBalance >= $fixedCard &&
@@ -70,9 +64,7 @@ class UserSubscriptionCheck extends Command
                             DB::beginTransaction();
                             
                             try {
-                                $user->balance -= $fixedCard  ;
-                                
-                                
+                                $user->balance -= $fixedCard;
                                 $currentDay = Carbon::now()->day;
                                 
                                 if ($currentDay < $device->pay_day) {
@@ -110,7 +102,7 @@ class UserSubscriptionCheck extends Command
                         //  როცა დვაისის ტარიფი ნოლზე მეტია
                     } else {
                         if (
-                            $user->balance >= $device->tariff_amount + $fixedCard    &&
+                            $user->balance >= $device->tariff_amount + $fixedCard &&
                             $user->freezed_balance >= $device->tariff_amount &&
                             !is_null($subscriptionDate) &&
                             $subscriptionDate->lt($nextMonthPayDay)
@@ -188,26 +180,14 @@ class UserSubscriptionCheck extends Command
                         ->first();
                         if (empty($deviceEarn)) {
                             if ($user && $device) {
-                                if( $device->deviceTariffAmount !== null           ){
-                                    DeviceEarn::create([
-                                        'device_id' => $device->id,
-                                        'month' => $currentMonth,
-                                        'year' => $currentYear,
-                                        'earnings' => $deviceEarning,
-                                        'cashback' => $user->cashback,
-                                        'deviceTariff' => $device->deviceTariffAmount,
-                                    ]);
-                                }else{
-                                    DeviceEarn::create([
-                                        'device_id' => $device->id,
-                                        'month' => $currentMonth,
-                                        'year' => $currentYear,
-                                        'earnings' => $deviceEarning,
-                                        'cashback' => $user->cashback,
-                                        'deviceTariff' => 0,
-                                    ]);
-                                }
-                                
+                                DeviceEarn::create([
+                                    'device_id' => $device->id,
+                                    'month' => $currentMonth,
+                                    'year' => $currentYear,
+                                    'earnings' => $deviceEarning,
+                                    'cashback' => $user->cashback,
+                                    'deviceTariff' => $device->deviceTariffAmount,
+                                ]);
                             } else {
                                 DeviceEarn::create([
                                     'device_id' => $device->id,
@@ -239,3 +219,4 @@ class UserSubscriptionCheck extends Command
                     );
                 }
             }
+            
