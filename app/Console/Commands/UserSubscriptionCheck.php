@@ -42,7 +42,7 @@ class UserSubscriptionCheck extends Command
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
                 $fixedCard = $userFixedBalnce * $userCardAmount ;
-                $fixedCard = $fixedCard * 100;
+                
 
  
                 $subscriptionDate = $user->pivot->subscription
