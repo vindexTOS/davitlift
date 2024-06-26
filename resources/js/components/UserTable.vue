@@ -155,6 +155,8 @@ tbody input {
             >
               {{ $t('Add user') }}
             </v-btn>
+                <button @click="downloadExcel">Download Excel</button>
+
           </template>
           <v-card>
             <v-card-title>
@@ -386,6 +388,7 @@ tbody input {
 
 <script>
 import { VDataTable } from 'vuetify/labs/components'
+import * as XLSX from 'xlsx';
 
 export default {
   components: { VDataTable },
@@ -478,6 +481,41 @@ export default {
   },
 
   methods: {
+    downloadExcel()
+    {
+      console.log(this.serverItems.userData)
+
+      let ExcelData = this.serverItems.userData.map((val) => 
+      {
+        return {
+          name: val.name,
+          email: val.email,
+          balance:val.balance,
+          phone: val.phone,
+          subscription: val.subscription,
+          cards:val.cards_count,
+              
+            }
+           }
+      )
+   
+       const worksheet = XLSX.utils.json_to_sheet(ExcelData);
+      
+       const workbook = XLSX.utils.book_new();
+      
+       XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+      
+  const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\//g, '-'); // Replace slashes with dashes
+      
+      // Generate the Excel file and trigger download
+      XLSX.writeFile(workbook, `users_info_${this.deviceId}_${formattedDate}.xlsx`);
+    },
+ 
     chackAdminEmail() {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
