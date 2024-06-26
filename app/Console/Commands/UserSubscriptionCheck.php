@@ -24,7 +24,7 @@ class UserSubscriptionCheck extends Command
     }
 
     public function handle()
-    { $today = Carbon::now()->day;
+    {  $today = Carbon::now()->day;
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
@@ -230,6 +230,7 @@ class UserSubscriptionCheck extends Command
                 }
             }
         }
+
 
         $this->info(
             'User subscriptions have been checked and updated successfully.'
