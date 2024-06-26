@@ -20,8 +20,7 @@ class TestController extends   Controller
 
 
      public function TestFixedCard (){
-        Log::debug("Garet");
-
+ 
       $today = Carbon::now()->day;
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
@@ -31,8 +30,7 @@ class TestController extends   Controller
             ->where('op_mode', 0)
             ->get();
          
-        //   Log::debug("")     
-            
+             
         foreach ($devices as $device) {
 
             $deviceEarning = 0;
@@ -41,10 +39,9 @@ class TestController extends   Controller
                 $userFixedBalnce = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
                 $fixedCard = $userFixedBalnce * $userCardAmount ;
-                $fixedCard = $fixedCard * 100;
+                
 
-                Log::debug($fixedCard);
-
+ 
                 $subscriptionDate = $user->pivot->subscription
                     ? Carbon::parse($user->pivot->subscription)
                     : null;
@@ -57,8 +54,7 @@ class TestController extends   Controller
               
                 if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
-                    Log::debug("ifshi"); 
-                  
+                   
        
                     if (
                         $userBalance >= $fixedCard &&
