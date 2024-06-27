@@ -15,6 +15,7 @@ use App\Models\UpdatingDevice;
 use PhpMqtt\Client\MqttClient;
 use App\Models\UnregisteredDevice;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -445,7 +446,7 @@ class MqttController extends Controller
                                                                                         
                                                                                         
                                                                                         if( $user->balance - $user->freezed_balance >= $fixedCard){
-                                                                                            
+                                                                                            Log::debug("შემოვიდა mqttController");
                                                                                             $user->balance -= $fixedCard ;
                                                                                             $user->freezed_balance -= $fixedCard;
                                                                                             $currentDay = Carbon::now()->day;
@@ -480,6 +481,9 @@ class MqttController extends Controller
                                                                                             $this->publishMessage($device->dev_id, $payload);
                                                                                             
                                                                                         }
+                                                                                    }else{
+                                                                                        $this->noMoney($device->dev_id);
+                                                                                        
                                                                                     }
                                                                                     
                                                                                     
