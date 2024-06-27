@@ -435,191 +435,206 @@ class MqttController extends Controller
                                                                                 $userBalance = $user->balance;
                                                                                 
                                                                                 $user->freezed_balance = $fixedCard;
-                                                                                if (
-                                                                                    $user->balance >=$fixedCard &&
-                                                                                    $user->freezed_balance >= $fixedCard &&
-                                                                                    !is_null($subscriptionDate) &&
-                                                                                    $subscriptionDate->lt($nextMonthPayDay)
-                                                                                    ) {
-                                                                                        
-                                                                                        
-                                                                                        
-                                                                                        
-                                                                                        if( $user->balance - $user->freezed_balance >= $fixedCard){
-                                                                                            Log::debug("შემოვიდა mqttController");
-                                                                                            $user->balance -= $fixedCard ;
-                                                                                            $user->freezed_balance -= $fixedCard;
-                                                                                            $currentDay = Carbon::now()->day;
-                                                                                            if ($currentDay < $device->pay_day) {
-                                                                                                $nextMonthPayDay = Carbon::now()
-                                                                                                ->startOfMonth()
-                                                                                                ->addDays($device->pay_day - 1);
-                                                                                            } else {
-                                                                                                $nextMonthPayDay = Carbon::now()
-                                                                                                ->addMonth()
-                                                                                                ->startOfMonth()
-                                                                                                ->addDays($device->pay_day - 1);
-                                                                                            }
-                                                                                            $userDevice->subscription = $nextMonthPayDay;
-                                                                                            
-                                                                                            $userDevice->save();
-                                                                                            $payload = $this->generateHexPayload(4, [
-                                                                                                [
-                                                                                                    'type' => 'timestamp',
-                                                                                                    'value' => Carbon::parse($nextMonthPayDay)
-                                                                                                    ->timestamp,
-                                                                                                ],
-                                                                                                [
-                                                                                                    'type' => 'string',
-                                                                                                    'value' => $data['payload'],
-                                                                                                ],
-                                                                                                [
-                                                                                                    'type' => 'number',
-                                                                                                    'value' => 0,
-                                                                                                ],
-                                                                                            ]);
-                                                                                            $this->publishMessage($device->dev_id, $payload);
-                                                                                            
-                                                                                        }
-                                                                                    }else{
-                                                                                        $this->noMoney($device->dev_id);
-                                                                                        
-                                                                                    }
-                                                                                    
-                                                                                    
-                                                                                }else if (
-                                                                                    $user->balance - $user->freezed_balance >=
-                                                                                    $device->tariff_amount
-                                                                                    ) {
-                                                                                        $user->freezed_balance =
-                                                                                        $user->freezed_balance + $device->tariff_amount;
-                                                                                        $user->save();
-                                                                                        $currentDay = Carbon::now()->day;
-                                                                                        if ($currentDay < $device->pay_day) {
-                                                                                            $nextMonthPayDay = Carbon::now()
-                                                                                            ->startOfMonth()
-                                                                                            ->addDays($device->pay_day - 1);
-                                                                                        } else {
-                                                                                            $nextMonthPayDay = Carbon::now()
-                                                                                            ->addMonth()
-                                                                                            ->startOfMonth()
-                                                                                            ->addDays($device->pay_day - 1);
-                                                                                        }
-                                                                                        $userDevice->subscription = $nextMonthPayDay;
-                                                                                        
-                                                                                        $userDevice->save();
-                                                                                        $payload = $this->generateHexPayload(4, [
-                                                                                            [
-                                                                                                'type' => 'timestamp',
-                                                                                                'value' => Carbon::parse($nextMonthPayDay)
-                                                                                                ->timestamp,
-                                                                                            ],
-                                                                                            [
-                                                                                                'type' => 'string',
-                                                                                                'value' => $data['payload'],
-                                                                                            ],
-                                                                                            [
-                                                                                                'type' => 'number',
-                                                                                                'value' => 0,
-                                                                                            ],
-                                                                                        ]);
-                                                                                        $this->publishMessage($device->dev_id, $payload);
-                                                                                    }else {
-                                                                                        $this->noMoney($device->dev_id);
-                                                                                    }
-                                                                                }
-                                                                            } else {
-                                                                                if (
-                                                                                    (int) $user->balance - $user->freezed_balance >=
-                                                                                    $device->tariff_amount
-                                                                                    ) {
-                                                                                        $lastAmount = LastUserAmount::where('user_id', $user->id)
-                                                                                        ->where('device_id', $device->id)
-                                                                                        ->first();
-                                                                                        
-                                                                                        if (empty($lastAmount->user_id)) {
-                                                                                            LastUserAmount::insert([
-                                                                                                'user_id' => $user->id,
-                                                                                                'device_id' => $device->id,
-                                                                                                'last_amount' =>
-                                                                                                $user->balance - $user->freezed_balance,
-                                                                                            ]);
-                                                                                        } else {
-                                                                                            $lastAmount->last_amount =
-                                                                                            $user->balance - $user->freezed_balance;
-                                                                                            $lastAmount->save();
-                                                                                        }
-                                                                                        $payload = $this->generateHexPayload(3, [
-                                                                                            [
-                                                                                                'type' => 'string',
-                                                                                                'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
-                                                                                            ],
-                                                                                            [
-                                                                                                'type' => 'number',
-                                                                                                'value' => 0,
-                                                                                            ],
-                                                                                            ['type' => 'string', 'value' => $data['payload']],
-                                                                                            [
-                                                                                                'type' => 'number',
-                                                                                                'value' => 0,
-                                                                                            ],
-                                                                                            [
-                                                                                                'type' => 'number16',
-                                                                                                'value' => $user->balance - $user->freezed_balance,
-                                                                                            ],
-                                                                                        ]);
-                                                                                        $user->save();
-                                                                                        $this->saveOrUpdateEarnings(
-                                                                                            $device->id,
-                                                                                            $device->tariff_amount,
-                                                                                            $device->company_id
-                                                                                        );
-                                                                                        $this->publishMessage($device->dev_id, $payload);
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                if( $user->balance - $user->freezed_balance >= $fixedCard){
+                                                                                    Log::debug("შემოვიდა mqttController");
+                                                                                    $user->balance -= $fixedCard ;
+                                                                                    $user->freezed_balance -= $fixedCard;
+                                                                                    $currentDay = Carbon::now()->day;
+                                                                                    if ($currentDay < $device->pay_day) {
+                                                                                        $nextMonthPayDay = Carbon::now()
+                                                                                        ->startOfMonth()
+                                                                                        ->addDays($device->pay_day - 1);
                                                                                     } else {
-                                                                                        $this->noMoney($device->dev_id);
+                                                                                        $nextMonthPayDay = Carbon::now()
+                                                                                        ->addMonth()
+                                                                                        ->startOfMonth()
+                                                                                        ->addDays($device->pay_day - 1);
                                                                                     }
+                                                                                    $userDevice->subscription = $nextMonthPayDay;
+                                                                                    
+                                                                                    $userDevice->save();
+                                                                                    $payload = $this->generateHexPayload(4, [
+                                                                                        [
+                                                                                            'type' => 'timestamp',
+                                                                                            'value' => Carbon::parse($nextMonthPayDay)
+                                                                                            ->timestamp,
+                                                                                        ],
+                                                                                        [
+                                                                                            'type' => 'string',
+                                                                                            'value' => $data['payload'],
+                                                                                        ],
+                                                                                        [
+                                                                                            'type' => 'number',
+                                                                                            'value' => 0,
+                                                                                        ],
+                                                                                    ]);
+                                                                                    $this->publishMessage($device->dev_id, $payload);
+                                                                                    
+                                                                                    
+                                                                                }else{
+                                                                                    $this->noMoney($device->dev_id);
+                                                                                    
+                                                                                }
+                                                                                
+                                                                                
+                                                                            }else if (
+                                                                                $user->balance - $user->freezed_balance >=
+                                                                                $device->tariff_amount
+                                                                                ) {
+                                                                                    $user->freezed_balance =
+                                                                                    $user->freezed_balance + $device->tariff_amount;
+                                                                                    $user->save();
+                                                                                    $currentDay = Carbon::now()->day;
+                                                                                    if ($currentDay < $device->pay_day) {
+                                                                                        $nextMonthPayDay = Carbon::now()
+                                                                                        ->startOfMonth()
+                                                                                        ->addDays($device->pay_day - 1);
+                                                                                    } else {
+                                                                                        $nextMonthPayDay = Carbon::now()
+                                                                                        ->addMonth()
+                                                                                        ->startOfMonth()
+                                                                                        ->addDays($device->pay_day - 1);
+                                                                                    }
+                                                                                    $userDevice->subscription = $nextMonthPayDay;
+                                                                                    
+                                                                                    $userDevice->save();
+                                                                                    $payload = $this->generateHexPayload(4, [
+                                                                                        [
+                                                                                            'type' => 'timestamp',
+                                                                                            'value' => Carbon::parse($nextMonthPayDay)
+                                                                                            ->timestamp,
+                                                                                        ],
+                                                                                        [
+                                                                                            'type' => 'string',
+                                                                                            'value' => $data['payload'],
+                                                                                        ],
+                                                                                        [
+                                                                                            'type' => 'number',
+                                                                                            'value' => 0,
+                                                                                        ],
+                                                                                    ]);
+                                                                                    $this->publishMessage($device->dev_id, $payload);
+                                                                                }else {
+                                                                                    $this->noMoney($device->dev_id);
+                                                                                }
+                                                                            }
+                                                                        } else {
+                                                                            if (
+                                                                                (int) $user->balance - $user->freezed_balance >=
+                                                                                $device->tariff_amount
+                                                                                ) {
+                                                                                    $lastAmount = LastUserAmount::where('user_id', $user->id)
+                                                                                    ->where('device_id', $device->id)
+                                                                                    ->first();
+                                                                                    
+                                                                                    if (empty($lastAmount->user_id)) {
+                                                                                        LastUserAmount::insert([
+                                                                                            'user_id' => $user->id,
+                                                                                            'device_id' => $device->id,
+                                                                                            'last_amount' =>
+                                                                                            $user->balance - $user->freezed_balance,
+                                                                                        ]);
+                                                                                    } else {
+                                                                                        $lastAmount->last_amount =
+                                                                                        $user->balance - $user->freezed_balance;
+                                                                                        $lastAmount->save();
+                                                                                    }
+                                                                                    $payload = $this->generateHexPayload(3, [
+                                                                                        [
+                                                                                            'type' => 'string',
+                                                                                            'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                                                                                        ],
+                                                                                        [
+                                                                                            'type' => 'number',
+                                                                                            'value' => 0,
+                                                                                        ],
+                                                                                        ['type' => 'string', 'value' => $data['payload']],
+                                                                                        [
+                                                                                            'type' => 'number',
+                                                                                            'value' => 0,
+                                                                                        ],
+                                                                                        [
+                                                                                            'type' => 'number16',
+                                                                                            'value' => $user->balance - $user->freezed_balance,
+                                                                                        ],
+                                                                                    ]);
+                                                                                    $user->save();
+                                                                                    $this->saveOrUpdateEarnings(
+                                                                                        $device->id,
+                                                                                        $device->tariff_amount,
+                                                                                        $device->company_id
+                                                                                    );
+                                                                                    $this->publishMessage($device->dev_id, $payload);
+                                                                                } else {
+                                                                                    $this->noMoney($device->dev_id);
                                                                                 }
                                                                             }
                                                                         }
-                                                                        
-                                                                        private function accessWithOneTimeCode($device, $data)
-                                                                        {
-                                                                            $code = DB::table('elevator_codes')
-                                                                            ->where('code', $data['payload'])
-                                                                            ->where('device_id', $device->id)
-                                                                            ->where('expires_at', '>', Carbon::now())
-                                                                            ->first();
-                                                                            if (empty($code)) {
-                                                                                $payload = $this->generateHexPayload(6, [
-                                                                                    [
-                                                                                        'type' => 'string',
-                                                                                        'value' => 'araswori',
-                                                                                    ],
-                                                                                    [
-                                                                                        'type' => 'number',
-                                                                                        'value' => 0,
-                                                                                    ],
-                                                                                    [
-                                                                                        'type' => 'string',
-                                                                                        'value' => 'kodi',
-                                                                                    ],
-                                                                                    [
-                                                                                        'type' => 'number',
-                                                                                        'value' => 0,
-                                                                                    ],
-                                                                                    [
-                                                                                        'type' => 'string',
-                                                                                        'value' => '',
-                                                                                    ],
-                                                                                    [
-                                                                                        'type' => 'number',
-                                                                                        'value' => 0,
-                                                                                    ],
-                                                                                ]);
-                                                                                $this->publishMessage($device->dev_id, $payload);
-                                                                            }
-                                                                            $user = User::where('id', $code->user_id)->first();
-                                                                            if ($device->op_mode == 0) {
+                                                                    }
+                                                                    
+                                                                    private function accessWithOneTimeCode($device, $data)
+                                                                    {
+                                                                        $code = DB::table('elevator_codes')
+                                                                        ->where('code', $data['payload'])
+                                                                        ->where('device_id', $device->id)
+                                                                        ->where('expires_at', '>', Carbon::now())
+                                                                        ->first();
+                                                                        if (empty($code)) {
+                                                                            $payload = $this->generateHexPayload(6, [
+                                                                                [
+                                                                                    'type' => 'string',
+                                                                                    'value' => 'araswori',
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'number',
+                                                                                    'value' => 0,
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'string',
+                                                                                    'value' => 'kodi',
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'number',
+                                                                                    'value' => 0,
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'string',
+                                                                                    'value' => '',
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'number',
+                                                                                    'value' => 0,
+                                                                                ],
+                                                                            ]);
+                                                                            $this->publishMessage($device->dev_id, $payload);
+                                                                        }
+                                                                        $user = User::where('id', $code->user_id)->first();
+                                                                        if ($device->op_mode == 0) {
+                                                                            $payload = $this->generateHexPayload(1, [
+                                                                                [
+                                                                                    'type' => 'string',
+                                                                                    'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'number',
+                                                                                    'value' => 0,
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'number16',
+                                                                                    'value' => $user->balance - $user->freezed_balance,
+                                                                                ],
+                                                                            ]);
+                                                                            $this->publishMessage($device->dev_id, $payload);
+                                                                            DB::table('elevator_codes')
+                                                                            ->where('id', '=', $code->id)
+                                                                            ->delete();
+                                                                        } else {
+                                                                            if ((int) $user->balance > $device->tariff_amount) {
+                                                                                $user->balance = (int) $user->balance - $device->tariff_amount;
                                                                                 $payload = $this->generateHexPayload(1, [
                                                                                     [
                                                                                         'type' => 'string',
@@ -635,201 +650,60 @@ class MqttController extends Controller
                                                                                     ],
                                                                                 ]);
                                                                                 $this->publishMessage($device->dev_id, $payload);
-                                                                                DB::table('elevator_codes')
-                                                                                ->where('id', '=', $code->id)
-                                                                                ->delete();
-                                                                            } else {
-                                                                                if ((int) $user->balance > $device->tariff_amount) {
-                                                                                    $user->balance = (int) $user->balance - $device->tariff_amount;
-                                                                                    $payload = $this->generateHexPayload(1, [
-                                                                                        [
-                                                                                            'type' => 'string',
-                                                                                            'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
-                                                                                        ],
-                                                                                        [
-                                                                                            'type' => 'number',
-                                                                                            'value' => 0,
-                                                                                        ],
-                                                                                        [
-                                                                                            'type' => 'number16',
-                                                                                            'value' => $user->balance - $user->freezed_balance,
-                                                                                        ],
-                                                                                    ]);
-                                                                                    $this->publishMessage($device->dev_id, $payload);
-                                                                                    $user->save();
-                                                                                    $devices_ids = Device::where(
-                                                                                        'users_id',
-                                                                                        $device->users_id
-                                                                                        )->get();
-                                                                                        foreach ($devices_ids as $key2 => $value2) {
-                                                                                            if ($value2->op_mode == '1') {
-                                                                                                $lastAmountCurrentDevice = LastUserAmount::where(
-                                                                                                    'user_id',
-                                                                                                    $user->id
-                                                                                                    )
-                                                                                                    ->where('device_id', $value2->id)
-                                                                                                    ->first();
-                                                                                                    
-                                                                                                    if (empty($lastAmountCurrentDevice->user_id)) {
-                                                                                                        LastUserAmount::insert([
-                                                                                                            'user_id' => $user->id,
-                                                                                                            'device_id' => $value2->id,
-                                                                                                            'last_amount' =>
-                                                                                                            $user->balance - $user->freezed_balance,
-                                                                                                        ]);
-                                                                                                    } else {
-                                                                                                        $lastAmountCurrentDevice->last_amount =
-                                                                                                        $user->balance - $user->freezed_balance;
-                                                                                                        $lastAmountCurrentDevice->save();
-                                                                                                    }
-                                                                                                    $payload = $this->generateHexPayload(5, [
-                                                                                                        [
-                                                                                                            'type' => 'string',
-                                                                                                            'value' => str_pad(
-                                                                                                                $user->id,
-                                                                                                                6,
-                                                                                                                '0',
-                                                                                                                STR_PAD_LEFT
-                                                                                                            ),
-                                                                                                        ],
-                                                                                                        [
-                                                                                                            'type' => 'number',
-                                                                                                            'value' => 0,
-                                                                                                        ],
-                                                                                                        [
-                                                                                                            'type' => 'number16',
-                                                                                                            'value' =>
-                                                                                                            $user->balance - $user->freezed_balance,
-                                                                                                        ],
+                                                                                $user->save();
+                                                                                $devices_ids = Device::where(
+                                                                                    'users_id',
+                                                                                    $device->users_id
+                                                                                    )->get();
+                                                                                    foreach ($devices_ids as $key2 => $value2) {
+                                                                                        if ($value2->op_mode == '1') {
+                                                                                            $lastAmountCurrentDevice = LastUserAmount::where(
+                                                                                                'user_id',
+                                                                                                $user->id
+                                                                                                )
+                                                                                                ->where('device_id', $value2->id)
+                                                                                                ->first();
+                                                                                                
+                                                                                                if (empty($lastAmountCurrentDevice->user_id)) {
+                                                                                                    LastUserAmount::insert([
+                                                                                                        'user_id' => $user->id,
+                                                                                                        'device_id' => $value2->id,
+                                                                                                        'last_amount' =>
+                                                                                                        $user->balance - $user->freezed_balance,
                                                                                                     ]);
-                                                                                                    $this->publishMessage($value2->dev_id, $payload);
-                                                                                                }
-                                                                                            }
-                                                                                            $devices_ids = Device::where(
-                                                                                                'users_id',
-                                                                                                $device->users_id
-                                                                                                )->get();
-                                                                                                foreach ($devices_ids as $key2 => $value2) {
-                                                                                                    if ($value2->op_mode == '1') {
-                                                                                                        $lastAmountCurrentDevice = LastUserAmount::where(
-                                                                                                            'user_id',
-                                                                                                            $user->id
-                                                                                                            )
-                                                                                                            ->where('device_id', $value2->id)
-                                                                                                            ->first();
-                                                                                                            
-                                                                                                            if (empty($lastAmountCurrentDevice->user_id)) {
-                                                                                                                LastUserAmount::insert([
-                                                                                                                    'user_id' => $user->id,
-                                                                                                                    'device_id' => $value2->id,
-                                                                                                                    'last_amount' =>
-                                                                                                                    $user->balance - $user->freezed_balance,
-                                                                                                                ]);
-                                                                                                            } else {
-                                                                                                                $lastAmountCurrentDevice->last_amount =
-                                                                                                                $user->balance - $user->freezed_balance;
-                                                                                                                $lastAmountCurrentDevice->save();
-                                                                                                            }
-                                                                                                            $payload = $this->generateHexPayload(5, [
-                                                                                                                [
-                                                                                                                    'type' => 'string',
-                                                                                                                    'value' => str_pad(
-                                                                                                                        $user->id,
-                                                                                                                        6,
-                                                                                                                        '0',
-                                                                                                                        STR_PAD_LEFT
-                                                                                                                    ),
-                                                                                                                ],
-                                                                                                                [
-                                                                                                                    'type' => 'number',
-                                                                                                                    'value' => 0,
-                                                                                                                ],
-                                                                                                                [
-                                                                                                                    'type' => 'number16',
-                                                                                                                    'value' =>
-                                                                                                                    $user->balance - $user->freezed_balance,
-                                                                                                                ],
-                                                                                                            ]);
-                                                                                                            $this->publishMessage($value2->dev_id, $payload);
-                                                                                                        }
-                                                                                                    }
-                                                                                                    DB::table('elevator_codes')
-                                                                                                    ->where('id', '=', $code->id)
-                                                                                                    ->delete();
                                                                                                 } else {
-                                                                                                    $this->noMoney($device->dev_id);
+                                                                                                    $lastAmountCurrentDevice->last_amount =
+                                                                                                    $user->balance - $user->freezed_balance;
+                                                                                                    $lastAmountCurrentDevice->save();
                                                                                                 }
+                                                                                                $payload = $this->generateHexPayload(5, [
+                                                                                                    [
+                                                                                                        'type' => 'string',
+                                                                                                        'value' => str_pad(
+                                                                                                            $user->id,
+                                                                                                            6,
+                                                                                                            '0',
+                                                                                                            STR_PAD_LEFT
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                    [
+                                                                                                        'type' => 'number',
+                                                                                                        'value' => 0,
+                                                                                                    ],
+                                                                                                    [
+                                                                                                        'type' => 'number16',
+                                                                                                        'value' =>
+                                                                                                        $user->balance - $user->freezed_balance,
+                                                                                                    ],
+                                                                                                ]);
+                                                                                                $this->publishMessage($value2->dev_id, $payload);
                                                                                             }
                                                                                         }
-                                                                                        
-                                                                                        private function remainedAmountUpdateToApplication($device, $data)
-                                                                                        {
-                                                                                            // $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
-                                                                                            
-                                                                                            $bigEndianValue = $data['amount'];
-                                                                                            $cardNumber = $data['card'];
-                                                                                            $deviceIds = Device::where('users_id', $device->users_id)
-                                                                                            ->pluck('id')
-                                                                                            ->toArray();
-                                                                                            
-                                                                                            $card = Card::where('card_number', $cardNumber)
-                                                                                            ->whereIn('device_id', $deviceIds)
-                                                                                            ->first();
-                                                                                            
-                                                                                            $user = User::where('id', $card->user_id)->first();
-                                                                                            $lastAmount = LastUserAmount::where('user_id', $user->id)
-                                                                                            ->where('device_id', $device->id)
-                                                                                            ->first();
-                                                                                            
-                                                                                            $deviceTarff = $device->tariff_amount;
-                                                                                            $userBalance = $user->balance;
-                                                                                            
-                                                                                            $diff = $lastAmount->last_amount - $bigEndianValue;
-                                                                                            if ($diff <= 0 || $diff == 0) {
-                                                                                                // $this->Logsaver('730', $device->id, 'diff');
-                                                                                                if ($userBalance >= $deviceTarff) {
-                                                                                                    $diff = $deviceTarff;
-                                                                                                } else {
-                                                                                                    return;
-                                                                                                }
-                                                                                            }
-                                                                                            
-                                                                                            // $this->Logsaver(
-                                                                                            //     'პირველი ლაინი bigEnd and lastAmount',
-                                                                                            //     $bigEndianValue,
-                                                                                            //     $lastAmount->last_amount
-                                                                                            // );
-                                                                                            $user->balance = $user->balance - $diff;
-                                                                                            $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
-                                                                                            
-                                                                                            // $this->Logsaver(
-                                                                                            //     'მეორე ლაინი userBalance and diff',
-                                                                                            //     $user->balance,
-                                                                                            //     $diff
-                                                                                            // );
-                                                                                            
-                                                                                            $sendPrice = $user->balance - $user->freezed_balance;
-                                                                                            $lastAmount->last_amount = $sendPrice;
-                                                                                            // $this->Logsaver(
-                                                                                            //     'მეოთხე ლაინი',
-                                                                                            //     $lastAmount->last_amount,
-                                                                                            //     'მეოთხე ლაინი'
-                                                                                            // );
-                                                                                            
-                                                                                            $lastAmount->save();
-                                                                                            
-                                                                                            $user->save();
-                                                                                            
-                                                                                            $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
-                                                                                            // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
-                                                                                            
-                                                                                            $devices_ids = Device::where('users_id', $device->users_id)->get();
-                                                                                            // $this->Logsaver($device_id, '178', $commandValue);
-                                                                                            // $this->Logsaver('760', $device->id, 'დევაისი არსებობს');
-                                                                                            
+                                                                                        $devices_ids = Device::where(
+                                                                                            'users_id',
+                                                                                            $device->users_id
+                                                                                            )->get();
                                                                                             foreach ($devices_ids as $key2 => $value2) {
-                                                                                                // $this->Logsaver('763', $value2->id, 'ლუპში შესვლა');
-                                                                                                
                                                                                                 if ($value2->op_mode == '1') {
                                                                                                     $lastAmountCurrentDevice = LastUserAmount::where(
                                                                                                         'user_id',
@@ -842,16 +716,23 @@ class MqttController extends Controller
                                                                                                             LastUserAmount::insert([
                                                                                                                 'user_id' => $user->id,
                                                                                                                 'device_id' => $value2->id,
-                                                                                                                'last_amount' => $sendPrice,
+                                                                                                                'last_amount' =>
+                                                                                                                $user->balance - $user->freezed_balance,
                                                                                                             ]);
                                                                                                         } else {
-                                                                                                            $lastAmountCurrentDevice->last_amount = $sendPrice;
+                                                                                                            $lastAmountCurrentDevice->last_amount =
+                                                                                                            $user->balance - $user->freezed_balance;
                                                                                                             $lastAmountCurrentDevice->save();
                                                                                                         }
                                                                                                         $payload = $this->generateHexPayload(5, [
                                                                                                             [
                                                                                                                 'type' => 'string',
-                                                                                                                'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                                                                                                                'value' => str_pad(
+                                                                                                                    $user->id,
+                                                                                                                    6,
+                                                                                                                    '0',
+                                                                                                                    STR_PAD_LEFT
+                                                                                                                ),
                                                                                                             ],
                                                                                                             [
                                                                                                                 'type' => 'number',
@@ -859,254 +740,367 @@ class MqttController extends Controller
                                                                                                             ],
                                                                                                             [
                                                                                                                 'type' => 'number16',
-                                                                                                                'value' => $sendPrice,
+                                                                                                                'value' =>
+                                                                                                                $user->balance - $user->freezed_balance,
                                                                                                             ],
                                                                                                         ]);
                                                                                                         $this->publishMessage($value2->dev_id, $payload);
                                                                                                     }
                                                                                                 }
+                                                                                                DB::table('elevator_codes')
+                                                                                                ->where('id', '=', $code->id)
+                                                                                                ->delete();
+                                                                                            } else {
+                                                                                                $this->noMoney($device->dev_id);
                                                                                             }
-                                                                                            
-                                                                                            private function deviceCurrentSetupPacket($device, $data)
-                                                                                            {
-                                                                                                $hard = substr($data['payload'], 0, 3);
-                                                                                                $soft = substr($data['payload'], 3, 3);
-                                                                                                $device->hardware_version = $hard;
-                                                                                                $device->soft_version = $soft;
-                                                                                                $lastCreated = UpdatingDevice::latest('created_at')->first();
-                                                                                                if (!empty($lastCreated)) {
-                                                                                                    $uptDev = UpdatingDevice::where('dev_id', $device->dev_id)
-                                                                                                    ->where('created_at', $lastCreated->created_at)
-                                                                                                    ->where('status', 4)
-                                                                                                    ->where('is_checked', false)
-                                                                                                    ->first();
-                                                                                                    if (!empty($uptDev)) {
-                                                                                                        if ($uptDev->previous_version == $soft) {
-                                                                                                            $uptDev->status = 2;
-                                                                                                        }
-                                                                                                        if ($uptDev->previous_version != $soft) {
-                                                                                                            $uptDev->status = 1;
-                                                                                                        }
-                                                                                                        $uptDev->save();
-                                                                                                    }
-                                                                                                }
-                                                                                                $device->save();
-                                                                                            }
-                                                                                            
-                                                                                            private function logDeviceError($device, $data)
-                                                                                            {
-                                                                                                $errorCode = unpack('Cerror', $data['payload']);
-                                                                                                $errors = [
-                                                                                                    '1' => 'SYS_ERR_PERIPHERIAL_FAILED ',
-                                                                                                    '2' => 'SYS_ERR_BAD_MQTT_PACKET ',
-                                                                                                    '3' => 'SYS_ERR_MEMORY_FULL ',
-                                                                                                    '17' => 'SYS_ERR_FOTA_INVALID_SW_VER ',
-                                                                                                    '18' => 'SYS_ERR_FOTA_INVALID_HW_REV',
-                                                                                                    '19' => 'SYS_ERR_FOTA_INVALID_BIN_FILE ',
-                                                                                                    '20' => 'SYS_ERR_FOTA_INVALID_BIN_FILE_SIZE',
-                                                                                                    '21' => 'SYS_ERR_FOTA_HTTP_CONNECTION_FAILED',
-                                                                                                    '22' => 'SYS_ERR_FOTA_CRC_VERIFY_FAILED',
-                                                                                                    '23' => 'SYS_ERR_FOTA_MEMORY_VERIFY_FAILED',
-                                                                                                    '24' => 'SYS_ERR_FOTA_ROLLBACK_CANCEL_FAILED',
-                                                                                                    '255' => 'SYS_ERR_UNKNOWN',
-                                                                                                ];
-                                                                                                if ($errorCode['error'] >= 17 && $errorCode['error'] <= 24) {
-                                                                                                    UpdatingDevice::where('dev_id', $device->dev_id)
-                                                                                                    ->where('is_checked', false)
-                                                                                                    ->update(['status' => 2]);
-                                                                                                }
-                                                                                                $errorText = 'reserved';
-                                                                                                if (isset($errors['' . $errorCode['error']])) {
-                                                                                                    $errorText = $errors['' . $errorCode['error']];
-                                                                                                }
-                                                                                                
-                                                                                                DeviceError::create([
-                                                                                                    'device_id' => $device->id,
-                                                                                                    'errorCode' => $errorCode['error'],
-                                                                                                    'errorText' => $errorText,
-                                                                                                ]);
-                                                                                            }
-                                                                                            
-                                                                                            public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
-                                                                                            {
-                                                                                                // Generate the date for month_year
-                                                                                                // $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
-                                                                                                // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
-                                                                                                $now = Carbon::now();
-                                                                                                $user = User::where('id', $companyId)->first();
-                                                                                                $device = Device::where('id', $deviceId)->first();
-                                                                                                
-                                                                                                if ($user->cashback == 0) {
-                                                                                                    // $this->Logsaver('876', $user->cashback, 'უსერის ქეშბექი');
-                                                                                                    
-                                                                                                    $user = User::where('id', $device->users_id)->first();
-                                                                                                }
-                                                                                                $this->Logsaver('879', $earningsValue, ' ერნიგნები');
-                                                                                                
-                                                                                                // $this->Logsaver('881', $user->id, 'მენეჯერის id');
-                                                                                                
-                                                                                                // Try to retrieve the entry for the given device and month_year
-                                                                                                $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
-                                                                                                ->where('month', $now->month)
-                                                                                                ->where('year', $now->year)
-                                                                                                ->first();
-                                                                                                if (!empty($deviceEarnings)) {
-                                                                                                    // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
-                                                                                                    $this->Logsaver('890', $earningsValue, $user->id);
-                                                                                                    
-                                                                                                    if ($user && $device) {
-                                                                                                        // $this->Logsaver(
-                                                                                                        //     $earningsValue,
-                                                                                                        //     $user->cashback,
-                                                                                                        //     'device->deviceTariffAmount'
-                                                                                                        // );
-                                                                                                        
-                                                                                                        if ($device->deviceTariffAmount != null) {
-                                                                                                            $deviceEarnings->earnings =
-                                                                                                            $deviceEarnings->earnings + $earningsValue;
-                                                                                                            $deviceEarnings->cashback = $user->cashback;
-                                                                                                            $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
-                                                                                                            $deviceEarnings->save();
-                                                                                                            
-                                                                                                            $this->Logsaver(
-                                                                                                                '890',
-                                                                                                                $deviceEarnings->earnings,
-                                                                                                                $user->id
-                                                                                                            );
-                                                                                                        } else {
-                                                                                                            $deviceEarnings->earnings =
-                                                                                                            $deviceEarnings->earnings + $earningsValue;
-                                                                                                            $deviceEarnings->cashback = $user->cashback;
-                                                                                                            $deviceEarnings->save();
-                                                                                                            
-                                                                                                            $this->Logsaver(
-                                                                                                                '920',
-                                                                                                                $deviceEarnings->earnings,
-                                                                                                                $user->id
-                                                                                                            );
-                                                                                                        }
-                                                                                                    } else {
-                                                                                                        $deviceEarnings->earnings += $earningsValue;
-                                                                                                        $this->Logsaver(
-                                                                                                            '911',
-                                                                                                            $user->id,
-                                                                                                            '  უსერი და დევაისი არ არსებობს '
-                                                                                                        );
-                                                                                                        
-                                                                                                        $deviceEarnings->save();
-                                                                                                    }
-                                                                                                } else {
-                                                                                                    // $this->Logsaver('906', $user->id, 'BIG ELSE');
-                                                                                                    $this->Logsaver('917', $user->id, ' ერნიგები ცარიელია');
-                                                                                                    
-                                                                                                    if ($user && $device) {
-                                                                                                        // $this->Logsaver('909', $user->id, 'user && device 2 ');
-                                                                                                        $this->Logsaver(
-                                                                                                            '921',
-                                                                                                            $user->id,
-                                                                                                            ' უსერი და დევაისი  არსებობს ცარიელიში'
-                                                                                                        );
-                                                                                                        
-                                                                                                        DeviceEarn::create([
-                                                                                                            'company_id' => $companyId,
-                                                                                                            'device_id' => $deviceId,
-                                                                                                            'month' => $now->month,
-                                                                                                            'year' => $now->year,
-                                                                                                            'earnings' => $earningsValue,
-                                                                                                            'cashback' => $user->cashback,
-                                                                                                            'deviceTariff' => $device->deviceTariffAmount,
-                                                                                                        ]);
-                                                                                                    } else {
-                                                                                                        // $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
-                                                                                                        $this->Logsaver(
-                                                                                                            '934',
-                                                                                                            $user->id,
-                                                                                                            'უსერი და დევაისი არ არსებობს ცარიელშ'
-                                                                                                        );
-                                                                                                        
-                                                                                                        DeviceEarn::create([
-                                                                                                            'company_id' => $companyId,
-                                                                                                            'device_id' => $deviceId,
-                                                                                                            'month' => $now->month,
-                                                                                                            'year' => $now->year,
-                                                                                                            'earnings' => $earningsValue,
-                                                                                                        ]);
-                                                                                                    }
-                                                                                                }
-                                                                                                // Save the model (either updates or creates based on existence)
-                                                                                            }
-                                                                                            
-                                                                                            public function getActivationCode($dev_id, $card)
-                                                                                            {
-                                                                                                $code = rand(100000, 999999); // Generates a random 6-character code
-                                                                                                $expiresAt = Carbon::now()->addMinutes(5); // Set the expiration timestamp to 5 hour from now
-                                                                                                DB::table('activation_codes')->insert([
-                                                                                                    'code' => $code,
-                                                                                                    'device_id' => $dev_id,
-                                                                                                    'card' => $card,
-                                                                                                    'expires_at' => $expiresAt,
-                                                                                                ]);
-                                                                                                echo $code;
-                                                                                                return $code;
-                                                                                            }
-                                                                                            
-                                                                                            public function generatePayloadStarter($command)
-                                                                                            {
-                                                                                                $hexString = str_pad(dechex(time()), 8, '0', STR_PAD_LEFT);
-                                                                                                $hexString .= str_pad(dechex($command), 2, '0', STR_PAD_LEFT);
-                                                                                                return $hexString;
-                                                                                            }
-                                                                                            
-                                                                                            public function noMoney($device_id)
-                                                                                            {
-                                                                                                $payload = $this->generateHexPayload(6, [
-                                                                                                    [
-                                                                                                        'type' => 'string',
-                                                                                                        'value' => 'araa',
-                                                                                                    ],
-                                                                                                    [
-                                                                                                        'type' => 'number',
-                                                                                                        'value' => 0,
-                                                                                                    ],
-                                                                                                    [
-                                                                                                        'type' => 'string',
-                                                                                                        'value' => 'sakmarisi',
-                                                                                                    ],
-                                                                                                    [
-                                                                                                        'type' => 'number',
-                                                                                                        'value' => 0,
-                                                                                                    ],
-                                                                                                    [
-                                                                                                        'type' => 'string',
-                                                                                                        'value' => 'Tanxa',
-                                                                                                    ],
-                                                                                                    [
-                                                                                                        'type' => 'number',
-                                                                                                        'value' => 0,
-                                                                                                    ],
-                                                                                                ]);
-                                                                                                $this->publishMessage($device_id, $payload);
-                                                                                            }
-                                                                                            
-                                                                                            public function generateHexPayload($command, $payload)
-                                                                                            {
-                                                                                                return [
-                                                                                                    'command' => $command,
-                                                                                                    'payload' => $payload,
-                                                                                                ];
-                                                                                            }
-                                                                                            
-                                                                                            public function publishMessage($device_id, $payload)
-                                                                                            {
-                                                                                                $data = [
-                                                                                                    'device_id' => $device_id,
-                                                                                                    'payload' => $payload,
-                                                                                                ];
-                                                                                                $queryParams = http_build_query($data);
-                                                                                                $response = Http::get(
-                                                                                                    'http://localhost:3000/mqtt/general?' . $queryParams
-                                                                                                );
-                                                                                                return $response->json(['data' => ['dasd']]);
+                                                                                        }
+                                                                                    }
+                                                                                    
+                                                                                    private function remainedAmountUpdateToApplication($device, $data)
+                                                                                    {
+                                                                                        // $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
+                                                                                        
+                                                                                        $bigEndianValue = $data['amount'];
+                                                                                        $cardNumber = $data['card'];
+                                                                                        $deviceIds = Device::where('users_id', $device->users_id)
+                                                                                        ->pluck('id')
+                                                                                        ->toArray();
+                                                                                        
+                                                                                        $card = Card::where('card_number', $cardNumber)
+                                                                                        ->whereIn('device_id', $deviceIds)
+                                                                                        ->first();
+                                                                                        
+                                                                                        $user = User::where('id', $card->user_id)->first();
+                                                                                        $lastAmount = LastUserAmount::where('user_id', $user->id)
+                                                                                        ->where('device_id', $device->id)
+                                                                                        ->first();
+                                                                                        
+                                                                                        $deviceTarff = $device->tariff_amount;
+                                                                                        $userBalance = $user->balance;
+                                                                                        
+                                                                                        $diff = $lastAmount->last_amount - $bigEndianValue;
+                                                                                        if ($diff <= 0 || $diff == 0) {
+                                                                                            // $this->Logsaver('730', $device->id, 'diff');
+                                                                                            if ($userBalance >= $deviceTarff) {
+                                                                                                $diff = $deviceTarff;
+                                                                                            } else {
+                                                                                                return;
                                                                                             }
                                                                                         }
                                                                                         
+                                                                                        // $this->Logsaver(
+                                                                                        //     'პირველი ლაინი bigEnd and lastAmount',
+                                                                                        //     $bigEndianValue,
+                                                                                        //     $lastAmount->last_amount
+                                                                                        // );
+                                                                                        $user->balance = $user->balance - $diff;
+                                                                                        $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
+                                                                                        
+                                                                                        // $this->Logsaver(
+                                                                                        //     'მეორე ლაინი userBalance and diff',
+                                                                                        //     $user->balance,
+                                                                                        //     $diff
+                                                                                        // );
+                                                                                        
+                                                                                        $sendPrice = $user->balance - $user->freezed_balance;
+                                                                                        $lastAmount->last_amount = $sendPrice;
+                                                                                        // $this->Logsaver(
+                                                                                        //     'მეოთხე ლაინი',
+                                                                                        //     $lastAmount->last_amount,
+                                                                                        //     'მეოთხე ლაინი'
+                                                                                        // );
+                                                                                        
+                                                                                        $lastAmount->save();
+                                                                                        
+                                                                                        $user->save();
+                                                                                        
+                                                                                        $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
+                                                                                        // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
+                                                                                        
+                                                                                        $devices_ids = Device::where('users_id', $device->users_id)->get();
+                                                                                        // $this->Logsaver($device_id, '178', $commandValue);
+                                                                                        // $this->Logsaver('760', $device->id, 'დევაისი არსებობს');
+                                                                                        
+                                                                                        foreach ($devices_ids as $key2 => $value2) {
+                                                                                            // $this->Logsaver('763', $value2->id, 'ლუპში შესვლა');
+                                                                                            
+                                                                                            if ($value2->op_mode == '1') {
+                                                                                                $lastAmountCurrentDevice = LastUserAmount::where(
+                                                                                                    'user_id',
+                                                                                                    $user->id
+                                                                                                    )
+                                                                                                    ->where('device_id', $value2->id)
+                                                                                                    ->first();
+                                                                                                    
+                                                                                                    if (empty($lastAmountCurrentDevice->user_id)) {
+                                                                                                        LastUserAmount::insert([
+                                                                                                            'user_id' => $user->id,
+                                                                                                            'device_id' => $value2->id,
+                                                                                                            'last_amount' => $sendPrice,
+                                                                                                        ]);
+                                                                                                    } else {
+                                                                                                        $lastAmountCurrentDevice->last_amount = $sendPrice;
+                                                                                                        $lastAmountCurrentDevice->save();
+                                                                                                    }
+                                                                                                    $payload = $this->generateHexPayload(5, [
+                                                                                                        [
+                                                                                                            'type' => 'string',
+                                                                                                            'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                                                                                                        ],
+                                                                                                        [
+                                                                                                            'type' => 'number',
+                                                                                                            'value' => 0,
+                                                                                                        ],
+                                                                                                        [
+                                                                                                            'type' => 'number16',
+                                                                                                            'value' => $sendPrice,
+                                                                                                        ],
+                                                                                                    ]);
+                                                                                                    $this->publishMessage($value2->dev_id, $payload);
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                        
+                                                                                        private function deviceCurrentSetupPacket($device, $data)
+                                                                                        {
+                                                                                            $hard = substr($data['payload'], 0, 3);
+                                                                                            $soft = substr($data['payload'], 3, 3);
+                                                                                            $device->hardware_version = $hard;
+                                                                                            $device->soft_version = $soft;
+                                                                                            $lastCreated = UpdatingDevice::latest('created_at')->first();
+                                                                                            if (!empty($lastCreated)) {
+                                                                                                $uptDev = UpdatingDevice::where('dev_id', $device->dev_id)
+                                                                                                ->where('created_at', $lastCreated->created_at)
+                                                                                                ->where('status', 4)
+                                                                                                ->where('is_checked', false)
+                                                                                                ->first();
+                                                                                                if (!empty($uptDev)) {
+                                                                                                    if ($uptDev->previous_version == $soft) {
+                                                                                                        $uptDev->status = 2;
+                                                                                                    }
+                                                                                                    if ($uptDev->previous_version != $soft) {
+                                                                                                        $uptDev->status = 1;
+                                                                                                    }
+                                                                                                    $uptDev->save();
+                                                                                                }
+                                                                                            }
+                                                                                            $device->save();
+                                                                                        }
+                                                                                        
+                                                                                        private function logDeviceError($device, $data)
+                                                                                        {
+                                                                                            $errorCode = unpack('Cerror', $data['payload']);
+                                                                                            $errors = [
+                                                                                                '1' => 'SYS_ERR_PERIPHERIAL_FAILED ',
+                                                                                                '2' => 'SYS_ERR_BAD_MQTT_PACKET ',
+                                                                                                '3' => 'SYS_ERR_MEMORY_FULL ',
+                                                                                                '17' => 'SYS_ERR_FOTA_INVALID_SW_VER ',
+                                                                                                '18' => 'SYS_ERR_FOTA_INVALID_HW_REV',
+                                                                                                '19' => 'SYS_ERR_FOTA_INVALID_BIN_FILE ',
+                                                                                                '20' => 'SYS_ERR_FOTA_INVALID_BIN_FILE_SIZE',
+                                                                                                '21' => 'SYS_ERR_FOTA_HTTP_CONNECTION_FAILED',
+                                                                                                '22' => 'SYS_ERR_FOTA_CRC_VERIFY_FAILED',
+                                                                                                '23' => 'SYS_ERR_FOTA_MEMORY_VERIFY_FAILED',
+                                                                                                '24' => 'SYS_ERR_FOTA_ROLLBACK_CANCEL_FAILED',
+                                                                                                '255' => 'SYS_ERR_UNKNOWN',
+                                                                                            ];
+                                                                                            if ($errorCode['error'] >= 17 && $errorCode['error'] <= 24) {
+                                                                                                UpdatingDevice::where('dev_id', $device->dev_id)
+                                                                                                ->where('is_checked', false)
+                                                                                                ->update(['status' => 2]);
+                                                                                            }
+                                                                                            $errorText = 'reserved';
+                                                                                            if (isset($errors['' . $errorCode['error']])) {
+                                                                                                $errorText = $errors['' . $errorCode['error']];
+                                                                                            }
+                                                                                            
+                                                                                            DeviceError::create([
+                                                                                                'device_id' => $device->id,
+                                                                                                'errorCode' => $errorCode['error'],
+                                                                                                'errorText' => $errorText,
+                                                                                            ]);
+                                                                                        }
+                                                                                        
+                                                                                        public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
+                                                                                        {
+                                                                                            // Generate the date for month_year
+                                                                                            // $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
+                                                                                            // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
+                                                                                            $now = Carbon::now();
+                                                                                            $user = User::where('id', $companyId)->first();
+                                                                                            $device = Device::where('id', $deviceId)->first();
+                                                                                            
+                                                                                            if ($user->cashback == 0) {
+                                                                                                // $this->Logsaver('876', $user->cashback, 'უსერის ქეშბექი');
+                                                                                                
+                                                                                                $user = User::where('id', $device->users_id)->first();
+                                                                                            }
+                                                                                            $this->Logsaver('879', $earningsValue, ' ერნიგნები');
+                                                                                            
+                                                                                            // $this->Logsaver('881', $user->id, 'მენეჯერის id');
+                                                                                            
+                                                                                            // Try to retrieve the entry for the given device and month_year
+                                                                                            $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
+                                                                                            ->where('month', $now->month)
+                                                                                            ->where('year', $now->year)
+                                                                                            ->first();
+                                                                                            if (!empty($deviceEarnings)) {
+                                                                                                // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
+                                                                                                $this->Logsaver('890', $earningsValue, $user->id);
+                                                                                                
+                                                                                                if ($user && $device) {
+                                                                                                    // $this->Logsaver(
+                                                                                                    //     $earningsValue,
+                                                                                                    //     $user->cashback,
+                                                                                                    //     'device->deviceTariffAmount'
+                                                                                                    // );
+                                                                                                    
+                                                                                                    if ($device->deviceTariffAmount != null) {
+                                                                                                        $deviceEarnings->earnings =
+                                                                                                        $deviceEarnings->earnings + $earningsValue;
+                                                                                                        $deviceEarnings->cashback = $user->cashback;
+                                                                                                        $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
+                                                                                                        $deviceEarnings->save();
+                                                                                                        
+                                                                                                        $this->Logsaver(
+                                                                                                            '890',
+                                                                                                            $deviceEarnings->earnings,
+                                                                                                            $user->id
+                                                                                                        );
+                                                                                                    } else {
+                                                                                                        $deviceEarnings->earnings =
+                                                                                                        $deviceEarnings->earnings + $earningsValue;
+                                                                                                        $deviceEarnings->cashback = $user->cashback;
+                                                                                                        $deviceEarnings->save();
+                                                                                                        
+                                                                                                        $this->Logsaver(
+                                                                                                            '920',
+                                                                                                            $deviceEarnings->earnings,
+                                                                                                            $user->id
+                                                                                                        );
+                                                                                                    }
+                                                                                                } else {
+                                                                                                    $deviceEarnings->earnings += $earningsValue;
+                                                                                                    $this->Logsaver(
+                                                                                                        '911',
+                                                                                                        $user->id,
+                                                                                                        '  უსერი და დევაისი არ არსებობს '
+                                                                                                    );
+                                                                                                    
+                                                                                                    $deviceEarnings->save();
+                                                                                                }
+                                                                                            } else {
+                                                                                                // $this->Logsaver('906', $user->id, 'BIG ELSE');
+                                                                                                $this->Logsaver('917', $user->id, ' ერნიგები ცარიელია');
+                                                                                                
+                                                                                                if ($user && $device) {
+                                                                                                    // $this->Logsaver('909', $user->id, 'user && device 2 ');
+                                                                                                    $this->Logsaver(
+                                                                                                        '921',
+                                                                                                        $user->id,
+                                                                                                        ' უსერი და დევაისი  არსებობს ცარიელიში'
+                                                                                                    );
+                                                                                                    
+                                                                                                    DeviceEarn::create([
+                                                                                                        'company_id' => $companyId,
+                                                                                                        'device_id' => $deviceId,
+                                                                                                        'month' => $now->month,
+                                                                                                        'year' => $now->year,
+                                                                                                        'earnings' => $earningsValue,
+                                                                                                        'cashback' => $user->cashback,
+                                                                                                        'deviceTariff' => $device->deviceTariffAmount,
+                                                                                                    ]);
+                                                                                                } else {
+                                                                                                    // $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
+                                                                                                    $this->Logsaver(
+                                                                                                        '934',
+                                                                                                        $user->id,
+                                                                                                        'უსერი და დევაისი არ არსებობს ცარიელშ'
+                                                                                                    );
+                                                                                                    
+                                                                                                    DeviceEarn::create([
+                                                                                                        'company_id' => $companyId,
+                                                                                                        'device_id' => $deviceId,
+                                                                                                        'month' => $now->month,
+                                                                                                        'year' => $now->year,
+                                                                                                        'earnings' => $earningsValue,
+                                                                                                    ]);
+                                                                                                }
+                                                                                            }
+                                                                                            // Save the model (either updates or creates based on existence)
+                                                                                        }
+                                                                                        
+                                                                                        public function getActivationCode($dev_id, $card)
+                                                                                        {
+                                                                                            $code = rand(100000, 999999); // Generates a random 6-character code
+                                                                                            $expiresAt = Carbon::now()->addMinutes(5); // Set the expiration timestamp to 5 hour from now
+                                                                                            DB::table('activation_codes')->insert([
+                                                                                                'code' => $code,
+                                                                                                'device_id' => $dev_id,
+                                                                                                'card' => $card,
+                                                                                                'expires_at' => $expiresAt,
+                                                                                            ]);
+                                                                                            echo $code;
+                                                                                            return $code;
+                                                                                        }
+                                                                                        
+                                                                                        public function generatePayloadStarter($command)
+                                                                                        {
+                                                                                            $hexString = str_pad(dechex(time()), 8, '0', STR_PAD_LEFT);
+                                                                                            $hexString .= str_pad(dechex($command), 2, '0', STR_PAD_LEFT);
+                                                                                            return $hexString;
+                                                                                        }
+                                                                                        
+                                                                                        public function noMoney($device_id)
+                                                                                        {
+                                                                                            $payload = $this->generateHexPayload(6, [
+                                                                                                [
+                                                                                                    'type' => 'string',
+                                                                                                    'value' => 'araa',
+                                                                                                ],
+                                                                                                [
+                                                                                                    'type' => 'number',
+                                                                                                    'value' => 0,
+                                                                                                ],
+                                                                                                [
+                                                                                                    'type' => 'string',
+                                                                                                    'value' => 'sakmarisi',
+                                                                                                ],
+                                                                                                [
+                                                                                                    'type' => 'number',
+                                                                                                    'value' => 0,
+                                                                                                ],
+                                                                                                [
+                                                                                                    'type' => 'string',
+                                                                                                    'value' => 'Tanxa',
+                                                                                                ],
+                                                                                                [
+                                                                                                    'type' => 'number',
+                                                                                                    'value' => 0,
+                                                                                                ],
+                                                                                            ]);
+                                                                                            $this->publishMessage($device_id, $payload);
+                                                                                        }
+                                                                                        
+                                                                                        public function generateHexPayload($command, $payload)
+                                                                                        {
+                                                                                            return [
+                                                                                                'command' => $command,
+                                                                                                'payload' => $payload,
+                                                                                            ];
+                                                                                        }
+                                                                                        
+                                                                                        public function publishMessage($device_id, $payload)
+                                                                                        {
+                                                                                            $data = [
+                                                                                                'device_id' => $device_id,
+                                                                                                'payload' => $payload,
+                                                                                            ];
+                                                                                            $queryParams = http_build_query($data);
+                                                                                            $response = Http::get(
+                                                                                                'http://localhost:3000/mqtt/general?' . $queryParams
+                                                                                            );
+                                                                                            return $response->json(['data' => ['dasd']]);
+                                                                                        }
+                                                                                    }
+                                                                                    
