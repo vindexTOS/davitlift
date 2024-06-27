@@ -26,8 +26,7 @@ class UserSubscriptionCheck extends Command
 
     public function handle()
     { 
-        Log::debug("Shemosvla user subscriptinshi >>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        $today = Carbon::now()->day;
+         $today = Carbon::now()->day;
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
@@ -61,9 +60,10 @@ class UserSubscriptionCheck extends Command
                 if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
                    
-       
-                    if (
-                        $userBalance >= $fixedCard &&
+                    $user->freezed_balance = $fixedCard;
+                                        if (
+                            $user->balance >=$fixedCard &&
+                            $user->freezed_balance >= $fixedCard &&
                         !is_null($subscriptionDate) &&
                         $subscriptionDate->lt($nextMonthPayDay)
                     ) {
@@ -72,7 +72,8 @@ class UserSubscriptionCheck extends Command
                         try {
                             $user->balance -= $fixedCard ;
                             
-
+                            $user->freezed_balance -= $fixedCard;
+                            if( $user->balance - $user->freezed_balance >= $fixedCard){
                             $currentDay = Carbon::now()->day;
 
                             if ($currentDay < $device->pay_day) {
@@ -90,7 +91,7 @@ class UserSubscriptionCheck extends Command
                                 ->update([
                                     'subscription' => $nextMonthPayDay,
                                 ]);
-
+    }
                             $user->save();
                             $deviceEarning += $fixedCard;
                             DB::commit();
