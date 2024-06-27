@@ -57,7 +57,8 @@ class TestController extends   Controller
                    
        
                     if (
-                        $userBalance >= $fixedCard &&
+                            $user->balance >=$fixedCard &&
+                            $user->freezed_balance >= $fixedCard &&
                         !is_null($subscriptionDate) &&
                         $subscriptionDate->lt($nextMonthPayDay)
                     ) {
@@ -66,7 +67,8 @@ class TestController extends   Controller
                         try {
                             $user->balance -= $fixedCard ;
                             
-
+                            $user->freezed_balance -= $fixedCard;
+                            if( $user->balance - $user->freezed_balance >= $fixedCard){
                             $currentDay = Carbon::now()->day;
 
                             if ($currentDay < $device->pay_day) {
@@ -84,7 +86,7 @@ class TestController extends   Controller
                                 ->update([
                                     'subscription' => $nextMonthPayDay,
                                 ]);
-
+    }
                             $user->save();
                             $deviceEarning += $fixedCard;
                             DB::commit();
