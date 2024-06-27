@@ -361,69 +361,25 @@ class MqttService
                                                                         ],
                                                                     ]);
                                                                     $this->publishMessage($device->dev_id, $payload);
-                                                                } else {
-                                                                    if($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0"){
-                                                                        
-                                                                        $userFixedBalnce = $user->fixed_card_amount;
-                                                                        $userCardAmount = Card::where('user_id', $user->id)->count();
-                                                                        $fixedCard = $userFixedBalnce * $userCardAmount ;
-                                                                        
-                                                                        
-                                                                        $userBalance = $user->balance;
-                                                                        
-                                                                        $user->freezed_balance = $fixedCard;
-                                                                        
-                                                                        
-                                                                        
-                                                                        
-                                                                        if($user->balance - $user->freezed_balance >= $fixedCard){
-                                                                            
-                                                                            $user->balance -= $fixedCard ;
-                                                                            $user->freezed_balance -= $fixedCard;
-                                                                            $currentDay = Carbon::now()->day;
-                                                                            if ($currentDay < $device->pay_day) {
-                                                                                $nextMonthPayDay = Carbon::now()
-                                                                                ->startOfMonth()
-                                                                                ->addDays($device->pay_day - 1);
-                                                                            } else {
-                                                                                $nextMonthPayDay = Carbon::now()
-                                                                                ->addMonth()
-                                                                                ->startOfMonth()
-                                                                                ->addDays($device->pay_day - 1);
-                                                                            }
-                                                                            $userDevice->subscription = $nextMonthPayDay;
-                                                                            
-                                                                            $userDevice->save();
-                                                                            $payload = $this->generateHexPayload(4, [
-                                                                                [
-                                                                                    'type' => 'timestamp',
-                                                                                    'value' => Carbon::parse($nextMonthPayDay)
-                                                                                    ->timestamp,
-                                                                                ],
-                                                                                [
-                                                                                    'type' => 'string',
-                                                                                    'value' => $data['payload'],
-                                                                                ],
-                                                                                [
-                                                                                    'type' => 'number',
-                                                                                    'value' => 0,
-                                                                                ],
-                                                                            ]);
-                                                                            $this->publishMessage($device->dev_id, $payload);
-                                                                            
-                                                                        }else{
-                                                                            $this->noMoney($device->dev_id);
-                                                                            
-                                                                        }
-                                                                        
-                                                                        
-                                                                        
-                                                                    }
+                                                                    // 
+                                                                }  else if($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0"){
+                                                                    
+                                                                    $userFixedBalnce = $user->fixed_card_amount;
+                                                                    $userCardAmount = Card::where('user_id', $user->id)->count();
+                                                                    $fixedCard = $userFixedBalnce * $userCardAmount ;
                                                                     
                                                                     
-                                                                    else  if ($user->balance >= $deviceTariffWithCardBalance) {
-                                                                        $user->freezed_balance = $device->tariff_amount;
-                                                                        $user->save();
+                                                                    $userBalance = $user->balance;
+                                                                    
+                                                                    $user->freezed_balance = $fixedCard;
+                                                                    
+                                                                    
+                                                                    
+                                                                    
+                                                                    if($user->balance - $user->freezed_balance >= $fixedCard){
+                                                                        
+                                                                        $user->balance -= $fixedCard ;
+                                                                        $user->freezed_balance -= $fixedCard;
                                                                         $currentDay = Carbon::now()->day;
                                                                         if ($currentDay < $device->pay_day) {
                                                                             $nextMonthPayDay = Carbon::now()
@@ -454,10 +410,46 @@ class MqttService
                                                                             ],
                                                                         ]);
                                                                         $this->publishMessage($device->dev_id, $payload);
+                                                                        
+                                                                    } 
+                                                                    
+                                                                } else if ($user->balance >= $deviceTariffWithCardBalance) {
+                                                                    $user->freezed_balance = $device->tariff_amount;
+                                                                    $user->save();
+                                                                    $currentDay = Carbon::now()->day;
+                                                                    if ($currentDay < $device->pay_day) {
+                                                                        $nextMonthPayDay = Carbon::now()
+                                                                        ->startOfMonth()
+                                                                        ->addDays($device->pay_day - 1);
                                                                     } else {
-                                                                        $this->noMoney($device->dev_id);
+                                                                        $nextMonthPayDay = Carbon::now()
+                                                                        ->addMonth()
+                                                                        ->startOfMonth()
+                                                                        ->addDays($device->pay_day - 1);
                                                                     }
+                                                                    $userDevice->subscription = $nextMonthPayDay;
+                                                                    
+                                                                    $userDevice->save();
+                                                                    $payload = $this->generateHexPayload(4, [
+                                                                        [
+                                                                            'type' => 'timestamp',
+                                                                            'value' => Carbon::parse($nextMonthPayDay)
+                                                                            ->timestamp,
+                                                                        ],
+                                                                        [
+                                                                            'type' => 'string',
+                                                                            'value' => $data['payload'],
+                                                                        ],
+                                                                        [
+                                                                            'type' => 'number',
+                                                                            'value' => 0,
+                                                                        ],
+                                                                    ]);
+                                                                    $this->publishMessage($device->dev_id, $payload);
+                                                                } else {
+                                                                    $this->noMoney($device->dev_id);
                                                                 }
+                                                                // 
                                                             }
                                                             ///////////////////////////////////////////////////////////////////////
                                                             else {
