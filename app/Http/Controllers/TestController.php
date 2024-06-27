@@ -55,8 +55,8 @@ class TestController extends   Controller
                 if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
                    
-       
-                    if (
+                    $user->freezed_balance = $fixedCard;
+                                        if (
                             $user->balance >=$fixedCard &&
                             $user->freezed_balance >= $fixedCard &&
                         !is_null($subscriptionDate) &&
