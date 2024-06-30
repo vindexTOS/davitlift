@@ -566,7 +566,6 @@
                 required
               ></v-text-field>
             </v-col>
-
             <v-col v-if="dialogAppConf" cols="12">
               <v-text-field
                 v-model="editedItem.validity_msg_L1"
@@ -693,6 +692,7 @@
   >
     <i class="mdi mdi-fullscreen-exit zoom-in-icon"></i>
   </div>
+<div v-if="isAdmin" @click="sendTest()" style="font-size:14px; cursor:pointer; border-radius:20px; padding:1rem; width:90px; color:white;aligntext:center; background-color:green;" >ტესტი</div>
 
   <div :class="isZoom ? 'user-table-zoom ' : 'user-table-hidden'">
     <UserTable
@@ -978,6 +978,8 @@ export default {
   },
 
   methods: {
+
+
     chackAdminEmail() {
       const token = localStorage.getItem('vuex')
       let email = JSON.parse(token).auth.user.email
@@ -1030,7 +1032,16 @@ export default {
           }
         })
     },
-
+    sendTest()
+{
+ axios.post("/api/testing-fix").then((res)=> {
+     this.$swal
+        .fire({
+          title: 'გაიგზავნა',
+           
+        })
+ } )
+},
     resetDevice(item) {
       this.$swal
         .fire({
