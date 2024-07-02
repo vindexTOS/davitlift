@@ -83,6 +83,9 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
         UserController::class,
         'updateUserSubscription',
     ]);
+    
+    Route::put("/update-fixed-card-amount", [UserController::class, "UpdateUsersFixedCardTarriff"]);
+    
 });
 
 //  company and manager middle ware
@@ -283,6 +286,7 @@ Route::get('user/transaction/history/{device_id}', [
     UserController::class,
     'UserTransactionsBasedOnDevice',
 ]);
+
 
 
 Route::post("/testing-fix", [TestController::class, 'TestFixedCard']);
