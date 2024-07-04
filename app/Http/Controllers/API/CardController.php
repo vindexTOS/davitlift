@@ -340,25 +340,25 @@ class CardController extends Controller
                 'payload' => $payload,
             ];
             $queryParams = http_build_query($data);
-            $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
-            $responseData = $response->json(); 
+             Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
+            // $responseData = $response->json(); 
             // Log response body
-            Log::debug("HTTP Response body: " . $responseData);
+            // Log::debug("HTTP Response body: " . $responseData);
         
             // Log JSON parsed response
-            $responseJson = $response->json();
-            Log::debug("HTTP Response JSON: " . json_encode($responseJson));
+            // $responseJson = $response->json();
+            // Log::debug("HTTP Response JSON: " . json_encode($responseJson));
         
             // Check the structure of the parsed response
-            if (is_array($responseJson)) {
-                foreach ($responseJson as $key => $value) {
-                    Log::debug("Response JSON Key: " . $key . ", Value Type: " . gettype($value));
-                }
-            } else {
-                Log::error("Response is not an array");
-            }
+            // if (is_array($responseJson)) {
+            //     foreach ($responseJson as $key => $value) {
+            //         Log::debug("Response JSON Key: " . $key . ", Value Type: " . gettype($value));
+            //     }
+            // } else {
+            //     Log::error("Response is not an array");
+            // }
         
-            return $responseJson;
+            return ["data" =>"ata"];
         }
         
         
