@@ -112,8 +112,7 @@ function generateHexPayload(command, payload = []) {
             case "string":
 
               payloadBufferList.push(Buffer.from(item.value, "utf8"));
-                console.log(hex)
-                break;
+                 break;
             case "timestamp":
                 const timeBuffer = Buffer.alloc(4);
                 timeBuffer.writeUInt32LE(item.value, 0);
