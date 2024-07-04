@@ -383,7 +383,7 @@ class CardController extends Controller
                 $payload = $this->generateHexPayload($command, [
                     [
                         'type' => 'string',
-                        'value' => str_pad("ss", 8, '0', STR_PAD_RIGHT),
+                        'value' => "YLE",
                     ]
                 ]);
                   
