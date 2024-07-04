@@ -383,7 +383,7 @@ class CardController extends Controller
 
                 // Generate the payload
 
-                
+                $dev_id = Device::where("id", $card->device_id)->get();
 
                 $payload = $this->generateHexPayload($command, [
                     [
@@ -394,7 +394,7 @@ class CardController extends Controller
 
                 // Log::debug("Generated payload: " . $payload);
 
-                $response = $this->publishMessage($card->dev_id, $payload);
+                $response = $this->publishMessage($dev_id, $payload);
                 Log::debug("Response from MQTT server: " . json_encode($response));
 
                 if (isset($response['command']) && isset($response['payload'])) {
