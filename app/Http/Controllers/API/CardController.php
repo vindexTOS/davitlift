@@ -359,12 +359,12 @@ class CardController extends Controller
             $command = 0x7;  
             
             
-            $payload = $this->generateHexPayload($command, [
+            $payload = $this->generateHexPayload($command, 
                 [
                     'type' => 'string',
                     'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
                     ]
-                ]);
+                );
                 
                 $this->publishMessage($card->device_id, $payload);
                 
