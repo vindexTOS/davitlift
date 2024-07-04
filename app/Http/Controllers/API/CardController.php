@@ -340,7 +340,7 @@ class CardController extends Controller
             ];
             $queryParams = http_build_query($data);
             $response = Http::get(
-                'http://localhost:3000/mqtt/general?' . $queryParams
+                                                                                                'http://localhost:3000/mqtt/general?' . $queryParams
             );
             return $response->json(['data' => ['dasd']]);
         }
@@ -359,10 +359,10 @@ class CardController extends Controller
             $command = 7;  
             
             
-            $payload = $this->generateHexPayload(7, [
+            $payload = $this->generateHexPayload(1, [
                 [
                     'type' => 'string',
-                    'value' => $card->card_number ,  
+                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
                     ]
                 ]);
                 
