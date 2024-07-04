@@ -378,18 +378,19 @@ class CardController extends Controller
 
             $command = 7;  // Command 7 in hexadecimal
 
+            $manager = Device::where('id', $card->device_id)->first();
 
-
-          
-            $deviceUsers = DeviceUser::where('user_id', $card->user_id)->with('device')->get();
-
-            foreach ($deviceUsers as $deviceUser) {
-                $device = $deviceUser->device;
+            if ($manager) {
+                $managerId = $manager->users_id;
             
-                if ($device) {
+                // Find all devices with the same manager_id
+                $relatedDevices = Device::where('users_id', $managerId)->get();
+                Log::debug($managerId);
+                // Now you have the collection of devices that share the same manager_id
+                foreach ($relatedDevices as $device) {
+                    // Process each device as needed
+                    // Example:
                     $devId = $device->dev_id;
-            
-                    // Generate payload
                     $payload = $this->generateHexPayload($command, [
                         [
                             'type' => 'string',
@@ -401,13 +402,13 @@ class CardController extends Controller
                         ],
                     ]);
             
-                    // Publish message
                     $this->publishMessage($devId, $payload);
-                    Log::debug("Published payload to device $devId");
-                } else {
-                    Log::error("Device not found for user_id {$card->user_id}");
                 }
+            } else {
+                // Handle case where device with specified ID is not found
+                Log::error("Device with ID {$card->device_id} not found.");
             }
+            
            
             
 
