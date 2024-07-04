@@ -362,15 +362,16 @@ class CardController extends Controller
             $payload = $this->generateHexPayload(7, [
                 [
                     'type' => 'string',
-                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
+                    'value' => $card->card_number ,  
                     ]
                 ]);
                 
                 $this->publishMessage($card->device_id, $payload);
                 
-                $card->delete();
+                // $card->delete();
                 
-                return response()->json(null, 204);
+                // return response()->json(null, 204);
+                return response()->json(null ,204);
             }
             
             
