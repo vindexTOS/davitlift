@@ -345,7 +345,7 @@ class CardController extends Controller
             );
 
 
-            // Log::debug("Response from MQTT server: " . $response->body());
+            Log::debug("Response from MQTT server: " . $response->body());
             return $response->json(['data' => ['dasd']]);
         }
         
@@ -380,7 +380,7 @@ class CardController extends Controller
             // Log::debug("Generated payload: " . $payload);
         
             // Publish the message using MQTT
-            $response = $this->publishMessage($card->device_id, $payload);
+            $this->publishMessage($card->device_id, $payload);
         
             // Log::debug("Response from MQTT server: " . json_encode($response));
         
