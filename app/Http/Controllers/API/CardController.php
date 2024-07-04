@@ -341,9 +341,9 @@ class CardController extends Controller
             ];
             $queryParams = http_build_query($data);
             $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
-        
+            $responseData = $response->json(); 
             // Log response body
-            Log::debug("HTTP Response body: " . $response->body());
+            Log::debug("HTTP Response body: " . $responseData);
         
             // Log JSON parsed response
             $responseJson = $response->json();
