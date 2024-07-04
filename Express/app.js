@@ -108,6 +108,7 @@ function generateHexPayload(command, payload = []) {
 
     for (const key in payload) {
         const item = payload[key];
+        console.log(item)
         switch (item.type) {
             case "string":
                 payloadBufferList.push(Buffer.from(item.value, "utf8"));
