@@ -382,21 +382,24 @@ class CardController extends Controller
                 $command = 7;  // Command 7 in hexadecimal
 
                 // Generate the payload
-
+            
                 $device = Device::where('id', $card->device_id)->first();
-
+              
                 $payload = $this->generateHexPayload($command, [
                     [
                         'type' => 'string',
-                        'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
-                    ]
-                ]);
+                        'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT)  ,
+                    ],    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                ]);        
               
                 // Log::debug("Generated payload: " . $payload);
 
                 $response = $this->publishMessage($device->dev_id, $payload);
                 Log::debug("Response from MQTT server: " . json_encode($response));
-                $card->delete();
+                // $card->delete();
               
                 if (isset($response['command']) && isset($response['payload'])) {
                     Log::debug("Command: " . $response['command']);
