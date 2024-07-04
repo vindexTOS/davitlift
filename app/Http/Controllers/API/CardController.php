@@ -425,7 +425,7 @@ class CardController extends Controller
             // Log::debug("Generated payload: " . $payload);
 
             // $response = $this->publishMessage($device->dev_id, $payload);
-            //    $card->delete();
+               $card->delete();
 
            
         } catch (\Exception $e) {
