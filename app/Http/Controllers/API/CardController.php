@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\API;
 
+use Carbon\Carbon;
 use App\Models\Card;
+use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceEarn;
 use App\Models\DeviceUser;
-use App\Models\LastUserAmount;
-use App\Models\User;
-use App\Services\MqttConnectionService;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\LastUserAmount;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
+use App\Services\MqttConnectionService;
 
 class CardController extends Controller
 {
@@ -339,12 +340,26 @@ class CardController extends Controller
                 'payload' => $payload,
             ];
             $queryParams = http_build_query($data);
-            $response = Http::get(
-                'http://localhost:3000/mqtt/general?' . $queryParams
-            );
-            return $response->json(['data' => ['dasd']]);
-        }
+            $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
         
+            // Log response body
+            Log::debug("HTTP Response body: " . $response->body());
+        
+            // Log JSON parsed response
+            $responseJson = $response->json();
+            Log::debug("HTTP Response JSON: " . json_encode($responseJson));
+        
+            // Check the structure of the parsed response
+            if (is_array($responseJson)) {
+                foreach ($responseJson as $key => $value) {
+                    Log::debug("Response JSON Key: " . $key . ", Value Type: " . gettype($value));
+                }
+            } else {
+                Log::error("Response is not an array");
+            }
+        
+            return $responseJson;
+        }
         
         
         
@@ -355,24 +370,37 @@ class CardController extends Controller
         }
         
         public function destroy(Card $card)
-        { 
-            $command = 0x7;  
-            
-            
-            $payload = $this->generateHexPayload($command, 
+        {
+            $command = 7;  // Command 7 in hexadecimal
+        
+            // Generate the payload
+            $payload = $this->generateHexPayload($command, [
                 [
                     'type' => 'string',
-                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
-                    ]
-                );
-                
-                $this->publishMessage($card->device_id, $payload);
-                
-                $card->delete();
-                
-                return response()->json(null, 204);
+                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
+                ]
+            ]);
+        
+            Log::debug("Generated payload: " . $payload);
+        
+            // Publish the message using MQTT
+            try {
+                $response = $this->publishMessage($card->device_id, $payload);
+                Log::debug("Response from MQTT server: " . json_encode($response));
+        
+                if (isset($response['command']) && isset($response['payload'])) {
+                    Log::debug("Command: " . $response['command']);
+                    Log::debug("Payload: " . json_encode($response['payload']));
+                } else {
+                    Log::error("Unexpected response structure: " . json_encode($response));
+                }
+            } catch (\Exception $e) {
+                Log::error("Error publishing message: " . $e->getMessage());
+                return response()->json(['error' => 'Failed to publish message'], 500);
             }
-            
+        
+            return response()->json(null, 204);
+        }
             
             
             
