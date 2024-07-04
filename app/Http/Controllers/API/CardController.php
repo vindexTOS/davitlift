@@ -340,17 +340,14 @@ class CardController extends Controller
             'payload' => $payload,
         ];
 
-        Log::debug($payload);
-        $queryParams = http_build_query($data);
+         $queryParams = http_build_query($data);
         $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
         $responseData = $response->json();
 
-        Log::debug("HTTP Response body: " . $responseData);
-
+ 
 
         $responseJson = $response->json();
-        Log::debug("HTTP Response JSON: " . json_encode($responseJson));
-
+ 
         // Check the structure of the parsed response
         // if (is_array($responseJson)) {
         //     foreach ($responseJson as $key => $value) {
@@ -381,32 +378,49 @@ class CardController extends Controller
 
             $command = 7;  // Command 7 in hexadecimal
 
-            // Generate the payload
 
-            $device = Device::where('id', $card->device_id)->first();
 
-            $payload = $this->generateHexPayload($command, [
-                [
-                    'type' => 'string',
-                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
-                ], [
-                    'type' => 'number',
-                    'value' => 0,
-                ],
-            ]);
+          
+
+            $deviceUserIds = DeviceUser::where('user_id', $card->user_id)->pluck('device_id');
+
+            $devices = Device::whereIn('id', $deviceUserIds)->get();
+
+            $devIds = $devices->pluck('dev_id')->toArray();
+
+            foreach ($devIds as $devId) {
+                 $payload = $this->generateHexPayload($command, [
+                    [
+                        'type' => 'string',
+                        'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
+                    ], [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                ]);
+            
+               
+                $this->publishMessage($devId, $payload);
+             }
+           
+            
+
+            // $payload = $this->generateHexPayload($command, [
+            //     [
+            //         'type' => 'string',
+            //         'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
+            //     ], [
+            //         'type' => 'number',
+            //         'value' => 0,
+            //     ],
+            // ]);
 
             // Log::debug("Generated payload: " . $payload);
 
-            $response = $this->publishMessage($device->dev_id, $payload);
-            Log::debug("Response from MQTT server: " . json_encode($response));
-            $card->delete();
+            // $response = $this->publishMessage($device->dev_id, $payload);
+               $card->delete();
 
-            if (isset($response['command']) && isset($response['payload'])) {
-                Log::debug("Command: " . $response['command']);
-                Log::debug("Payload: " . json_encode($response['payload']));
-            } else {
-                Log::error("Unexpected response structure: " . json_encode($response));
-            }
+           
         } catch (\Exception $e) {
             Log::error("Error publishing message: " . $e->getMessage());
             return response()->json(['error' => 'Failed to publish message'], 500);
