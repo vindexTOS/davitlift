@@ -339,6 +339,8 @@ class CardController extends Controller
                 'device_id' => $device_id,
                 'payload' => $payload,
             ];
+
+            Log::debug($payload);
             $queryParams = http_build_query($data);
             $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
             $responseData = $response->json();
@@ -380,6 +382,9 @@ class CardController extends Controller
                 $command = 7;  // Command 7 in hexadecimal
 
                 // Generate the payload
+
+                
+
                 $payload = $this->generateHexPayload($command, [
                     [
                         'type' => 'string',
