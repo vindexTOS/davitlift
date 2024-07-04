@@ -373,11 +373,10 @@ class CardController extends Controller
     $payload = $this->generateHexPayload($command, [
         [
             'type' => 'string',
-            'value' => str_pad($card->card_number, 8, "\0", STR_PAD_RIGHT),  
+            'value' => str_pad($card->card_number, 8, "0", STR_PAD_RIGHT),  
         ]
     ]);
-    Log::debug("paylad: " .str_pad( $card->card_number, 8, "\0", STR_PAD_RIGHT) );
-
+ 
     // Publish the message using MQTT
     $this->publishMessage($card->device_id, $payload);
     
