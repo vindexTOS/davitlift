@@ -365,26 +365,24 @@ class CardController extends Controller
 
 
 
-      public function destroy(Card $card)
-{ 
-    $command = 7;  // Command 7 in hexadecimal
-    
-    // Generate the payload
-    $payload = $this->generateHexPayload($command, [
-        [
-            'type' => 'string',
-            'value' => str_pad($card->card_number, 8, "0", STR_PAD_RIGHT),  
-        ]
-    ]);
- 
-    // Publish the message using MQTT
-    $this->publishMessage($card->device_id, $payload);
-    
-    return response()->json(null, 204);
-}
-
+        public function destroy(Card $card)
+        { 
+            $command = 7;  
             
             
+            $payload = $this->generateHexPayload(7, [
+                [
+                    'type' => 'string',
+                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
+                    ]
+                ]);
+                
+                $this->publishMessage($card->device_id, $payload);
+                
+                // $card->delete();
+                
+                return response()->json(null, 204);
+            }
             
             
             
