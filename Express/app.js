@@ -108,10 +108,12 @@ function generateHexPayload(command, payload = []) {
 
     for (const key in payload) {
         const item = payload[key];
-        console.log(item)
         switch (item.type) {
             case "string":
-                payloadBufferList.push(Buffer.from(item.value, "utf8"));
+                console.log(item.type)
+
+               let hex =  payloadBufferList.push(Buffer.from(item.value, "utf8"));
+                console.log(hex)
                 break;
             case "timestamp":
                 const timeBuffer = Buffer.alloc(4);
