@@ -110,9 +110,8 @@ function generateHexPayload(command, payload = []) {
         const item = payload[key];
         switch (item.type) {
             case "string":
-                console.log(item.type)
 
-               let hex =  payloadBufferList.push(Buffer.from(item.value, "utf8"));
+              payloadBufferList.push(Buffer.from(item.value, "utf8"));
                 console.log(hex)
                 break;
             case "timestamp":
@@ -145,6 +144,7 @@ function generateHexPayload(command, payload = []) {
 }
 function publishMessage(device_id, payload) {
     const topic = `Lift/${device_id}/commands/general`;
+    console.log( topic,  payload )
     client.publish(topic, payload, { qos: 1 }, (err) => {
         if (err) {
         } else {
