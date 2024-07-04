@@ -36,7 +36,7 @@ class CardController extends Controller
         if (empty($data)) {
             return response()->json(['message' => 'incorrect_code'], 422);
         }
-        
+
         $device = Device::where('id', $data->device_id)->first();
         $userCards = Card::where('device_id', $data->device_id)
         ->where('user_id', Auth::id())
@@ -75,7 +75,7 @@ class CardController extends Controller
         }
         return response()->json(['message' => 'create_successfully'], 201);
     }
-    
+
     public function storeForUser(Request $request)
     {
         $data = DB::table('activation_codes')
@@ -84,7 +84,7 @@ class CardController extends Controller
         if (empty($data)) {
             return response()->json(['message' => 'incorrect_code'], 422);
         }
-        
+
         $device = Device::where('id', $data->device_id)->first();
         $userCards = Card::where('device_id', $data->device_id)
         ->where('user_id', $request->user_id)
@@ -93,7 +93,7 @@ class CardController extends Controller
         $relate = DeviceUser::where('user_id', $request->user_id)
         ->where('device_id', $data->device_id)
         ->first();
-        
+
         if ($device->limit > count($userCards) && !empty($relate)) {
             Card::create([
                 'name' => $request->name,
@@ -117,12 +117,12 @@ class CardController extends Controller
         }
         return response()->json(['message' => 'create_successfully'], 201);
     }
-    
+
     public function show(Card $card)
     {
         return $card;
     }
-    
+
     public function generateElevatorCode(Request $request)
     {
         $code = rand(1000, 9999); // Generates a random 4-character code
@@ -177,7 +177,7 @@ class CardController extends Controller
             $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
-            
+
             $card = Card::where('user_id', $user->id)
             ->whereIn('device_id', $deviceIds)
             ->first();
@@ -205,7 +205,7 @@ class CardController extends Controller
             $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
             ->first();
-            
+
             if (empty($lastAmount->user_id)) {
                 LastUserAmount::insert([
                     'user_id' => $user->id,
@@ -241,7 +241,7 @@ class CardController extends Controller
                         )
                         ->where('device_id', $value2->id)
                         ->first();
-                        
+
                         if (empty($lastAmountCurrentDevice->user_id)) {
                             LastUserAmount::insert([
                                 'user_id' => $user->id,
@@ -282,7 +282,7 @@ class CardController extends Controller
         {
             // Generate the date for month_year
             // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
-            
+
             $now = Carbon::now();
             $user = User::where('id', $companyId)->first();
             $device = Device::where('id', $deviceId)->first();
@@ -299,7 +299,7 @@ class CardController extends Controller
                     $deviceEarnings->save();
                 } else {
                     $deviceEarnings->earnings += $earningsValue;
-                    
+
                     $deviceEarnings->save();
                 }
             } else {
@@ -325,7 +325,7 @@ class CardController extends Controller
             }
             // Save the model (either updates or creates based on existence)
         }
-        
+
         public function generateHexPayload($command, $payload)
         {
             return [
@@ -340,15 +340,15 @@ class CardController extends Controller
                 'payload' => $payload,
             ];
             $queryParams = http_build_query($data);
-             Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
-            // $responseData = $response->json(); 
-            // Log response body
-            // Log::debug("HTTP Response body: " . $responseData);
-        
-            // Log JSON parsed response
-            // $responseJson = $response->json();
-            // Log::debug("HTTP Response JSON: " . json_encode($responseJson));
-        
+            $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
+            $responseData = $response->json();
+            
+            Log::debug("HTTP Response body: " . $responseData);
+
+            
+            $responseJson = $response->json();
+            Log::debug("HTTP Response JSON: " . json_encode($responseJson));
+
             // Check the structure of the parsed response
             // if (is_array($responseJson)) {
             //     foreach ($responseJson as $key => $value) {
@@ -357,41 +357,41 @@ class CardController extends Controller
             // } else {
             //     Log::error("Response is not an array");
             // }
-        
+
             return ["data" =>"ata"];
         }
-        
-        
-        
+
+
+
         public function update(Request $request, Card $card)
         {
             $card->update($request->all());
             return response()->json($card, 200);
         }
-        
+
         public function destroy(Card $card)
         {
-            
-        
+
+
             // Publish the message using MQTT
             try {
 
 
                 $command = 7;  // Command 7 in hexadecimal
-        
+
                 // Generate the payload
                 $payload = $this->generateHexPayload($command, [
                     [
                         'type' => 'string',
-                        'value' => str_pad("ss", 8, '0', STR_PAD_RIGHT),
+                        'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
                     ]
                 ]);
-                  
+
                 // Log::debug("Generated payload: " . $payload);
 
                 $response = $this->publishMessage($card->device_id, $payload);
                 Log::debug("Response from MQTT server: " . json_encode($response));
-        
+
                 if (isset($response['command']) && isset($response['payload'])) {
                     Log::debug("Command: " . $response['command']);
                     Log::debug("Payload: " . json_encode($response['payload']));
@@ -402,13 +402,12 @@ class CardController extends Controller
                 Log::error("Error publishing message: " . $e->getMessage());
                 return response()->json(['error' => 'Failed to publish message'], 500);
             }
-        
+
             return response()->json(null, 204);
         }
-            
-            
-            
-            
-            
+
+
+
+
+
         }
-        
