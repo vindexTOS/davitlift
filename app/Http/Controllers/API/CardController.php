@@ -368,7 +368,7 @@ class CardController extends Controller
         public function destroy(Card $card)
         { 
             $command = 7;  
-            
+              Log::debug( $card->card_number);
             
             $payload = $this->generateHexPayload(7, [
                 [
