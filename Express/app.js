@@ -14,7 +14,7 @@ app.get("/mqtt/general", (req, res) => {
         data.device_id,
         generateHexPayload(data.payload.command, data.payload.payload)
     );
-    res.send("test");
+    res.send(data.payload.command);
 });
 
 app.listen(port, () => {});
@@ -29,6 +29,8 @@ app.get("/mqtt/general/force", (req, res) => {
     publishMessage(data.device_id, data.payload);
     res.send("test");
 });
+
+ 
 client.on("connect", () => {
     // Once connected, subscribe to the topics
     client.subscribe([generalTopic, heartbeatTopic], () => {});
