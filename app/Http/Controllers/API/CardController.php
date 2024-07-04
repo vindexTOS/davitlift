@@ -345,7 +345,7 @@ class CardController extends Controller
             );
 
 
-            Log::debug("Response from MQTT server: " . $response->body());
+            // Log::debug("Response from MQTT server: " . $response->body());
             return $response->json(['data' => ['dasd']]);
         }
         
