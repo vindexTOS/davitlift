@@ -57,7 +57,7 @@ client.on("message", (topic, message) => {
             msgJson.card = payload.toString("utf8", 2, 10);
         }
         axios
-            .get("https://3.71.18.216/api/mqtt/general", {
+            .get("http://3.71.18.216/api/mqtt/general", {
                 params: {
                     payload: msgJson,
                     topic: topic,
@@ -69,7 +69,7 @@ client.on("message", (topic, message) => {
             );
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
         axios
-            .get("https://3.71.18.216/api/mqtt/heartbeat", {
+            .get("http://3.71.18.216/api/mqtt/heartbeat", {
                 params: {
                     payload: msgJson,
                     topic: topic,
