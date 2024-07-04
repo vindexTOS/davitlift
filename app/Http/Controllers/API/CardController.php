@@ -383,11 +383,11 @@ class CardController extends Controller
                 $payload = $this->generateHexPayload($command, [
                     [
                         'type' => 'string',
-                        'value' => "YLE",
+                        'value' => str_pad("ss", 8, '0', STR_PAD_RIGHT),
                     ]
                 ]);
                   
-                Log::debug("Generated payload: " . $payload);
+                // Log::debug("Generated payload: " . $payload);
 
                 $response = $this->publishMessage($card->device_id, $payload);
                 Log::debug("Response from MQTT server: " . json_encode($response));
