@@ -356,10 +356,10 @@ class CardController extends Controller
         
         public function destroy(Card $card)
         { 
-            $command = 0x7;  
+            $command = 7;  
             
             
-            $payload = $this->generateHexPayload($command, [
+            $payload = $this->generateHexPayload(7, [
                 [
                     'type' => 'string',
                     'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
