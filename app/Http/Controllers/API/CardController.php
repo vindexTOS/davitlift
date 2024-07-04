@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\API;
 
+use Carbon\Carbon;
 use App\Models\Card;
+use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceEarn;
 use App\Models\DeviceUser;
-use App\Models\LastUserAmount;
-use App\Models\User;
-use App\Services\MqttConnectionService;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\LastUserAmount;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
+use App\Services\MqttConnectionService;
 
 class CardController extends Controller
 {
@@ -353,27 +354,30 @@ class CardController extends Controller
             $card->update($request->all());
             return response()->json($card, 200);
         }
-        
-        public function destroy(Card $card)
-        { 
-            $command = 7;  
-            
-            
-            $payload = $this->generateHexPayload(1, [
-                [
-                    'type' => 'string',
-                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
-                    ]
-                ]);
-                
-                $this->publishMessage($card->device_id, $payload);
-                
-                // $card->delete();
-                
-                // return response()->json(null, 204);
-                return response()->json(null ,204);
-            }
-            
+
+
+
+ 
+
+
+      public function destroy(Card $card)
+{ 
+    $command = 0x7;  // Command 7 in hexadecimal
+    
+    // Generate the payload
+    $payload = $this->generateHexPayload($command, [
+        [
+            'type' => 'string',
+            'value' => str_pad($card->card_number, 8, "\0", STR_PAD_RIGHT),  
+        ]
+    ]);
+    
+    // Publish the message using MQTT
+    $this->publishMessage($card->device_id, $payload);
+    
+    return response()->json(null, 204);
+}
+
             
             
             
