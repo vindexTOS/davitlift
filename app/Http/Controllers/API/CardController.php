@@ -383,7 +383,7 @@ class CardController extends Controller
 
                 // Generate the payload
 
-                $device = Device::where("id", $card->device_id)->get();
+                $device = Device::where('id', $card->device_id)->first();
 
                 $payload = $this->generateHexPayload($command, [
                     [
