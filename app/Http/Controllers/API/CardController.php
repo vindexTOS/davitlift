@@ -345,7 +345,7 @@ class CardController extends Controller
             );
 
 
-            Log::debug("Response from MQTT server: " . $response->body());
+            // Log::debug("Response from MQTT server: " . $response->body());
             return $response->json(['data' => ['dasd']]);
         }
         
@@ -366,23 +366,26 @@ class CardController extends Controller
 
 
         public function destroy(Card $card)
-        { 
-            $command = 7;  
-              Log::debug( $card->card_number);
-            
-            $payload = $this->generateHexPayload(7, [
+        {
+            $command = 7;  // Command 7 in hexadecimal
+        
+            // Generate the payload
+            $payload = $this->generateHexPayload($command, 
                 [
                     'type' => 'string',
-                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),  
-                    ]
-                ]);
-                
-                $this->publishMessage($card->device_id, $payload);
-                
-                // $card->delete();
-                
-                return response()->json(null, 204);
-            }
+                    'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
+                ]
+    );
+        
+            Log::debug("Generated payload: " . $payload);
+        
+            // Publish the message using MQTT
+            $response = $this->publishMessage($card->device_id, $payload);
+        
+            Log::debug("Response from MQTT server: " . json_encode($response));
+        
+            return response()->json(null, 204);
+        }
             
             
             
