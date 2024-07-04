@@ -391,12 +391,13 @@ class CardController extends Controller
                         'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
                     ]
                 ]);
-
+              
                 // Log::debug("Generated payload: " . $payload);
 
                 $response = $this->publishMessage($device->dev_id, $payload);
                 Log::debug("Response from MQTT server: " . json_encode($response));
-
+                $card->delete();
+              
                 if (isset($response['command']) && isset($response['payload'])) {
                     Log::debug("Command: " . $response['command']);
                     Log::debug("Payload: " . json_encode($response['payload']));
@@ -408,7 +409,7 @@ class CardController extends Controller
                 return response()->json(['error' => 'Failed to publish message'], 500);
             }
 
-            return response()->json(null, 204);
+            return response()->json("Card Has Been Deleted", 204);
         }
 
 
