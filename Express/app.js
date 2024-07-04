@@ -14,7 +14,7 @@ app.get("/mqtt/general", (req, res) => {
         data.device_id,
         generateHexPayload(data.payload.command, data.payload.payload)
     );
-    res.send(data.payload.toString());
+    res.send(data.toString());
 });
 
 app.listen(port, () => {});
