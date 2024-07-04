@@ -381,27 +381,33 @@ class CardController extends Controller
 
 
           
+            $deviceUsers = DeviceUser::where('user_id', $card->user_id)->with('device')->get();
 
-            $deviceUserIds = DeviceUser::where('user_id', $card->user_id)->pluck('device_id');
-
-            $devices = Device::whereIn('id', $deviceUserIds)->get();
-
-            $devIds = $devices->pluck('dev_id')->toArray();
-
-            foreach ($devIds as $devId) {
-                 $payload = $this->generateHexPayload($command, [
-                    [
-                        'type' => 'string',
-                        'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
-                    ], [
-                        'type' => 'number',
-                        'value' => 0,
-                    ],
-                ]);
+            foreach ($deviceUsers as $deviceUser) {
+                $device = $deviceUser->device;
             
-               
-                $this->publishMessage($devId, $payload);
-             }
+                if ($device) {
+                    $devId = $device->dev_id;
+            
+                    // Generate payload
+                    $payload = $this->generateHexPayload($command, [
+                        [
+                            'type' => 'string',
+                            'value' => str_pad($card->card_number, 8, '0', STR_PAD_RIGHT),
+                        ],
+                        [
+                            'type' => 'number',
+                            'value' => 0,
+                        ],
+                    ]);
+            
+                    // Publish message
+                    $this->publishMessage($devId, $payload);
+                    Log::debug("Published payload to device $devId");
+                } else {
+                    Log::error("Device not found for user_id {$card->user_id}");
+                }
+            }
            
             
 
@@ -418,7 +424,7 @@ class CardController extends Controller
             // Log::debug("Generated payload: " . $payload);
 
             // $response = $this->publishMessage($device->dev_id, $payload);
-               $card->delete();
+            //    $card->delete();
 
            
         } catch (\Exception $e) {
