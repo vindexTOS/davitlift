@@ -341,8 +341,11 @@ class CardController extends Controller
             ];
             $queryParams = http_build_query($data);
             $response = Http::get(
-                                                                                                'http://localhost:3000/mqtt/general?' . $queryParams
+                'http://localhost:3000/mqtt/general?' . $queryParams
             );
+
+
+            Log::debug("Response from MQTT server: " . $response->body());
             return $response->json(['data' => ['dasd']]);
         }
         
@@ -357,12 +360,14 @@ class CardController extends Controller
 
 
 
+
  
+
 
 
       public function destroy(Card $card)
 { 
-    $command = 0x7;  // Command 7 in hexadecimal
+    $command = 7;  // Command 7 in hexadecimal
     
     // Generate the payload
     $payload = $this->generateHexPayload($command, [
@@ -371,7 +376,8 @@ class CardController extends Controller
             'value' => str_pad($card->card_number, 8, "\0", STR_PAD_RIGHT),  
         ]
     ]);
-    
+    Log::debug("paylad: " . $payload);
+
     // Publish the message using MQTT
     $this->publishMessage($card->device_id, $payload);
     
