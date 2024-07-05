@@ -25,7 +25,7 @@ app.listen(port, () => {});
 const generalTopic = "Lift/+/events/general";
 const heartbeatTopic = "Lift/+/events/heartbeat";
 
-const client = mqtt.connect("mqtt://3.71.18.216", {
+const client = mqtt.connect("mqtt://147.182.164.92", {
     port: 1883,
 });
 app.get("/mqtt/general/force", (req, res) => {
@@ -34,7 +34,6 @@ app.get("/mqtt/general/force", (req, res) => {
     res.send("test");
 });
 
- 
 client.on("connect", () => {
     // Once connected, subscribe to the topics
     client.subscribe([generalTopic, heartbeatTopic], () => {});
@@ -57,7 +56,7 @@ client.on("message", (topic, message) => {
             msgJson.card = payload.toString("utf8", 2, 10);
         }
         axios
-            .get("http://3.71.18.216/api/mqtt/general", {
+            .get("http://lift.eideas.io/api/mqtt/general", {
                 params: {
                     payload: msgJson,
                     topic: topic,
@@ -69,7 +68,7 @@ client.on("message", (topic, message) => {
             );
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
         axios
-            .get("http://3.71.18.216/api/mqtt/heartbeat", {
+            .get("http://lift.eideas.io/api/mqtt/heartbeat", {
                 params: {
                     payload: msgJson,
                     topic: topic,
@@ -110,9 +109,8 @@ function generateHexPayload(command, payload = []) {
         const item = payload[key];
         switch (item.type) {
             case "string":
-
-              payloadBufferList.push(Buffer.from(item.value, "utf8"));
-                 break;
+                payloadBufferList.push(Buffer.from(item.value, "utf8"));
+                break;
             case "timestamp":
                 const timeBuffer = Buffer.alloc(4);
                 timeBuffer.writeUInt32LE(item.value, 0);
@@ -143,7 +141,7 @@ function generateHexPayload(command, payload = []) {
 }
 function publishMessage(device_id, payload) {
     const topic = `Lift/${device_id}/commands/general`;
-    console.log( topic,  payload )
+    console.log(topic, payload);
     client.publish(topic, payload, { qos: 1 }, (err) => {
         if (err) {
         } else {
