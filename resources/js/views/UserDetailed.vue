@@ -318,7 +318,7 @@
                     required
                 ></v-select>
                 <v-text-field
-                    v-if="isAdmin || user.role === 'company'"
+                    v-if="isAdmin || role == 'company'"
                     v-model="user.fixed_card_amount"
                     label="ბარათის ტარიფი"
                     required
@@ -505,6 +505,7 @@ export default {
             showElevator: false,
             showBalance: false,
             showCode: false,
+            companyRole: "",
             user: {},
             isAdmin: false,
             role: "",
