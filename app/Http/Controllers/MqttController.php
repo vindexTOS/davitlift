@@ -1,14 +1,17 @@
 <?php
 namespace App\Http\Controllers;
 
+use PDOException;
 use Carbon\Carbon;
 use App\Models\Card;
 use App\Models\User;
+use RuntimeException;
 use App\Models\Device;
 use App\Models\ErrorLogs;
 use App\Models\DeviceEarn;
 use App\Models\DeviceUser;
 use App\Models\DeviceError;
+use App\Models\ElevatorUse;
 use Illuminate\Http\Request;
 use App\Models\LastUserAmount;
 use App\Models\UpdatingDevice;
@@ -351,6 +354,7 @@ class MqttController extends Controller
                                                                                     ],
                                                                                 ]);
                                                                                 $this->publishMessage($value2->dev_id, $payload);
+                                                                                $this->trackElevetorUses($user->id, $value2->id, 1);
                                                                             }
                                                                         }
                                                                     } else {
@@ -694,6 +698,8 @@ class MqttController extends Controller
                                                                                                     ],
                                                                                                 ]);
                                                                                                 $this->publishMessage($value2->dev_id, $payload);
+                                                                                                $this->trackElevetorUses($user->id, $value2->id, 1);
+
                                                                                             }
                                                                                         }
                                                                                         $devices_ids = Device::where(
@@ -742,6 +748,8 @@ class MqttController extends Controller
                                                                                                             ],
                                                                                                         ]);
                                                                                                         $this->publishMessage($value2->dev_id, $payload);
+                                                                                                        $this->trackElevetorUses($user->id, $value2->id, 1);
+
                                                                                                     }
                                                                                                 }
                                                                                                 DB::table('elevator_codes')
@@ -854,6 +862,8 @@ class MqttController extends Controller
                                                                                                         ],
                                                                                                     ]);
                                                                                                     $this->publishMessage($value2->dev_id, $payload);
+                                                                                                    $this->trackElevetorUses($user->id, $value2->id, 1);
+
                                                                                                 }
                                                                                             }
                                                                                         }
@@ -1099,5 +1109,20 @@ class MqttController extends Controller
                                                                                             );
                                                                                             return $response->json(['data' => ['dasd']]);
                                                                                         }
+
+                                                                                        //  tracking elevetors 
+    public function trackElevetorUses(string $userId, string $deviceId, int $type)
+    {
+
+        try {
+            ElevatorUse::create([
+                'user_id' => $userId,
+                'device_id' => $deviceId,
+                'type' => $type,
+            ]);
+        } catch (PDOException $e) {
+            throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
+        }
+    }
                                                                                     }
                                                                                     

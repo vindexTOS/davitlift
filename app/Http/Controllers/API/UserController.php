@@ -17,6 +17,7 @@ use App\Models\TbcTransaction;
 use App\Models\CompanyTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\ElevatorUse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -360,6 +361,23 @@ class UserController extends Controller
                 }
                 
             }
+
+        public function GetUsersElevatorUse(string $user_id){
+              
+              try {
+                 
+                $eleveatorUses = ElevatorUse::where("user_id", $user_id)->get();
+
+                if(count($eleveatorUses) <= 0){
+                    return [];
+                
+                }
+                return response()->json(["data"=> $eleveatorUses ]);
+                
+              } catch (\Throwable $e) {
+                return response()->json(["msg"=> $e]);
+            }
+        }
         }
         
         // balance
