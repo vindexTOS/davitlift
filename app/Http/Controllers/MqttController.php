@@ -354,8 +354,7 @@ class MqttController extends Controller
                                                                                     ],
                                                                                 ]);
                                                                                 $this->publishMessage($value2->dev_id, $payload);
-                                                                                $this->trackElevetorUses($user->id, $value2->id, 1);
-                                                                            }
+                                                                             }
                                                                         }
                                                                     } else {
                                                                         $this->noMoney($device_id);
@@ -698,8 +697,7 @@ class MqttController extends Controller
                                                                                                     ],
                                                                                                 ]);
                                                                                                 $this->publishMessage($value2->dev_id, $payload);
-                                                                                                $this->trackElevetorUses($user->id, $value2->id, 1);
-
+ 
                                                                                             }
                                                                                         }
                                                                                         $devices_ids = Device::where(
@@ -862,7 +860,6 @@ class MqttController extends Controller
                                                                                                         ],
                                                                                                     ]);
                                                                                                     $this->publishMessage($value2->dev_id, $payload);
-                                                                                                    $this->trackElevetorUses($user->id, $value2->id, 1);
 
                                                                                                 }
                                                                                             }

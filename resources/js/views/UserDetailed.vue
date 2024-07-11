@@ -611,7 +611,7 @@ export default {
     async created() {
         this.getCards();
         this.getUserDevice();
-        this. getElevatorUseHistory()
+        this.getElevatorUseHistory()
         this.getTransactions();
         this.chackAdminEmail();
     },
