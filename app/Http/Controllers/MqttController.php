@@ -354,8 +354,7 @@ class MqttController extends Controller
                                                                                     ],
                                                                                 ]);
                                                                                 $this->publishMessage($value2->dev_id, $payload);
-                                                                                $this->trackElevetorUses($user->id,  1, 1);
-
+ 
                                                                              }
                                                                         }
                                                                     } else {
@@ -699,8 +698,7 @@ class MqttController extends Controller
                                                                                                     ],
                                                                                                 ]);
                                                                                                 $this->publishMessage($value2->dev_id, $payload);
-                                                                                                $this->trackElevetorUses($user->id,  2, 1);
-
+ 
                                                                                             }
                                                                                         }
                                                                                         $devices_ids = Device::where(
@@ -749,8 +747,7 @@ class MqttController extends Controller
                                                                                                             ],
                                                                                                         ]);
                                                                                                         $this->publishMessage($value2->dev_id, $payload);
-                                                                                                        $this->trackElevetorUses($user->id,3, 1);
-
+ 
                                                                                                     }
                                                                                                 }
                                                                                                 DB::table('elevator_codes')
@@ -863,10 +860,11 @@ class MqttController extends Controller
                                                                                                         ],
                                                                                                     ]);
                                                                                                     $this->publishMessage($value2->dev_id, $payload);
-                                                                                                    $this->trackElevetorUses($user->id,  4, 1);
 
                                                                                                 }
                                                                                             }
+                                                                                            $this->trackElevetorUses($user->id, $device->id, 1);
+
                                                                                         }
                                                                                         
                                                                                         private function deviceCurrentSetupPacket($device, $data)
