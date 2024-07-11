@@ -354,6 +354,8 @@ class MqttController extends Controller
                                                                                     ],
                                                                                 ]);
                                                                                 $this->publishMessage($value2->dev_id, $payload);
+                                                                                $this->trackElevetorUses($user->id, $value2->id, 1);
+
                                                                              }
                                                                         }
                                                                     } else {
@@ -746,8 +748,7 @@ class MqttController extends Controller
                                                                                                             ],
                                                                                                         ]);
                                                                                                         $this->publishMessage($value2->dev_id, $payload);
-                                                                                                        $this->trackElevetorUses($user->id, $value2->id, 1);
-
+ 
                                                                                                     }
                                                                                                 }
                                                                                                 DB::table('elevator_codes')
@@ -860,7 +861,7 @@ class MqttController extends Controller
                                                                                                         ],
                                                                                                     ]);
                                                                                                     $this->publishMessage($value2->dev_id, $payload);
-
+ 
                                                                                                 }
                                                                                             }
                                                                                         }
