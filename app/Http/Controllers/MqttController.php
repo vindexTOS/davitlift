@@ -863,7 +863,7 @@ class MqttController extends Controller
 
                                                                                                 }
                                                                                             }
-                                                                                            $this->trackElevetorUses($user->id, $device->id, 1);
+                                                                                            $this->trackElevetorUses($user->id, $device->id, 1, $deviceTarff);
 
                                                                                         }
                                                                                         
@@ -1110,7 +1110,7 @@ class MqttController extends Controller
                                                                                         }
 
                                                                                         //  tracking elevetors 
-    public function trackElevetorUses(string $userId, string $deviceId, int $type)
+    public function trackElevetorUses(string $userId, string $deviceId, int $type, string $tariff)
     {
 
         try {
@@ -1118,6 +1118,7 @@ class MqttController extends Controller
                 'user_id' => $userId,
                 'device_id' => $deviceId,
                 'type' => $type,
+                "tariff"=>$tariff
             ]);
         } catch (PDOException $e) {
             throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
