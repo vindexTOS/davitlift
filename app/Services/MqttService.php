@@ -343,7 +343,10 @@ class MqttService
                                                             $userDevice = DeviceUser::where('user_id', $user->id)
                                                             ->where('device_id', $card->device_id)
                                                             ->first();
-                                                            
+                                                            if( time()  > Carbon::parse($userDevice->subscription)->timestamp ){
+                                                                $this->noMoney($device->dev_id);
+                                                                
+                                                            }
                                                             if (
                                                                 time() < Carbon::parse($userDevice->subscription)->timestamp
                                                                 ) {
