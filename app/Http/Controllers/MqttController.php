@@ -265,101 +265,101 @@ class MqttController extends Controller
                                                         } else {
                                                             $this->noMoney($device_id);
                                                         }
-                                                    } else {
-                                                        if (
-                                                            $$user->balance - $device->tariff_amount >
-                                                            $device->tariff_amount
-                                                            ) {
-                                                                $user->balance = $user->balance - $device->tariff_amount;
-                                                                $lastAmount = LastUserAmount::where('user_id', $user->id)
-                                                                ->where('device_id', $device->id)
-                                                                ->first();
-                                                                
-                                                                if (empty($lastAmount->user_id)) {
-                                                                    LastUserAmount::insert([
-                                                                        'user_id' => $user->id,
-                                                                        'device_id' => $device->id,
-                                                                        'last_amount' =>
-                                                                        $user->balance - $user->freezed_balance,
-                                                                    ]);
-                                                                } else {
-                                                                    $lastAmount->last_amount =
-                                                                    $user->balance - $user->freezed_balance;
-                                                                    $lastAmount->save();
-                                                                }
-                                                                $payload = $this->generateHexPayload(1, [
-                                                                    [
-                                                                        'type' => 'string',
-                                                                        'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
-                                                                    ],
-                                                                    [
-                                                                        'type' => 'number',
-                                                                        'value' => 0,
-                                                                    ],
-                                                                    [
-                                                                        'type' => 'number16',
-                                                                        'value' => $user->balance - $user->freezed_balance,
-                                                                    ],
+                                                    } else if (
+                                                        $$user->balance - $device->tariff_amount >
+                                                        $device->tariff_amount
+                                                        ) 
+                                                        {
+                                                            $user->balance = $user->balance - $device->tariff_amount;
+                                                            $lastAmount = LastUserAmount::where('user_id', $user->id)
+                                                            ->where('device_id', $device->id)
+                                                            ->first();
+                                                            
+                                                            if (empty($lastAmount->user_id)) {
+                                                                LastUserAmount::insert([
+                                                                    'user_id' => $user->id,
+                                                                    'device_id' => $device->id,
+                                                                    'last_amount' =>
+                                                                    $user->balance - $user->freezed_balance,
                                                                 ]);
-                                                                $this->publishMessage($device_id, $payload);
-                                                                $user->save();
-                                                                $this->saveOrUpdateEarnings(
-                                                                    $device->id,
-                                                                    $device->tariff_amount,
-                                                                    $device->company_id
-                                                                );
-                                                                $devices_ids = Device::where(
-                                                                    'users_id',
-                                                                    $device->users_id
-                                                                    )->get();
-                                                                    foreach ($devices_ids as $key2 => $value2) {
-                                                                        if ($value2->op_mode == '1') {
-                                                                            $lastAmountCurrentDevice = LastUserAmount::where(
-                                                                                'user_id',
-                                                                                $user->id
-                                                                                )
-                                                                                ->where('device_id', $value2->id)
-                                                                                ->first();
-                                                                                
-                                                                                if (empty($lastAmountCurrentDevice->user_id)) {
-                                                                                    LastUserAmount::insert([
-                                                                                        'user_id' => $user->id,
-                                                                                        'device_id' => $value2->id,
-                                                                                        'last_amount' =>
-                                                                                        $user->balance - $user->freezed_balance,
-                                                                                    ]);
-                                                                                } else {
-                                                                                    $lastAmountCurrentDevice->last_amount =
-                                                                                    $user->balance - $user->freezed_balance;
-                                                                                    $lastAmountCurrentDevice->save();
-                                                                                }
-                                                                                $payload = $this->generateHexPayload(5, [
-                                                                                    [
-                                                                                        'type' => 'string',
-                                                                                        'value' => str_pad(
-                                                                                            $user->id,
-                                                                                            6,
-                                                                                            '0',
-                                                                                            STR_PAD_LEFT
-                                                                                        ),
-                                                                                    ],
-                                                                                    [
-                                                                                        'type' => 'number',
-                                                                                        'value' => 0,
-                                                                                    ],
-                                                                                    [
-                                                                                        'type' => 'number16',
-                                                                                        'value' =>
-                                                                                        $user->balance - $user->freezed_balance,
-                                                                                    ],
+                                                            } else {
+                                                                $lastAmount->last_amount =
+                                                                $user->balance - $user->freezed_balance;
+                                                                $lastAmount->save();
+                                                            }
+                                                            $payload = $this->generateHexPayload(1, [
+                                                                [
+                                                                    'type' => 'string',
+                                                                    'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                                                                ],
+                                                                [
+                                                                    'type' => 'number',
+                                                                    'value' => 0,
+                                                                ],
+                                                                [
+                                                                    'type' => 'number16',
+                                                                    'value' => $user->balance - $user->freezed_balance,
+                                                                ],
+                                                            ]);
+                                                            $this->publishMessage($device_id, $payload);
+                                                            $user->save();
+                                                            $this->saveOrUpdateEarnings(
+                                                                $device->id,
+                                                                $device->tariff_amount,
+                                                                $device->company_id
+                                                            );
+                                                            $devices_ids = Device::where(
+                                                                'users_id',
+                                                                $device->users_id
+                                                                )->get();
+                                                                foreach ($devices_ids as $key2 => $value2) {
+                                                                    if ($value2->op_mode == '1') {
+                                                                        $lastAmountCurrentDevice = LastUserAmount::where(
+                                                                            'user_id',
+                                                                            $user->id
+                                                                            )
+                                                                            ->where('device_id', $value2->id)
+                                                                            ->first();
+                                                                            
+                                                                            if (empty($lastAmountCurrentDevice->user_id)) {
+                                                                                LastUserAmount::insert([
+                                                                                    'user_id' => $user->id,
+                                                                                    'device_id' => $value2->id,
+                                                                                    'last_amount' =>
+                                                                                    $user->balance - $user->freezed_balance,
                                                                                 ]);
-                                                                                $this->publishMessage($value2->dev_id, $payload);
-                                                                                
+                                                                            } else {
+                                                                                $lastAmountCurrentDevice->last_amount =
+                                                                                $user->balance - $user->freezed_balance;
+                                                                                $lastAmountCurrentDevice->save();
                                                                             }
+                                                                            $payload = $this->generateHexPayload(5, [
+                                                                                [
+                                                                                    'type' => 'string',
+                                                                                    'value' => str_pad(
+                                                                                        $user->id,
+                                                                                        6,
+                                                                                        '0',
+                                                                                        STR_PAD_LEFT
+                                                                                    ),
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'number',
+                                                                                    'value' => 0,
+                                                                                ],
+                                                                                [
+                                                                                    'type' => 'number16',
+                                                                                    'value' =>
+                                                                                    $user->balance - $user->freezed_balance,
+                                                                                ],
+                                                                            ]);
+                                                                            $this->publishMessage($value2->dev_id, $payload);
+                                                                            
                                                                         }
-                                                                    } else {
-                                                                        $this->noMoney($device_id);
                                                                     }
+                                                                    
+                                                                } else {
+                                                                    $this->noMoney($device_id);
                                                                 }
                                                             }
                                                         }
