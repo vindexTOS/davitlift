@@ -417,6 +417,7 @@ class MqttController extends Controller
                                                                     ->where('device_id', $card->device_id)
                                                                     ->first();
                                                                     if( time()  > Carbon::parse($userDevice->subscription)->timestamp){
+                                                                        Log::debug("No date");
                                                                         $this->noMoney($device->dev_id);
                                                                         return;
                                                                         
