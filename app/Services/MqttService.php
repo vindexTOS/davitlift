@@ -4,25 +4,27 @@
 
 namespace App\Services;
 
+use PDOException;
+use Carbon\Carbon;
 use App\Models\Card;
-use App\Models\DeviceError;
+use App\Models\User;
+use RuntimeException;
+use App\Models\Device;
+use App\Models\ErrorLogs;
+use App\Models\DeviceEarn;
 use App\Models\DeviceUser;
+use App\Models\DeviceError;
+use App\Models\ElevatorUse;
+use App\Models\Transaction;
 use App\Models\LastUserAmount;
 use App\Models\UpdatingDevice;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use PhpMqtt\Client\MqttClient;
-use App\Models\Device;
-use App\Models\User;
-use App\Models\Transaction;
-use App\Models\DeviceEarn;
-use Carbon\Carbon;
-use App\Models\ElevatorUse;
-use App\Models\ErrorLogs;
-use Illuminate\Support\Facades\Log;
 use App\Models\UnregisteredDevice;
-use function PHPUnit\Framework\exactly;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use function PHPUnit\Framework\isNull;
+use function PHPUnit\Framework\exactly;
+use Illuminate\Support\Facades\Storage;
 
 class MqttService
 {
@@ -248,6 +250,7 @@ class MqttService
                                                         $userDevice = DeviceUser::where('user_id', $user->id)
                                                         ->whereIn('device_id', $deviceIds)
                                                         ->first();
+                                                        Log::debug("MQTT SERVICE shemsvla 1");
                                                         if (
                                                             time() < Carbon::parse($userDevice->subscription)->timestamp
                                                             ) {
@@ -332,6 +335,7 @@ class MqttService
                                                         $user = User::where('id', $card->user_id)->first();
                                                         /////////////////////////////////////
                                                         if ($device->op_mode == 0) {
+                                                            Log::debug("MQTT SERVICE shemsvla 3");
                                                             $userFixedBalnce = $user->fixed_card_amount;
                                                             $userCardAmount = Card::where('user_id', $user->id)->count();
                                                             $fixedCard = $userFixedBalnce * $userCardAmount;
@@ -341,7 +345,10 @@ class MqttService
                                                             $userDevice = DeviceUser::where('user_id', $user->id)
                                                             ->where('device_id', $card->device_id)
                                                             ->first();
-                                                            
+                                                            if( time()  > Carbon::parse($userDevice->subscription)->timestamp ){
+                                                                $this->noMoney($device->dev_id);
+                                                                
+                                                            }
                                                             if (
                                                                 time() < Carbon::parse($userDevice->subscription)->timestamp
                                                                 ) {
@@ -361,12 +368,16 @@ class MqttService
                                                                         ],
                                                                     ]);
                                                                     $this->publishMessage($device->dev_id, $payload);
-                                                                    // 
-                                                                }  else if($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0"){
+                                                                    
+                                                                } else if( time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                                                                    
+                                                                    $this->noMoney($device->dev_id);
+                                                                    
+                                                                }else if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                                                                     
                                                                     $userFixedBalnce = $user->fixed_card_amount;
                                                                     $userCardAmount = Card::where('user_id', $user->id)->count();
-                                                                    $fixedCard = $userFixedBalnce * $userCardAmount ;
+                                                                    $fixedCard = $userFixedBalnce * $userCardAmount;
                                                                     
                                                                     
                                                                     $userBalance = $user->balance;
@@ -376,9 +387,9 @@ class MqttService
                                                                     
                                                                     
                                                                     
-                                                                    if($user->balance - $user->freezed_balance >= $fixedCard){
+                                                                    if ($user->balance - $user->freezed_balance >= $fixedCard) {
                                                                         
-                                                                        $user->balance -= $fixedCard ;
+                                                                        $user->balance -= $fixedCard;
                                                                         $user->freezed_balance -= $fixedCard;
                                                                         $currentDay = Carbon::now()->day;
                                                                         if ($currentDay < $device->pay_day) {
@@ -410,9 +421,7 @@ class MqttService
                                                                             ],
                                                                         ]);
                                                                         $this->publishMessage($device->dev_id, $payload);
-                                                                        
-                                                                    } 
-                                                                    
+                                                                    }
                                                                 } else if ($user->balance >= $deviceTariffWithCardBalance) {
                                                                     $user->freezed_balance = $device->tariff_amount;
                                                                     $user->save();
@@ -511,6 +520,7 @@ class MqttService
                                                         ->first();
                                                         $user = User::where('id', $code->user_id)->first();
                                                         if ($device->op_mode == 0) {
+                                                            Log::debug("MQTT SERVICE shemsvla 2");
                                                             $payload = $this->generateHexPayload(1, []);
                                                             $this->publishMessage($device->dev_id, $payload);
                                                         } else {
@@ -916,5 +926,7 @@ class MqttService
                                                         }
                                                         return $crc;
                                                     }
+                                                    
+                                                    
                                                 }
                                                 

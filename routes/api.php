@@ -288,5 +288,7 @@ Route::get('user/transaction/history/{device_id}', [
 ]);
 
 
+//  testing area 
 
+Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix", [TestController::class, 'TestFixedCard']);

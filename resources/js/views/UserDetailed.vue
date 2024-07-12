@@ -32,6 +32,9 @@
                             <v-btn @click="dialog = true" style="width: 100%">
                                 {{ $t("Change password") }}
                             </v-btn>
+                            <v-btn @click="showElevetorHistory = true" style="width: 100%">
+                                ლიფტების ისტორია
+                            </v-btn>
                         </v-card>
                     </v-menu>
                 </v-card-title>
@@ -448,6 +451,42 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+    <v-dialog v-model="showElevetorHistory" max-width="600">
+    <v-card>
+        <v-card-title class="headline">მგზავრობის ისტორია</v-card-title>
+        <v-list>
+            <v-list-item-group>
+                <template v-if="!elevetorHistory">
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-title>{{ $t("No elevator history") }}</v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </template>
+                <template v-else>
+                    <v-list-item v-for="(item, index) in elevetorHistory" :key="index">
+                        <v-list-item-content>
+                            <v-list-item-title>{{ $t("ID") }}: {{ item.id }}</v-list-item-title>
+                            <!-- <v-list-item-subtitle>{{ $t("User ID") }}: {{ item.user_id }}</v-list-item-subtitle> -->
+                            <v-list-item-subtitle>{{ $t("Device ID") }}: {{ item.device_id }}</v-list-item-subtitle>
+                            <!-- <v-list-item-subtitle>{{ $t("Type") }}: {{ item.type }}</v-list-item-subtitle> -->
+                            <v-list-item-subtitle>გატარების თარიღი: {{ item.created_at.slice(0, 22) }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>გადახდილი თანხა: {{ item.tariff }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>უსერის ბალანსი: {{ item. current_balance }}</v-list-item-subtitle>
+
+                        </v-list-item-content>
+                    </v-list-item>
+                </template>
+            </v-list-item-group>
+        </v-list>
+    </v-card>
+    <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="blue darken-1" @click="showElevetorHistory = false">
+            {{ $t("Close") }}
+        </v-btn>
+    </v-card-actions>
+</v-dialog>
     <v-dialog max-width="500px" v-model="showBalance">
         <v-card>
             <v-card-title>
@@ -505,7 +544,8 @@ export default {
             showElevator: false,
             showBalance: false,
             showCode: false,
-            companyRole: "",
+            showElevetorHistory:false,
+            elevetorHistory:[],
             user: {},
             isAdmin: false,
             role: "",
@@ -579,6 +619,7 @@ export default {
     async created() {
         this.getCards();
         this.getUserDevice();
+        this.getElevatorUseHistory()
         this.getTransactions();
         this.chackAdminEmail();
     },
@@ -634,14 +675,23 @@ export default {
         },
     },
     methods: {
+        getElevatorUseHistory(){
+            axios.get(`/api/elevatoruse/${this.$route.params.id}`).then(({data})=> {
+                console.log(data)
+                this.elevetorHistory = data .data
+            }).catch(err =>console.log(err ))
+        },
+     
         chackAdminEmail() {
             const token = localStorage.getItem("vuex");
             let email = JSON.parse(token).auth.user.email;
             this.isAdmin = email === "info@eideas.io";
             this.role = JSON.parse(token).auth.user.role;
         },
+
+      
         addBalance() {
-            // Your logic for adding balance
+             
             axios
                 .get(
                     "/api/bank/transaction/create/" +
