@@ -250,6 +250,7 @@ class MqttService
                                                         $userDevice = DeviceUser::where('user_id', $user->id)
                                                         ->whereIn('device_id', $deviceIds)
                                                         ->first();
+                                                        Log::debug("MQTT SERVICE shemsvla");
                                                         if (
                                                             time() < Carbon::parse($userDevice->subscription)->timestamp
                                                             ) {

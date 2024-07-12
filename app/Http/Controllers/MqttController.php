@@ -242,6 +242,7 @@ class MqttController extends Controller
                                                 $this->publishMessage($device_id, $payload);
                                             } else {
                                                 if ($device->op_mode == 0) {
+                                                    Log::debug("MQTT CONTROLLER shemsvla");
                                                     
                                                     if( time()  > Carbon::parse($userDevice->subscription)->timestamp ){
                                                         $this->noMoney($device_id);
