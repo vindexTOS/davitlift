@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class ElevatorUse extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','device_id','type'];
+    protected $fillable = ['user_id','device_id','type','tariff','current_balance',];
 }
