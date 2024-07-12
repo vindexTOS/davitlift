@@ -1095,7 +1095,8 @@ class MqttController extends Controller
                 'device_id' => $deviceId,
                 'type' => $type,
                 "tariff" => $tariff,
-                'current_balance' => $currentBalance
+                'current_balance' => $currentBalance,
+                'created_at' => Carbon::now(),
             ]);
         } catch (PDOException $e) {
             throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
