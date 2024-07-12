@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('elevator_uses', function (Blueprint $table) {
             $table->string("tariff")->default("0");
+            $table->string("current_balance")->default("0");
 
         });
     }
