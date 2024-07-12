@@ -412,14 +412,19 @@ class MqttController extends Controller
                                                             } else {
                                                                 $user = User::where('id', $card->user_id)->first();
                                                                 if ($device->op_mode == 0) {
-                                                                    Log::debug("MQTT CONTROLLER shemsvla 1");
+                                                                    
                                                                     $userDevice = DeviceUser::where('user_id', $user->id)
                                                                     ->where('device_id', $card->device_id)
                                                                     ->first();
-                                                                    
+                                                                    if( time()  > Carbon::parse($userDevice->subscription)->timestamp){
+                                                                        $this->noMoney($device->dev_id);
+                                                                        return;
+                                                                        
+                                                                    }
                                                                     if (
                                                                         time() < Carbon::parse($userDevice->subscription)->timestamp
                                                                         ) {
+                                                                            Log::debug("MQTT CONTROLLER Carbon");
                                                                             $payload = $this->generateHexPayload(4, [
                                                                                 [
                                                                                     'type' => 'timestamp',
