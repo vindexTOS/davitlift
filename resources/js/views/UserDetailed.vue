@@ -472,6 +472,8 @@
                             <!-- <v-list-item-subtitle>{{ $t("Type") }}: {{ item.type }}</v-list-item-subtitle> -->
                             <v-list-item-subtitle>გატარების თარიღი: {{ item.created_at.slice(0, 22) }}</v-list-item-subtitle>
                             <v-list-item-subtitle>გადახდილი თანხა: {{ item.tariff }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>უსერის ბალანსი: {{ item. current_balance }}</v-list-item-subtitle>
+
                         </v-list-item-content>
                     </v-list-item>
                 </template>
