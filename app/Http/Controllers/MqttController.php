@@ -354,8 +354,8 @@ class MqttController extends Controller
                                                                                     ],
                                                                                 ]);
                                                                                 $this->publishMessage($value2->dev_id, $payload);
- 
-                                                                             }
+                                                                                
+                                                                            }
                                                                         }
                                                                     } else {
                                                                         $this->noMoney($device_id);
@@ -523,56 +523,56 @@ class MqttController extends Controller
                                                                                     $this->noMoney($device->dev_id);
                                                                                 }
                                                                             }
-                                                                        } else {
-                                                                            if (
-                                                                                (int) $user->balance - $user->freezed_balance >=
-                                                                                $device->tariff_amount
-                                                                                ) {
-                                                                                    $lastAmount = LastUserAmount::where('user_id', $user->id)
-                                                                                    ->where('device_id', $device->id)
-                                                                                    ->first();
-                                                                                    
-                                                                                    if (empty($lastAmount->user_id)) {
-                                                                                        LastUserAmount::insert([
-                                                                                            'user_id' => $user->id,
-                                                                                            'device_id' => $device->id,
-                                                                                            'last_amount' =>
-                                                                                            $user->balance - $user->freezed_balance,
-                                                                                        ]);
-                                                                                    } else {
-                                                                                        $lastAmount->last_amount =
-                                                                                        $user->balance - $user->freezed_balance;
-                                                                                        $lastAmount->save();
-                                                                                    }
-                                                                                    $payload = $this->generateHexPayload(3, [
-                                                                                        [
-                                                                                            'type' => 'string',
-                                                                                            'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
-                                                                                        ],
-                                                                                        [
-                                                                                            'type' => 'number',
-                                                                                            'value' => 0,
-                                                                                        ],
-                                                                                        ['type' => 'string', 'value' => $data['payload']],
-                                                                                        [
-                                                                                            'type' => 'number',
-                                                                                            'value' => 0,
-                                                                                        ],
-                                                                                        [
-                                                                                            'type' => 'number16',
-                                                                                            'value' => $user->balance - $user->freezed_balance,
-                                                                                        ],
+                                                                        } else if   
+                                                                        (
+                                                                            (int) $user->balance - $user->freezed_balance >=
+                                                                            $device->tariff_amount
+                                                                            ) {
+                                                                                $lastAmount = LastUserAmount::where('user_id', $user->id)
+                                                                                ->where('device_id', $device->id)
+                                                                                ->first();
+                                                                                
+                                                                                if (empty($lastAmount->user_id)) {
+                                                                                    LastUserAmount::insert([
+                                                                                        'user_id' => $user->id,
+                                                                                        'device_id' => $device->id,
+                                                                                        'last_amount' =>
+                                                                                        $user->balance - $user->freezed_balance,
                                                                                     ]);
-                                                                                    $user->save();
-                                                                                    $this->saveOrUpdateEarnings(
-                                                                                        $device->id,
-                                                                                        $device->tariff_amount,
-                                                                                        $device->company_id
-                                                                                    );
-                                                                                    $this->publishMessage($device->dev_id, $payload);
                                                                                 } else {
-                                                                                    $this->noMoney($device->dev_id);
+                                                                                    $lastAmount->last_amount =
+                                                                                    $user->balance - $user->freezed_balance;
+                                                                                    $lastAmount->save();
                                                                                 }
+                                                                                $payload = $this->generateHexPayload(3, [
+                                                                                    [
+                                                                                        'type' => 'string',
+                                                                                        'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                                                                                    ],
+                                                                                    [
+                                                                                        'type' => 'number',
+                                                                                        'value' => 0,
+                                                                                    ],
+                                                                                    ['type' => 'string', 'value' => $data['payload']],
+                                                                                    [
+                                                                                        'type' => 'number',
+                                                                                        'value' => 0,
+                                                                                    ],
+                                                                                    [
+                                                                                        'type' => 'number16',
+                                                                                        'value' => $user->balance - $user->freezed_balance,
+                                                                                    ],
+                                                                                ]);
+                                                                                $user->save();
+                                                                                $this->saveOrUpdateEarnings(
+                                                                                    $device->id,
+                                                                                    $device->tariff_amount,
+                                                                                    $device->company_id
+                                                                                );
+                                                                                $this->publishMessage($device->dev_id, $payload);
+                                                                                
+                                                                            }else {
+                                                                                $this->noMoney($device->dev_id);
                                                                             }
                                                                         }
                                                                     }
@@ -698,7 +698,7 @@ class MqttController extends Controller
                                                                                                     ],
                                                                                                 ]);
                                                                                                 $this->publishMessage($value2->dev_id, $payload);
- 
+                                                                                                
                                                                                             }
                                                                                         }
                                                                                         $devices_ids = Device::where(
@@ -747,7 +747,7 @@ class MqttController extends Controller
                                                                                                             ],
                                                                                                         ]);
                                                                                                         $this->publishMessage($value2->dev_id, $payload);
- 
+                                                                                                        
                                                                                                     }
                                                                                                 }
                                                                                                 DB::table('elevator_codes')
@@ -860,11 +860,11 @@ class MqttController extends Controller
                                                                                                         ],
                                                                                                     ]);
                                                                                                     $this->publishMessage($value2->dev_id, $payload);
-
+                                                                                                    
                                                                                                 }
                                                                                             }
                                                                                             $this->trackElevetorUses($user->id, $device->id, 1, $deviceTarff);
-
+                                                                                            
                                                                                         }
                                                                                         
                                                                                         private function deviceCurrentSetupPacket($device, $data)
@@ -952,7 +952,6 @@ class MqttController extends Controller
                                                                                             ->first();
                                                                                             if (!empty($deviceEarnings)) {
                                                                                                 // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
-                                                                                                $this->Logsaver('890', $earningsValue, $user->id);
                                                                                                 
                                                                                                 if ($user && $device) {
                                                                                                     // $this->Logsaver(
@@ -968,44 +967,27 @@ class MqttController extends Controller
                                                                                                         $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                                                                                                         $deviceEarnings->save();
                                                                                                         
-                                                                                                        $this->Logsaver(
-                                                                                                            '890',
-                                                                                                            $deviceEarnings->earnings,
-                                                                                                            $user->id
-                                                                                                        );
+                                                                                                        
                                                                                                     } else {
                                                                                                         $deviceEarnings->earnings =
                                                                                                         $deviceEarnings->earnings + $earningsValue;
                                                                                                         $deviceEarnings->cashback = $user->cashback;
                                                                                                         $deviceEarnings->save();
                                                                                                         
-                                                                                                        $this->Logsaver(
-                                                                                                            '920',
-                                                                                                            $deviceEarnings->earnings,
-                                                                                                            $user->id
-                                                                                                        );
+                                                                                                        
                                                                                                     }
                                                                                                 } else {
                                                                                                     $deviceEarnings->earnings += $earningsValue;
-                                                                                                    $this->Logsaver(
-                                                                                                        '911',
-                                                                                                        $user->id,
-                                                                                                        '  უსერი და დევაისი არ არსებობს '
-                                                                                                    );
+                                                                                                    
                                                                                                     
                                                                                                     $deviceEarnings->save();
                                                                                                 }
                                                                                             } else {
                                                                                                 // $this->Logsaver('906', $user->id, 'BIG ELSE');
-                                                                                                $this->Logsaver('917', $user->id, ' ერნიგები ცარიელია');
                                                                                                 
                                                                                                 if ($user && $device) {
                                                                                                     // $this->Logsaver('909', $user->id, 'user && device 2 ');
-                                                                                                    $this->Logsaver(
-                                                                                                        '921',
-                                                                                                        $user->id,
-                                                                                                        ' უსერი და დევაისი  არსებობს ცარიელიში'
-                                                                                                    );
+                                                                                                    
                                                                                                     
                                                                                                     DeviceEarn::create([
                                                                                                         'company_id' => $companyId,
@@ -1018,11 +1000,7 @@ class MqttController extends Controller
                                                                                                     ]);
                                                                                                 } else {
                                                                                                     // $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
-                                                                                                    $this->Logsaver(
-                                                                                                        '934',
-                                                                                                        $user->id,
-                                                                                                        'უსერი და დევაისი არ არსებობს ცარიელშ'
-                                                                                                    );
+                                                                                                    
                                                                                                     
                                                                                                     DeviceEarn::create([
                                                                                                         'company_id' => $companyId,
@@ -1108,21 +1086,21 @@ class MqttController extends Controller
                                                                                             );
                                                                                             return $response->json(['data' => ['dasd']]);
                                                                                         }
-
+                                                                                        
                                                                                         //  tracking elevetors 
-    public function trackElevetorUses(string $userId, string $deviceId, int $type, string $tariff)
-    {
-
-        try {
-            ElevatorUse::create([
-                'user_id' => $userId,
-                'device_id' => $deviceId,
-                'type' => $type,
-                "tariff"=>$tariff
-            ]);
-        } catch (PDOException $e) {
-            throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
-        }
-    }
+                                                                                        public function trackElevetorUses(string $userId, string $deviceId, int $type, string $tariff)
+                                                                                        {
+                                                                                            
+                                                                                            try {
+                                                                                                ElevatorUse::create([
+                                                                                                    'user_id' => $userId,
+                                                                                                    'device_id' => $deviceId,
+                                                                                                    'type' => $type,
+                                                                                                    "tariff"=>$tariff
+                                                                                                ]);
+                                                                                            } catch (PDOException $e) {
+                                                                                                throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
+                                                                                            }
+                                                                                        }
                                                                                     }
                                                                                     
