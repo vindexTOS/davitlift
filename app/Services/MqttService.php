@@ -250,7 +250,7 @@ class MqttService
                                                         $userDevice = DeviceUser::where('user_id', $user->id)
                                                         ->whereIn('device_id', $deviceIds)
                                                         ->first();
-                                                        Log::debug("MQTT SERVICE shemsvla");
+                                                        Log::debug("MQTT SERVICE shemsvla 1");
                                                         if (
                                                             time() < Carbon::parse($userDevice->subscription)->timestamp
                                                             ) {
@@ -335,6 +335,7 @@ class MqttService
                                                         $user = User::where('id', $card->user_id)->first();
                                                         /////////////////////////////////////
                                                         if ($device->op_mode == 0) {
+                                                            Log::debug("MQTT SERVICE shemsvla 3");
                                                             $userFixedBalnce = $user->fixed_card_amount;
                                                             $userCardAmount = Card::where('user_id', $user->id)->count();
                                                             $fixedCard = $userFixedBalnce * $userCardAmount;
@@ -519,6 +520,7 @@ class MqttService
                                                         ->first();
                                                         $user = User::where('id', $code->user_id)->first();
                                                         if ($device->op_mode == 0) {
+                                                            Log::debug("MQTT SERVICE shemsvla 2");
                                                             $payload = $this->generateHexPayload(1, []);
                                                             $this->publishMessage($device->dev_id, $payload);
                                                         } else {

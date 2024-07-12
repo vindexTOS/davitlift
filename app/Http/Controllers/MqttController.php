@@ -412,6 +412,7 @@ class MqttController extends Controller
                                                             } else {
                                                                 $user = User::where('id', $card->user_id)->first();
                                                                 if ($device->op_mode == 0) {
+                                                                    Log::debug("MQTT CONTROLLER shemsvla 1");
                                                                     $userDevice = DeviceUser::where('user_id', $user->id)
                                                                     ->where('device_id', $card->device_id)
                                                                     ->first();
@@ -622,6 +623,8 @@ class MqttController extends Controller
                                                                         }
                                                                         $user = User::where('id', $code->user_id)->first();
                                                                         if ($device->op_mode == 0) {
+                                                                            Log::debug("MQTT CONTROLLER shemsvla 2");
+                                                                            
                                                                             $payload = $this->generateHexPayload(1, [
                                                                                 [
                                                                                     'type' => 'string',
