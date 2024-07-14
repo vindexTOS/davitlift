@@ -43,7 +43,7 @@
                 </template>
                 <v-card>
                   <v-card-title>
-                    <span class="text-h5">
+                    <span class="text-h5"> 
                       {{
                         isCompanyPage
                           ? $t('Declare service fee')

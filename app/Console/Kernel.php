@@ -13,7 +13,11 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('transaction:details')->everyFiveMinutes();
-        $schedule->command('user:subscription-check')->everySixHoures();
+         
+        $schedule->command('user:subscription-check')->dailyAt('20:05');
+        $schedule->command('user:subscription-check')->dailyAt('00:00');
+        $schedule->command('user:subscription-check')->dailyAt('00:10');
+
     }
 
     /**
