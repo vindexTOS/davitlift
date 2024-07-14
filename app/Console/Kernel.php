@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('user:subscription-check')->dailyAt('20:05');
         $schedule->command('user:subscription-check')->dailyAt('00:00');
         $schedule->command('user:subscription-check')->dailyAt('00:10');
+        $schedule->command('user:subscription-check')->dailyAt('04:00');
+
         $schedule->command('user:subscription-check')->dailyAt('04:05');
 
     }
