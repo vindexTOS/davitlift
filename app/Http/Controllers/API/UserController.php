@@ -361,23 +361,23 @@ class UserController extends Controller
                 }
                 
             }
-
-        public function GetUsersElevatorUse(string $user_id){
-              
-              try {
-                 
-                $eleveatorUses = ElevatorUse::where("user_id", $user_id)->get();
-
-                if(count($eleveatorUses) <= 0){
-                    return [];
+            
+            public function GetUsersElevatorUse(string $user_id){
                 
+                try {
+                    
+                    $eleveatorUses = ElevatorUse::where("user_id", $user_id)->get();
+                    
+                    if(count($eleveatorUses) <= 0){
+                        return [];
+                        
+                    }
+                    return response()->json(["data"=> $eleveatorUses ]);
+                    
+                } catch (\Throwable $e) {
+                    return response()->json(["msg"=> $e]);
                 }
-                return response()->json(["data"=> $eleveatorUses ]);
-                
-              } catch (\Throwable $e) {
-                return response()->json(["msg"=> $e]);
             }
-        }
         }
         
         // balance
