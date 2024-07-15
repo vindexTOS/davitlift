@@ -13,13 +13,14 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('transaction:details')->everyFiveMinutes();
-        
-        $schedule->command('user:subscription-check')->dailyAt('20:05');
-        $schedule->command('user:subscription-check')->dailyAt('00:00');
-        $schedule->command('user:subscription-check')->dailyAt('00:10');
-        $schedule->command('user:subscription-check')->dailyAt('04:00');
-        
-        $schedule->command('user:subscription-check')->dailyAt('04:05');
+        $schedule->command('user:subscription-check')->everyTwoHours();
+        $schedule->command('user:subscription-check')->dailyAt('00:00')
+        ->timezone('Asia/Tbilisi');;
+        $schedule->command('user:subscription-check')->dailyAt('00:05')
+        ->timezone('Asia/Tbilisi');;
+        $schedule->command('user:subscription-check')
+        ->dailyAt('04:05')
+        ->timezone('Asia/Tbilisi');
         
     }
     
