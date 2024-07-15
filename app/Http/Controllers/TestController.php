@@ -17,14 +17,15 @@ use App\Services\SubscriptionService;
 
 class TestController extends   Controller 
 {  
-    public function TestTimeZone(){
+    public function TestTimeZone()
+    {
         $currentTime = Carbon::now('Asia/Tbilisi');
+        $currentTimeFormatted = $currentTime->format('Y-m-d H:i:s');
         
-        
-        $currentTimeFormatted = $currentTime->toDateTimeString();
-        
-        return response()->json(['currentTime' =>  $currentTime , "app-time-zone"=>config('app.timezone') ]);
-        
+        return response()->json([
+            'currentTime' =>  $currentTimeFormatted,
+            'app-time-zone' => config('app.timezone')
+        ]);
     }
     
     public function TestFixedCard (){
