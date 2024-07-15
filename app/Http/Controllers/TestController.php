@@ -23,7 +23,7 @@ class TestController extends   Controller
         
         $currentTimeFormatted = $currentTime->toDateTimeString();
         
-        return response()->json(['currentTime' => $currentTimeFormatted, "app-time-zone"=>config('app.timezone') ]);
+        return response()->json(['currentTime' =>  $currentTime , "app-time-zone"=>config('app.timezone') ]);
         
     }
     
