@@ -25,7 +25,7 @@ class TestController extends   Controller
         return response()->json([
             'currentTime' =>  $currentTimeFormatted,
             'app-time-zone' => config('app.timezone'),
-            'todat'=>Carbon::now()->day,
+            'todat'=>Carbon::now() ,
         ]);
     }
     
