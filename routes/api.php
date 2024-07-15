@@ -292,3 +292,4 @@ Route::get('user/transaction/history/{device_id}', [
 
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix", [TestController::class, 'TestFixedCard']);
+Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
