@@ -1088,7 +1088,8 @@ class MqttController extends Controller
                                                                                         
                                                                                         public function trackElevetorUses(string $userId, string $deviceId, int $type, string $tariff, string $currentBalance)
                                                                                         {
-                                                                                            
+                                                                                            $currentTime = Carbon::now('Asia/Tbilisi');
+                                                                                            $currentTimeFormatted = $currentTime->format('Y-m-d H:i:s');
                                                                                             try {
                                                                                                 ElevatorUse::create([
                                                                                                     'user_id' => $userId,
@@ -1096,7 +1097,7 @@ class MqttController extends Controller
                                                                                                     'type' => $type,
                                                                                                     "tariff" => $tariff,
                                                                                                     'current_balance' => $currentBalance,
-                                                                                                    'created_at' => Carbon::now('Asia/Tbilisi') ,
+                                                                                                    'created_at' => $currentTimeFormatted ,
                                                                                                 ]);
                                                                                             } catch (PDOException $e) {
                                                                                                 throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
