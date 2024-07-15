@@ -31,15 +31,15 @@ class TestController extends   Controller
     
     public function TestFixedCard (){
         
-        $today = Carbon::now()->day;
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+        $today = Carbon::now(4)->day;
+        $currentMonth = Carbon::now(4)->month;
+        $currentYear = Carbon::now(4)->year;
         
         // Get Devices where pay_day is equal to today and op_mode is equal to 0
         $devices = Device::where('pay_day', $today)
         ->where('op_mode', 0)
         ->get();
-        
+    
         foreach ($devices as $device) {
             $deviceEarning = 0;
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
@@ -53,7 +53,7 @@ class TestController extends   Controller
                 ? Carbon::parse($user->pivot->subscription)
                 : null;
                 
-                $nextMonthPayDay = Carbon::now()
+                $nextMonthPayDay = Carbon::now(4)
                 ->addMonth()
                 ->startOfMonth()
                 ->addDays($device->pay_day - 1);
@@ -74,10 +74,10 @@ class TestController extends   Controller
                             $user->freezed_balance -= $fixedCard;
                             
                             // Update subscription date for next month
-                            $currentDay = Carbon::now()->day;
+                            $currentDay = Carbon::now(4)->day;
                             $nextMonthPayDay = ($currentDay < $device->pay_day)
-                            ? Carbon::now()->startOfMonth()->addDays($device->pay_day - 1)
-                            : Carbon::now()->addMonth()->startOfMonth()->addDays($device->pay_day - 1);
+                            ? Carbon::now(4)->startOfMonth()->addDays($device->pay_day - 1)
+                            : Carbon::now(4)->addMonth()->startOfMonth()->addDays($device->pay_day - 1);
                             
                             DeviceUser::where('device_id', $device->id)
                             ->where('user_id', $user->id)
@@ -105,10 +105,10 @@ class TestController extends   Controller
                             $user->balance -= $device->tariff_amount + $fixedCard;
                             $user->freezed_balance -= $device->tariff_amount;
                             
-                            $currentDay = Carbon::now()->day;
+                            $currentDay = Carbon::now(4)->day;
                             $nextMonthPayDay = ($currentDay < $device->pay_day)
-                            ? Carbon::now()->startOfMonth()->addDays($device->pay_day - 1)
-                            : Carbon::now()->addMonth()->startOfMonth()->addDays($device->pay_day - 1);
+                            ? Carbon::now(4)->startOfMonth()->addDays($device->pay_day - 1)
+                            : Carbon::now(4)->addMonth()->startOfMonth()->addDays($device->pay_day - 1);
                             
                             DeviceUser::where('device_id', $device->id)
                             ->where('user_id', $user->id)
@@ -161,9 +161,10 @@ class TestController extends   Controller
                 }
             }
         }
-        
+      
+      
         return response()->json(
-            ['message' => 'mivige   '],
+            ['message' =>  Carbon::now(4)->startOfMonth()->addDays(15 - 1)],
             200
         );
     }   
