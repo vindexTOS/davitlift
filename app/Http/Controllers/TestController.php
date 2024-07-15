@@ -18,7 +18,7 @@ use App\Services\SubscriptionService;
 class TestController extends   Controller 
 {  
     public function TestTimeZone(){
-        $currentTime = Carbon::now();
+        $currentTime = Carbon::now('Asia/Tbilisi');
         
         
         $currentTimeFormatted = $currentTime->toDateTimeString();
