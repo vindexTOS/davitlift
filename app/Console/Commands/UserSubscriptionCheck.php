@@ -26,9 +26,9 @@ class UserSubscriptionCheck extends Command
 
     public function handle()
     { 
-         $today = Carbon::now()->day;
-        $currentMonth = Carbon::now()->month;
-        $currentYear = Carbon::now()->year;
+         $today = Carbon::now(4)->day;
+        $currentMonth = Carbon::now(4)->month;
+        $currentYear = Carbon::now(4)->year;
 
         // Get Devices where pay_day is equal to today and op_mode is equal to 0
         $devices = Device::where('pay_day', $today)
@@ -50,7 +50,7 @@ class UserSubscriptionCheck extends Command
                 $subscriptionDate = $user->pivot->subscription
                     ? Carbon::parse($user->pivot->subscription)
                     : null;
-                $nextMonthPayDay = Carbon::now()
+                $nextMonthPayDay = Carbon::now(4)
                     ->addMonth()
                     ->startOfMonth()
                     ->addDays($device->pay_day - 1);
@@ -77,11 +77,11 @@ class UserSubscriptionCheck extends Command
                             $currentDay = Carbon::now()->day;
 
                             if ($currentDay < $device->pay_day) {
-                                $nextMonthPayDay = Carbon::now()
+                                $nextMonthPayDay = Carbon::now(4)
                                     ->startOfMonth()
                                     ->addDays($device->pay_day - 1);
                             } else {
-                                $nextMonthPayDay = Carbon::now()
+                                $nextMonthPayDay = Carbon::now(4)
                                     ->addMonth()
                                     ->startOfMonth()
                                     ->addDays($device->pay_day - 1);
@@ -136,11 +136,11 @@ class UserSubscriptionCheck extends Command
                                 $currentDay = Carbon::now()->day;
 
                                 if ($currentDay < $device->pay_day) {
-                                    $nextMonthPayDay = Carbon::now()
+                                    $nextMonthPayDay = Carbon::now(4)
                                         ->startOfMonth()
                                         ->addDays($device->pay_day - 1);
                                 } else {
-                                    $nextMonthPayDay = Carbon::now()
+                                    $nextMonthPayDay = Carbon::now(4)
                                         ->addMonth()
                                         ->startOfMonth()
                                         ->addDays($device->pay_day - 1);

@@ -15,7 +15,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('transaction:details')->everyFiveMinutes();
         $schedule->command('user:subscription-check')->everyTwoHours();
         $schedule->command('user:subscription-check')->dailyAt('00:00')
-        ->timezone('Asia/Tbilisi');;
+        ->timezone('Asia/Tbilisi');
+        $schedule->command('user:subscription-check')->dailyAt('00:01')
+        ->timezone('Asia/Tbilisi');
         $schedule->command('user:subscription-check')->dailyAt('00:05')
         ->timezone('Asia/Tbilisi');;
         $schedule->command('user:subscription-check')
