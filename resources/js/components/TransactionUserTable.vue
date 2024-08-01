@@ -119,8 +119,15 @@ export default {
     },
 
     getItemType(type) {
-      console.log(type)
-      return type
+      let res = ''
+      if(type == "LB"){
+        res = "Liberty ჩასარიცხი აპარატი"
+      }else if( type == "TBC"){
+        res = 'TBC ჩასარიცხი აპარატი'
+      }else{ 
+        res = type
+      }
+      return res
     },
   },
 }

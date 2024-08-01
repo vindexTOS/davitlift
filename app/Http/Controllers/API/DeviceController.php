@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Requests\CreateDeviceRequest;
 use App\Models\Company;
 use App\Models\CompanyTransaction;
-use App\Models\Device;
+ 
 use App\Models\DeviceError;
 use App\Models\DeviceUser;
 use App\Models\UnregisteredDevice;
@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Validator;
 
 class DeviceController extends Controller
 {
+
+    
     public function index()
     {
         if (Auth::user()->email == config('app.super_admin_email')) {
