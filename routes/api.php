@@ -1,23 +1,24 @@
 <?php
-use App\Http\Controllers\UpdatingDeviceController;
+use App\Models\Device;
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\API\CompanyController;
-use App\Http\Controllers\API\DeviceController;
-use App\Http\Controllers\API\CardController;
-use App\Http\Controllers\API\TransactionController;
-use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\AuthController;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BankOfGeorgia;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\FileController;
-use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Controllers\MqttController;
 use App\Http\Controllers\TestController;
-use App\Http\Middleware\SuperAdminMiddleware;
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CardController;
+use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\DeviceController;
+use App\Http\Controllers\API\CompanyController;
 use App\Http\Middleware\ComapnyAccsessMiddleware;
+  use App\Http\Middleware\SuperAdminMiddleware;
+use App\Http\Controllers\UpdatingDeviceController;
+use App\Http\Controllers\API\TransactionController;
+use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
-use App\Models\Device;
 
 //  ADMIN ONLY
 
@@ -289,6 +290,9 @@ Route::get('user/transaction/history/{device_id}', [
 
 
 //  testing area 
+
+Route::get("/ipay/verification/", [BankOfGeorgia::class, 'VerifyUser']);
+Route::get("/ipay/payment/", [BankOfGeorgia::class, "handlePayment"]);
 
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix", [TestController::class, 'TestFixedCard']);
