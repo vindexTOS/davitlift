@@ -100,7 +100,7 @@ class BankOfGeorgia extends Controller
                     );
                 }
 
-                return response()->json(['code' => 0, 'message' => 'Payment successful'], Response::HTTP_OK);
+                return response()->json(['code' => 0, 'message' => 'Payment successful', 'FileId' =>$fileId], Response::HTTP_OK);
             } else {
                 return response()->json(['code' => 6], Response::HTTP_NOT_FOUND); // User not found
             }
@@ -116,7 +116,8 @@ class BankOfGeorgia extends Controller
     {
 
         $deviceId = DeviceUser::where('user_id', $userId)->first();
-        $string = '';
+        $string = '' .$userId;
+     
         if ($deviceId) {
             $device = Device::where('id', $deviceId->device_id)->first();
             $manager = User::where('id', $device->users_id)->first();
