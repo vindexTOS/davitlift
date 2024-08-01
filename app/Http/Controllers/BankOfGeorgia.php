@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class BankOfGeorgia extends Controller
 {
-
+//   TO DO გაატანე ფაილ აიდი წარმატების შესრულებისას რომ შეინახონ თავიანთ მხარეს "2#400357449#591914946" 
 
   //    /api/ipay/verification/?CUSTOMER_ID=574151953
   public function VerifyUser(Request $request)
