@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Requests\CreateDeviceRequest;
-use App\Models\Company;
-use App\Models\CompanyTransaction;
- 
-use App\Models\DeviceError;
-use App\Models\DeviceUser;
-use App\Models\UnregisteredDevice;
 use App\Models\User;
-use App\Services\MqttConnectionService;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use App\Models\Device;
+use App\Models\Company;
+ 
 use App\Models\DeviceEarn;
-use Illuminate\Support\Facades\Auth;
+use App\Models\DeviceUser;
+use App\Models\DeviceError;
+use Illuminate\Http\Request;
 use App\Services\MqttService;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use PhpMqtt\Client\MqttClient;
+use App\Models\CompanyTransaction;
+use App\Models\UnregisteredDevice;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use App\Services\MqttConnectionService;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\CreateDeviceRequest;
 
 class DeviceController extends Controller
 {
