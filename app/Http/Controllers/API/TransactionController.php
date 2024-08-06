@@ -533,7 +533,7 @@ class TransactionController extends Controller
                                             }
                                             
                                             public function updateUserData($data, $transaction, $order_id, $isFastPay)
-                                            {
+                                                {
                                                 try {
                                                     Log::debug('აფდეითში შემოსვლა');
                                                     
