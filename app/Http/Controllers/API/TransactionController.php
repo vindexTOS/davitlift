@@ -73,7 +73,7 @@ class TransactionController extends Controller
                     'transaction_id' => $tbcTransaction->order_id,
                     'created_at' => $tbcTransaction->created_at,
                     'updated_at' => $tbcTransaction->updated_at,
-                    'type' => 'TBC ჩასარიცხი აპარატი',
+                    'type' =>  $tbcTransaction->type,
                 ];
             });
             if ($transactions->isEmpty()) {

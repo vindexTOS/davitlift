@@ -95,7 +95,7 @@ public function CheckPing(Request $request)
         }
         // Verify hash
     
-        $this.CheckHashCode($phone . $amount . $paymentID,   $hash );
+        $this->CheckHashCode($phone . $amount . $paymentID,   $hash );
         // checking if payment already happend
         if ($this->checkIfTransactionAlreadyHappend($paymentID)) {
             return response()->json(

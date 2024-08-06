@@ -124,7 +124,10 @@ export default {
         res = "Liberty ჩასარიცხი აპარატი"
       }else if( type == "TBC"){
         res = 'TBC ჩასარიცხი აპარატი'
-      }else{ 
+      } else if (type == "BO"){
+        res = "BO ჩასარიცხი აპარატი"
+      }
+      else{ 
         res = type
       }
       return res
