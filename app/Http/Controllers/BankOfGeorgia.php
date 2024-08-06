@@ -7,22 +7,49 @@ use App\Models\Card;
 use App\Models\User;
 use App\Models\Device;
 use App\Models\Company;
-use Illuminate\Routing\Controller;
 use App\Models\DeviceUser;
 use Illuminate\Http\Request;
 use App\Models\LastUserAmount;
 use App\Models\TbcTransaction;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
+use App\Exceptions\InvalidHashCodeException;
 use Symfony\Component\HttpFoundation\Response;
 
 class BankOfGeorgia extends Controller
 {
 //   TO DO გაატანე ფაილ აიდი წარმატების შესრულებისას რომ შეინახონ თავიანთ მხარეს "2#400357449#591914946" 
+//  http://localhost:8000/api/ipay/ping/?OP=ping&USERNAME=ipay&PASSWORD=ipay123&HASH_CODE=12341234058923958023
+public function CheckPing(Request $request)
+{
+    try {
+        $OP = $request->query("OP");
+        $USERNAME = $request->query("USERNAME");
+        $PASSWORD = $request->query("PASSWORD");
+        $HASH_CODE = $request->query("HASH_CODE");
 
-  //    /api/ipay/verification/?CUSTOMER_ID=574151953
+        $this->CheckHashCode($OP . $USERNAME . $PASSWORD, $HASH_CODE);
+
+        return response()->json(
+            ['code' => 0, 'timestamp' => date('Y-m-d H:i:s')],
+            Response::HTTP_OK
+        );
+    } catch (InvalidHashCodeException $e) {
+        return $e->render();
+    } catch (\Exception $e) {
+        return response()->json(
+            ['code' => 99, "msg" => $e->getMessage()],
+            Response::HTTP_INTERNAL_SERVER_ERROR
+        );
+    }
+}
+
+
+  //    /api/ipay/verification/?OP=verify&CUSTOMER_ID=574151953
   public function VerifyUser(Request $request)
   {
       $CUSTOMER_ID = $request->query('CUSTOMER_ID');
+      $OP = $request->query("OP");
 
       try {
           $user = User::where('phone', $CUSTOMER_ID)->first();
@@ -53,12 +80,13 @@ class BankOfGeorgia extends Controller
 
 
  
-    //    http://localhost:8000/api/ipay/payment/?CUSTOMER_ID=574151953&PAY_AMOUNT=1000&PAYMENT_ID=1&HASH_CODE=97708186f1577e90c98b6c2a7bfed5eb
+    //    http://localhost:8000/api/ipay/payment/?OP=pay&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=574151953&PAY_AMOUNT=1000&PAYMENT_ID=1&HASH_CODE=97708186f1577e90c98b6c2a7bfed5eb
  
     public function handlePayment(Request $request)
     {
         $phone = $request->query('CUSTOMER_ID');
         $amount = $request->query('PAY_AMOUNT');
+        
         $hash = $request->query('HASH_CODE');
         $paymentID = $request->query("PAYMENT_ID");
         // Validate required parameters
@@ -66,11 +94,8 @@ class BankOfGeorgia extends Controller
             return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
         }
         // Verify hash
-        $expectedHash = $this->generateHash($phone . $amount . $paymentID);
-        if (strtoupper($hash) !== strtoupper($expectedHash)) {
-            return response()->json(['code' => 3, "hash" => strtoupper($hash), "expected" => strtoupper($expectedHash)], Response::HTTP_BAD_REQUEST); // Incorrect hash code
-        }
-
+    
+        $this.CheckHashCode($phone . $amount . $paymentID,   $hash );
         // checking if payment already happend
         if ($this->checkIfTransactionAlreadyHappend($paymentID)) {
             return response()->json(
@@ -184,7 +209,16 @@ class BankOfGeorgia extends Controller
     {
         return md5($data . "someseacret");
     }
+  // hash checking function 
 
+  private function CheckHashCode(string $data, string $hash)
+  {
+      $expectedHash = $this->generateHash($data);
+  
+      if (strtoupper($hash) !== strtoupper($expectedHash)) {
+          throw new InvalidHashCodeException($expectedHash, $hash);
+      }
+  }
     //     update user info
     public function updateUserData($amount, $user_id,   $isFastPay)
     {

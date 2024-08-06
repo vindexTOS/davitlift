@@ -293,7 +293,7 @@ Route::get('user/transaction/history/{device_id}', [
 
 Route::get("/ipay/verification/", [BankOfGeorgia::class, 'VerifyUser']);
 Route::get("/ipay/payment/", [BankOfGeorgia::class, "handlePayment"]);
-
+Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
