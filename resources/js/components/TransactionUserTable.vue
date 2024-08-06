@@ -21,8 +21,8 @@
       </template>
       <template v-slot:item.amountTax="{ item }">
         {{
-          item.raw.type === 'TBC ჩასარიცხი აპარატი'
-            ? item.raw.amount
+          item.raw.type == 'TBC' || "LB" || "BO"
+            ? item.raw.amount  
             : getUntaxedAmount(item.raw.amount)
         }}
         ლარი

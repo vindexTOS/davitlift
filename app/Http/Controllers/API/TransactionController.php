@@ -132,7 +132,7 @@ class TransactionController extends Controller
                         'transaction_id' => $tbcTransaction->order_id,
                         'created_at' => $tbcTransaction->created_at,
                         'updated_at' => $tbcTransaction->updated_at,
-                        'type' => $tbcTransaction->type,
+                        'type' => $tbcTransaction->type ,
                     ];
                 });
                 if ($transactions->isEmpty()) {
