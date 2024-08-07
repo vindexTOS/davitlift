@@ -21,10 +21,11 @@
       </template>
       <template v-slot:item.amountTax="{ item }">
         {{
-          item.raw.type == 'TBC' || "LB" || "BO"
-            ? item.raw.amount  
-            : getUntaxedAmount(item.raw.amount)
+         
+            getAmount(item.raw.type ,item.raw.amount)
         }}
+ 
+      
         ლარი
       </template>
       <template v-slot:item.type="{ item }">
@@ -117,7 +118,18 @@ export default {
 
       return (amount - tax).toFixed(2)
     },
-
+    getAmount(type, amount){
+      
+       if(type == 'TBC' ||  type == "LB" ||type == "BO" ){
+        return amount 
+       }else if(type == "TBC ონლაინ გადახდა" ){
+        console.log("hay benson")
+        return this.getUntaxedAmount(amount)
+       }else{
+        return amount
+       }
+    }
+,
     getItemType(type) {
       let res = ''
       if(type == "LB"){
