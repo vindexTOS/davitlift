@@ -39,7 +39,7 @@ use TransactionProvider;
       $HASH_CODE = $request->query("HASH_CODE");
 
       try {
-                 if($OP || $USERNAME || $PASSWORD || $CUSTOMER_ID || $SERVICE_ID || $PAY_SRC || $HASH_CODE){
+                 if(!$OP || !$USERNAME || !$PASSWORD || !$CUSTOMER_ID || !$SERVICE_ID || !$PAY_SRC || !$HASH_CODE){
                                 return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
 
                  }
@@ -59,13 +59,15 @@ use TransactionProvider;
                   Response::HTTP_NOT_FOUND
               );
           }
-      } catch (\Exception $e) {
+      } catch (InvalidHashCodeException $e) {
+        return $e->render();
+    } catch (\Exception $e) {
           \Illuminate\Support\Facades\Log::error(
               'Error checking user existence: ' . $e->getMessage()
           );
 
           return response()->json(
-              ['code' => 99],
+              ['code' => 99, "msg"=>$e->getMessage()],
               Response::HTTP_INTERNAL_SERVER_ERROR
           );
       }
@@ -139,42 +141,9 @@ use TransactionProvider;
         }
     }
 
-    //   make FileID 
+  
 
-    public function MakeFileId($userId)
-    {
-
-        $deviceId = DeviceUser::where('user_id', $userId)->first();
-        $string = '' .$userId;
-     
-        if ($deviceId) {
-            $device = Device::where('id', $deviceId->device_id)->first();
-            $manager = User::where('id', $device->users_id)->first();
-            $company = Company::where('id', $device->company_id)->first();
-            if (
-                isset($manager) &&
-                isset($manager->phone) &&
-                isset($company) &&
-                isset($company->sk_code)
-            ) {
-                $string .= '#' . $company->sk_code;
-                $length = strlen($string);
-
-                // If the length is greater than 30, truncate the string to 30 characters
-                if ($length > 30) {
-                    $string = substr($string, 0, 30);
-                }
-
-                // Calculate the remaining length available for the manager's name
-                $remainingLength = 30 - strlen($string);
-
-                // Append the portion of the manager's name that fits into the remaining length
-                $string .=
-                    '#' . substr($manager->phone, 0, $remainingLength);
-            }
-        }
-        return $string;
-    }
+    
     //   payment creation 
 
     public function createTransactionFastPay(
@@ -236,7 +205,7 @@ use TransactionProvider;
     $CUSTOMER_ID = $request->query("CUSTOMER_ID");
     $HASH_CODE = $request->query("HASH_CODE");
     $SERVICE_ID = $request->query("SERVICE_ID");
-    
+     
      $this->CheckHashCode($OP. $USERNAME. $PASSWORD . $CUSTOMER_ID .$SERVICE_ID , $HASH_CODE );
      return response()->json(
         ['code' => 0, 'timestamp' => date('Y-m-d H:i:s')],
@@ -247,11 +216,15 @@ use TransactionProvider;
 public function CheckPing(Request $request)
 {
     try {
+         
         $OP = $request->query("OP");
         $USERNAME = $request->query("USERNAME");
         $PASSWORD = $request->query("PASSWORD");
         $HASH_CODE = $request->query("HASH_CODE");
+     if(!$OP || !$USERNAME || !$PASSWORD || !$HASH_CODE){
+        return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
 
+    }
         $this->CheckHashCode($OP . $USERNAME . $PASSWORD, $HASH_CODE);
 
         return response()->json(
@@ -261,8 +234,10 @@ public function CheckPing(Request $request)
     } catch (InvalidHashCodeException $e) {
         return $e->render();
     } catch (\Exception $e) {
+         Log::error('Error in CheckPing: ' . $e->getMessage());
+
         return response()->json(
-            ['code' => 99, "msg" => $e->getMessage()],
+            ['code' => 99, 'msg' =>  $e->getMessage()],
             Response::HTTP_INTERNAL_SERVER_ERROR
         );
     }
