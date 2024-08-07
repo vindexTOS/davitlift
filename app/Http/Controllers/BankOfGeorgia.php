@@ -11,9 +11,11 @@ use App\Models\DeviceUser;
 use Illuminate\Http\Request;
 use App\Models\LastUserAmount;
 use App\Models\TbcTransaction;
+use PhpParser\Node\Stmt\TryCatch;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use App\Providers\TransactionProvider;
+use App\Exceptions\BankOfGeorgiaUserCheck;
 use App\Exceptions\InvalidHashCodeException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -43,6 +45,7 @@ use TransactionProvider;
                                 return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
 
                  }
+        $this->checkUser($USERNAME,$PASSWORD);
 
         $this->CheckHashCode($OP. $USERNAME . $PASSWORD . $CUSTOMER_ID . $SERVICE_ID . $PAY_SRC , $HASH_CODE);
 
@@ -61,7 +64,9 @@ use TransactionProvider;
           }
       } catch (InvalidHashCodeException $e) {
         return $e->render();
-    } catch (\Exception $e) {
+    }  catch (BankOfGeorgiaUserCheck $e){
+        return $e->render();
+     }  catch (\Exception $e) {
           \Illuminate\Support\Facades\Log::error(
               'Error checking user existence: ' . $e->getMessage()
           );
@@ -74,13 +79,18 @@ use TransactionProvider;
   }
 
 
-
+ 
  
     //    http://www.service-provider1.ge/payments/ipay.php?OP=pay&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=112233&SERVICE_ID=dsl&PAY_AMOUNT=500&PAY_SRC=&internet&PAYMENT_ID=123456&EXTRA_INFO=Mikheil%20Kapanadze&HASH_CODE=12341234058923958023
  
     public function handlePayment(Request $request)
     {
 
+
+
+
+
+        try {
 
 
         $OP = $request->query("OP");
@@ -96,11 +106,14 @@ use TransactionProvider;
         $hash = $request->query('HASH_CODE');
         $paymentID = $request->query("PAYMENT_ID");
         // Validate required parameters
-        if (!$phone || !$amount || !$hash || !$paymentID) {
+        if (!$phone || !$amount || !$hash || !$paymentID || !$USERNAME || !$PASSWORD || !$PAY_SRC || !$OP ) {
             return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
         }
+
+        $this->checkUser($USERNAME,$PASSWORD);
+
         // Verify hash
-    
+
         $this->CheckHashCode($OP. $USERNAME. $PASSWORD .$phone .$SERVICE_ID . $amount . $PAY_SRC . $paymentID,   $hash );
         // checking if payment already happend
         if ($this->checkIfTransactionAlreadyHappend($paymentID)) {
@@ -109,9 +122,6 @@ use TransactionProvider;
                 Response::HTTP_BAD_REQUEST
             );
         };
-
-
-        try {
             $user = User::where('phone', $phone)->first();
             if ($user) {
                 $fileId = $this->MakeFileId($user->id);
@@ -135,6 +145,11 @@ use TransactionProvider;
             } else {
                 return response()->json(['code' => 6], Response::HTTP_NOT_FOUND); // User not found
             }
+        } catch (InvalidHashCodeException $e) {
+            return $e->render();
+        } 
+        catch (BankOfGeorgiaUserCheck $e){
+           return $e->render();
         } catch (\Exception $e) {
             Log::error('Error processing payment: ' . $e->getMessage());
             return response()->json(['code' => 99], Response::HTTP_INTERNAL_SERVER_ERROR); // General error
@@ -215,16 +230,24 @@ use TransactionProvider;
 //  http://localhost:8000/api/ipay/ping/?OP=ping&USERNAME=ipay&PASSWORD=ipay123&HASH_CODE=12341234058923958023
 public function CheckPing(Request $request)
 {
+
+
     try {
-         
+
+
         $OP = $request->query("OP");
         $USERNAME = $request->query("USERNAME");
         $PASSWORD = $request->query("PASSWORD");
         $HASH_CODE = $request->query("HASH_CODE");
+
+     
+
      if(!$OP || !$USERNAME || !$PASSWORD || !$HASH_CODE){
         return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
 
     }
+
+        $this->checkUser($USERNAME,$PASSWORD);
         $this->CheckHashCode($OP . $USERNAME . $PASSWORD, $HASH_CODE);
 
         return response()->json(
@@ -233,7 +256,11 @@ public function CheckPing(Request $request)
         );
     } catch (InvalidHashCodeException $e) {
         return $e->render();
-    } catch (\Exception $e) {
+    } 
+     catch (BankOfGeorgiaUserCheck $e){
+        return $e->render();
+     }
+    catch (\Exception $e) {
          Log::error('Error in CheckPing: ' . $e->getMessage());
 
         return response()->json(
@@ -241,5 +268,17 @@ public function CheckPing(Request $request)
             Response::HTTP_INTERNAL_SERVER_ERROR
         );
     }
+}
+
+
+
+public function checkUser($USERNAME, $PASSWORD)
+{
+    if ($USERNAME !== "ipay" || $PASSWORD !== "ipay123") {
+ 
+        throw new BankOfGeorgiaUserCheck();
+    }
+    
+     
 }
 }
