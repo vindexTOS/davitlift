@@ -21,13 +21,41 @@ use Symfony\Component\HttpFoundation\Response;
 
 class BankOfGeorgia extends Controller
 {
-//   TO DO გაატანე ფაილ აიდი წარმატების შესრულებისას რომ შეინახონ თავიანთ მხარეს "2#400357449#591914946" 
-
+ 
 use TransactionProvider;
+
+
+
+// Endpoint:https://lift.eideas.io/api/ipay/?OP=payUSERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=597571441&SERVICE_ID=dsl&PAY_AMOUNT=500&PAYMENT_ID=123456&HASH_CODE=089423FFE1AACD403CA8A6D60E3F83871&PAY_SRC=internet
+
+// /api/ipay/?OP=verify&USERNAME=ipay&PASSWORD=ipay123&CUSTO
+// MER_ID=597571441&SERVICE_ID=dsl&PAY_SRC=internet&HASH_CODE=A1638825250CFAD6665EC5
+// DC2631E9AD
+
+public function  handleIpay(Request $request){
+    $OP = $request->query("OP");
+     switch($OP){
+        case "verify":
+           return   $this-> VerifyUser($request);
+            break;
+        case "ping":
+         return   $this->CheckPing($request);
+            break;
+        case "pay":
+           return $this->handlePayment($request);
+            break;
+         }
+
+}
+
+
+
+
+
 
   //    /api/ipay/verification/?OP=verify&CUSTOMER_ID=574151953
 //   http://www.service-provider1.ge/payments/ipay.php?OP=verify&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=112233&SERVICE_ID=dsl&PAY_AMOUNT=500&PAY_SRC=internet&HASH_CODE=12341234058923958023
-   public function VerifyUser(Request $request)
+private function VerifyUser(Request $request)
   {
  
   
@@ -83,7 +111,7 @@ use TransactionProvider;
  
     //    http://www.service-provider1.ge/payments/ipay.php?OP=pay&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=112233&SERVICE_ID=dsl&PAY_AMOUNT=500&PAY_SRC=&internet&PAYMENT_ID=123456&EXTRA_INFO=Mikheil%20Kapanadze&HASH_CODE=12341234058923958023
  
-    public function handlePayment(Request $request)
+   private function handlePayment(Request $request)
     {
 
 
@@ -160,8 +188,7 @@ use TransactionProvider;
 
     
     //   payment creation 
-
-    public function createTransactionFastPay(
+private function createTransactionFastPay(
         $amount,
         $userId,
         $order_id,
@@ -180,7 +207,7 @@ use TransactionProvider;
 
 
   
-    public function checkIfTransactionAlreadyHappend($PAYMENT_ID)
+private function checkIfTransactionAlreadyHappend($PAYMENT_ID)
     {
 
         $order = Tbctransaction::where('order_id', $PAYMENT_ID)->first();
@@ -228,7 +255,7 @@ use TransactionProvider;
     );
  }
 //  http://localhost:8000/api/ipay/ping/?OP=ping&USERNAME=ipay&PASSWORD=ipay123&HASH_CODE=12341234058923958023
-public function CheckPing(Request $request)
+private function CheckPing(Request $request)
 {
 
 
@@ -272,7 +299,7 @@ public function CheckPing(Request $request)
 
 
 
-public function checkUser($USERNAME, $PASSWORD)
+private function checkUser($USERNAME, $PASSWORD)
 {
     if ($USERNAME !== "ipay" || $PASSWORD !== "ipay123") {
  
@@ -281,4 +308,10 @@ public function checkUser($USERNAME, $PASSWORD)
     
      
 }
+
+
+
+
+
+
 }

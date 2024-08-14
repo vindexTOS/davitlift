@@ -291,10 +291,10 @@ Route::get('user/transaction/history/{device_id}', [
 
 //  testing area 
 
-Route::get("/ipay/verification/", [BankOfGeorgia::class, 'VerifyUser']);
-Route::get("/ipay/payment/", [BankOfGeorgia::class, "handlePayment"]);
-Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
-Route::get("/ipay/testhash", [BankOfGeorgia::class, "TestHash"]);
+Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
+// Route::get("/ipay/payment/", [BankOfGeorgia::class, "handlePayment"]);
+// Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
+// Route::get("/ipay/testhash", [BankOfGeorgia::class, "TestHash"]);
 
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix", [TestController::class, 'TestFixedCard']);
