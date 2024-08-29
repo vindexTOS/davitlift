@@ -298,15 +298,14 @@ private function CheckPing(Request $request)
 }
 
 
-
 private function checkUser($USERNAME, $PASSWORD)
 {
-    if ($USERNAME !== "ipay" || $PASSWORD !== "ipay123") {
- 
+    $expectedUsername = env('BOG_USERNAME', 'ipay');
+    $expectedPassword = env('BOG_PASSWORD', 'ipay123');
+
+    if ($USERNAME !== $expectedUsername || $PASSWORD !== $expectedPassword) {
         throw new BankOfGeorgiaUserCheck();
     }
-    
-     
 }
 
 
