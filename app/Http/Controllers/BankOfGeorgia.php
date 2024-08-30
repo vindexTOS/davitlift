@@ -350,7 +350,7 @@ private function VerifyUser(Request $request)
 
         Tbctransaction::create([
             'user_id' => $userId,
-            'amount' =>   $amount  ,
+            'amount' =>  number_format($amount / 100, 2),
             'FileId' => $FileId,
             'order_id' => $order_id,
             'type' => $type,
