@@ -119,8 +119,10 @@ export default {
       return (amount - tax).toFixed(2)
     },
     getAmount(type, amount){
-      
-       if(type == 'TBC' ||  type == "LB" ||type == "BO" ){
+        if(type.includes("BO")){
+          return amount /100
+        }
+       else if(type == 'TBC' ||  type == "LB" ){
         return amount 
        }else if(type == "TBC ონლაინ გადახდა" ){
         console.log("hay benson")
@@ -135,9 +137,9 @@ export default {
       if(type == "LB"){
         res = "Liberty ჩასარიცხი აპარატი"
       }else if( type == "TBC"){
-        res = 'TBC ჩასარიცხი აპარატი'
-      } else if (type == "BO"){
-        res = "BO ჩასარიცხი აპარატი"
+        res = 'TBC ჩასარიცხი აპარატი1'
+      } else if (type == "BO-internet"){
+        res = "საქართველოს ბანკის ონლაინ გადახდა"
       }
       else{ 
         res = type
