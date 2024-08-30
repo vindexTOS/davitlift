@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use App\Exceptions\MqttNodeException;
 use App\Services\MqttConnectionService;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CreateDeviceRequest;
@@ -384,16 +385,36 @@ return  $device;
     public function deleteError($id) {
         return DeviceError::where('id',$id)->delete();
     }
-    public function publishMessage($device_id,$payload)
+    public function publishMessage($device_id, $payload)
     {
         $data = [
             'device_id' => $device_id,
             'payload' => $payload
         ];
         $queryParams = http_build_query($data);
-        $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
-        return $response->json(['data' => ['dasd']]);
 
+        $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
+
+        // Decode the response JSON
+        $responseBody = $response->json();
+
+        // Check if $responseBody is an array
+        if (!is_array($responseBody)) {
+            Log::error('Unexpected response format: ' . json_encode($responseBody));
+            throw new MqttNodeException('Unexpected response format', $responseBody);
+        }
+
+        // Check for error status
+        if (isset($responseBody['status']) && $responseBody['status'] === 'error') {
+            // Log the error message
+            Log::error('MQTT Error: ' . ($responseBody['message'] ?? 'Unknown error'));
+
+            // Throw the custom exception
+            throw new MqttNodeException($responseBody['message'] ?? 'Unknown error');
+        }
+
+        // Return a success response if no errors
+        return ['data' => ['success']];
     }
 
     public function updateDeviceTariff($id,  Request $request){

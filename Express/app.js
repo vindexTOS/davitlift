@@ -8,20 +8,23 @@ const port = 3000;
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
-app.get("/mqtt/general", (req, res) => {
+app.get("/mqtt/general", async (req, res) => {
     const data = req.query;
-    publishMessage(
-        data.device_id,
-        generateHexPayload(data.payload.command, data.payload.payload)
-    );
-    // console.log(data)
-    // console.log(data.payload)
-    // console.log(data.payload.payload)
 
-    res.send(data.toString());
+    try {
+        const response = await publishMessage(
+            data.device_id,
+            generateHexPayload(data.payload.command, data.payload.payload)
+        );
+        res.json(response);
+    } catch (error) {
+        res.json({
+            status: "error",
+            message: error.message || "Connection error",
+        });
+    }
 });
-
-app.listen(port, () => {});
+app.listen(port, () => { });
 const generalTopic = "Lift/+/events/general";
 const heartbeatTopic = "Lift/+/events/heartbeat";
 
@@ -36,7 +39,7 @@ app.get("/mqtt/general/force", (req, res) => {
 
 client.on("connect", () => {
     // Once connected, subscribe to the topics
-    client.subscribe([generalTopic, heartbeatTopic], () => {});
+    client.subscribe([generalTopic, heartbeatTopic], () => { });
 });
 
 client.on("error", function (error) {
@@ -47,8 +50,16 @@ client.on("message", (topic, message) => {
     // Convert message to string and parse if necessary
     const msgJson = parseHexPayload(message);
 
+    // Log the received message for debugging
+    // console.log("Received message:", {
+    //     topic: topic,
+    //     message: msgJson
+    // });
+
     if (topic.match(/Lift\/[^\/]+\/events\/general/)) {
+        // Handle general event messages
         if (msgJson.command === 1) {
+            // Do something with command 1
         }
         if (msgJson.command === 4) {
             const payload = Buffer.from(msgJson.payload, "binary");
@@ -62,11 +73,14 @@ client.on("message", (topic, message) => {
                     topic: topic,
                 },
             })
-            .then((response) => {})
-            .catch((error) =>
-                console.error("Error sending general event", error)
-            );
+            .then((response) => {
+                console.log("General event sent:", response.data);
+            })
+            .catch((error) => {
+                console.error("Error sending general event:", error);
+            });
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
+        // Handle heartbeat event messages
         axios
             .get("https://lift.eideas.io/api/mqtt/heartbeat", {
                 params: {
@@ -74,10 +88,12 @@ client.on("message", (topic, message) => {
                     topic: topic,
                 },
             })
-            .then((response) => {})
-            .catch((error) =>
-                console.error("Error sending heartbeat event", error)
-            );
+            .then((response) => {
+                // console.log("Heartbeat event sent:", response.data);
+            })
+            .catch((error) => {
+                // console.error("Error sending heartbeat event:", error);
+            });
     }
 });
 function parseHexPayload(byteString) {
@@ -140,11 +156,28 @@ function generateHexPayload(command, payload = []) {
     return Buffer.concat([commandBuffer, ...payloadBufferList]);
 }
 function publishMessage(device_id, payload) {
-    const topic = `Lift/${device_id}/commands/general`;
-    console.log(topic, payload);
-    client.publish(topic, payload, { qos: 1 }, (err) => {
-        if (err) {
-        } else {
+    return new Promise((resolve, reject) => {
+        const topic = `Lift/${device_id}/commands/general`;
+
+        if (!client.connected) {
+            console.log("MQTT client is not connected");
+            return reject(new Error("MQTT client is not connected"));
         }
+        let res = client.publish(topic, payload, { qos: 1 }, (err) => {
+            // console.log(err)
+            if (err) {
+                // console.error("Error publishing message:", err);
+                reject(new Error("Connection error"));
+            } else {
+                // Log successful publish
+                // console.log(`Message published to ${topic}`);
+                resolve({
+                    status: "success",
+                    message: "Message published successfully",
+                });
+            }
+        });
+
+        console.log(res)
     });
 }

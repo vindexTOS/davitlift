@@ -96,7 +96,7 @@ Route::middleware(['auth:api', 'ComapnyAndManagerAccsessMiddleware'])->group(
         // delete  user
         Route::delete('/userRemoveDevice/{user_id}/{device_id}', [
             UserController::class,
-            'removeToDevice',
+            'removeToDevice'
         ]);
         // add user to device
         Route::get('/userToDevice/{user_search}/{device_id}', [

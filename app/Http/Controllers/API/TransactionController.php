@@ -344,8 +344,7 @@ class TransactionController extends Controller
                         $FileId,
                         $type
                         ) {
-                            Log::debug($type);
-                            Tbctransaction::create([
+                             Tbctransaction::create([
                                 'user_id' => $userId,
                                 'amount' => $amount,
                                 'FileId' => $FileId,
@@ -440,7 +439,9 @@ class TransactionController extends Controller
                                 $transaction->save();
                                 return $data;
                             }
-                            
+                             public function testTransactionOrderForEcom(){
+                                 
+                             }
                             public function makeOrderTransaction($amount, $user, $token)
                             {
                                 $data = [];
@@ -535,8 +536,7 @@ class TransactionController extends Controller
                                             public function updateUserData($data, $transaction, $order_id, $isFastPay)
                                             {
                                                 try {
-                                                    Log::debug('აფდეითში შემოსვლა');
-                                                    
+                                                     
                                                     $user = User::where('id', $transaction->user_id)
                                                     ->with('devices')
                                                     ->first();
@@ -547,14 +547,17 @@ class TransactionController extends Controller
                                                         
                                                         $sakomisio = number_format($sakomisio, 2, '.', '');
                                                     }
+
+                                               
                                                     $user->balance =
                                                     intval($user->balance) + $transfer_amount - $sakomisio;
                                                     $userCardAmount = Card::where('user_id', $user->id)->count();
+                                                    Log::debug( $user->balance);
                                                     
+
                                                     foreach ($user->devices as $key => $device) {
                                                         if ($device->op_mode === '0') {
-                                                            Log::debug('op_mode = 0');
-                                                            
+                                                             
                                                             $subscriptionDate = $device->pivot->subscription
                                                             ? Carbon::parse($device->pivot->subscription)
                                                             : null;
@@ -564,22 +567,19 @@ class TransactionController extends Controller
                                                                 
                                                                 ->startOfMonth()
                                                                 ->addDays($device->pay_day - 1);
-                                                                Log::debug('შემდეგი თარიღი>>> 1' . $nextMonthPayDay);
-                                                            } else {
+                                                             } else {
                                                                 $nextMonthPayDay = Carbon::now()
                                                                 ->addMonth()
                                                                 ->startOfMonth()
                                                                 ->addDays($device->pay_day - 1);
                                                                 
-                                                                Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
-                                                            }
+                                                             }
                                                             if (
                                                                 is_null($subscriptionDate) ||
                                                                 ($subscriptionDate &&
                                                                 $subscriptionDate->lt($nextMonthPayDay))
                                                                 ) {
-                                                                    Log::debug('is_null');
-                                                                    
+                                                                     
                                                                     $cardAmount =
                                                                     $userCardAmount * $user->fixed_card_amount;
                                                                     if (
