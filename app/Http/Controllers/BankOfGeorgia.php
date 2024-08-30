@@ -163,9 +163,9 @@ class BankOfGeorgia extends Controller
                     'order_id',
                     $paymentID
                 )->first();
+                
 
-
-                if ($transaction) {
+                if (!$transaction) {
                     $this->updateUserData(
                         $amount,
                         $transaction->user_id,
