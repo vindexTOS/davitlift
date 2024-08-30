@@ -12,10 +12,42 @@ use Illuminate\Support\Carbon;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
+use App\Exceptions\BankOfGeorgiaUserCheck;
+use App\Exceptions\InvalidHashCodeException;
+ 
 
 
 trait TransactionProvider  
-{
+{ 
+    //   validations for bank of georgia 
+    //  user name and password check
+    private function checkUser($USERNAME, $PASSWORD)
+    {
+        $expectedUsername = env('BOG_USERNAME', 'ipay');
+        $expectedPassword = env('BOG_PASSWORD', 'ipay123');
+
+        if ($USERNAME !== $expectedUsername || $PASSWORD !== $expectedPassword) {
+            throw new BankOfGeorgiaUserCheck();
+        }
+    }
+    
+      // Hash generation function
+      private function generateHash($data)
+      {
+          return md5($data . "someseacret");
+      }
+      // hash checking function 
+    
+      private function CheckHashCode(string $data, string $hash)
+      {
+          $expectedHash = $this->generateHash($data);
+  
+          if (strtoupper($hash) !== strtoupper($expectedHash)) {
+              throw new InvalidHashCodeException($expectedHash, $hash);
+          }
+      }
+ 
+
     //   make FileID 
 
     public function MakeFileId($userId)
@@ -205,7 +237,83 @@ trait TransactionProvider
          );
          return $response->json(['data' => ['dasd']]);
      }
+//  XML processing 
+     private function arrayToXml($data, &$xmlData) {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $subnode = $xmlData->addChild($key);
+                $this->arrayToXml($value, $subnode);
+            } else {
+                $xmlData->addChild($key, htmlspecialchars($value));
+            }
+        }
+    }
 
 
+    private function arrayToXmlWithAttributes($data, &$xmlData) {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                if (isset($value['attributes'])) {
+                    $subnode = $xmlData->addChild($key);
+                    foreach ($value['attributes'] as $attrKey => $attrValue) {
+                        $subnode->addAttribute($attrKey, $attrValue);
+                    }
+                    if (isset($value['value'])) {
+                        $subnode[0] = htmlspecialchars($value['value']);
+                    }
+                } else {
+                    $subnode = $xmlData->addChild($key);
+                    $this->arrayToXmlWithAttributes($value, $subnode);
+                }
+            } else {
+                $xmlData->addChild($key, htmlspecialchars($value));
+            }
+        }
+    }
      
+
+  private function XmlResponse($data){
+    $xmlData = new \SimpleXMLElement('<?xml version="1.0"?><pay-response></pay-response>');
+    $this->arrayToXmlWithAttributes($data, $xmlData);
+    $xmlContent = $xmlData->asXML();
+
+    return response($xmlContent,  \Illuminate\Http\Response::HTTP_OK)
+        ->header('Content-Type', 'application/xml');
+  }
+
+    private function HandleErrorCodes(int $code, string $message){
+    $data = [
+        'status' => [
+            'attributes' => [
+                'code' => $code
+            ],
+            'value' =>  $message
+        ],
+        'timestamp' => now()->timestamp,
+    ];
+    $xmlData = new \SimpleXMLElement('<?xml version="1.0"?><pay-response></pay-response>');
+    $this->arrayToXmlWithAttributes($data, $xmlData);
+    $xmlContent = $xmlData->asXML();
+    return response($xmlContent, \Illuminate\Http\Response::HTTP_BAD_REQUEST)
+    ->header('Content-Type', 'application/xml');
+  
+  }
+  private function HandleServerError(){
+        $data = [
+            'status' => [
+                'attributes' => [
+                    'code' =>10
+                ],
+                'value' => 'OP services dose not exist'
+            ],
+            'timestamp' => now()->timestamp,
+        ];
+  
+    $xmlData = new \SimpleXMLElement('<?xml version="1.0"?><pay-response></pay-response>');
+    $this->arrayToXmlWithAttributes($data, $xmlData);
+    $xmlContent = $xmlData->asXML();
+       
+    return response($xmlContent,  \Illuminate\Http\Response::HTTP_BAD_REQUEST)
+    ->header('Content-Type', 'application/xml');
+    }
 }

@@ -3,44 +3,37 @@
 namespace App\Exceptions;
 
 use Exception;
- 
 use App\Providers\TransactionProvider;
- 
 use Illuminate\Http\Response;
 
-class InvalidHashCodeException extends Exception
+class BankOfGeorgiaGeneralError extends Exception
 {
-
     use TransactionProvider;
-    protected $expectedHash;
-    protected $actualHash;
 
-    public function __construct(string $expectedHash, string $actualHash)
+    protected $customMessage;
+
+    public function __construct(string $message = null)
     {
-        parent::__construct("Invalid hash code");
-        $this->expectedHash = $expectedHash;
-        $this->actualHash = $actualHash;
+        parent::__construct($message);
+        $this->customMessage = $message ?: '500 server error';
     }
-
-    public function render():Response
+    public function render(): Response
     {
         $data = [
             'status' => [
                 'attributes' => [
-                    'code' => 3
+                    'code' => 99
                 ],
-                'value' => 'Hash code is invalid'
+                'value' => $this->customMessage
             ],
-             "ex"=> $this->expectedHash,
             'timestamp' => now()->timestamp,
         ];
 
-        // Convert array to XML
         $xmlData = new \SimpleXMLElement('<?xml version="1.0"?><pay-response></pay-response>');
         $this->arrayToXmlWithAttributes($data, $xmlData);
         $xmlContent = $xmlData->asXML();
 
-        return response($xmlContent, Response::HTTP_BAD_REQUEST)
+        return response($xmlContent, Response::HTTP_INTERNAL_SERVER_ERROR)
             ->header('Content-Type', 'application/xml');
     }
 }

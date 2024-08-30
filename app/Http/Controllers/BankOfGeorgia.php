@@ -45,70 +45,74 @@ class BankOfGeorgia extends Controller
             case "pay":
                 return $this->handlePayment($request);
                 break;
+            case "debt":
+                return $this->Debt($request);
+                break;
             default:
                 throw new \App\Exceptions\BankOfGeorgiaBOException();
         }
     }
 
 
+    //http://localhost:8000/api/ipay/?USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=597571441&SERVICE_ID=dsl&HASH_CODE=178AC219B54B6C2E704DB6A31B125E33&OP=debt
 
-
-
-
-    //    /api/ipay/verification/?OP=verify&CUSTOMER_ID=574151953
-    //   http://www.service-provider1.ge/payments/ipay.php?OP=verify&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=112233&SERVICE_ID=dsl&PAY_AMOUNT=500&PAY_SRC=internet&HASH_CODE=12341234058923958023
-    private function VerifyUser(Request $request)
+    private function Debt(Request $request)
     {
-
-
         $OP = $request->query("OP");
         $USERNAME = $request->query("USERNAME");
         $PASSWORD = $request->query("PASSWORD");
         $CUSTOMER_ID = $request->query("CUSTOMER_ID");
         $SERVICE_ID = $request->query("SERVICE_ID");
-        $PAY_SRC = $request->query("PAY_SRC");
-
         $HASH_CODE = $request->query("HASH_CODE");
-
         try {
-            if (!$OP || !$USERNAME || !$PASSWORD || !$CUSTOMER_ID || !$SERVICE_ID || !$PAY_SRC || !$HASH_CODE) {
-                return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
-
+            if (!$OP || !$USERNAME || !$PASSWORD || !$CUSTOMER_ID || !$SERVICE_ID   || !$HASH_CODE) {
+                return $this->HandleErrorCodes(4, "Parameters are lacking");
             }
+
             $this->checkUser($USERNAME, $PASSWORD);
 
-            $this->CheckHashCode($OP . $USERNAME . $PASSWORD . $CUSTOMER_ID . $SERVICE_ID . $PAY_SRC, $HASH_CODE);
+            $this->CheckHashCode($OP . $USERNAME . $PASSWORD . $CUSTOMER_ID . $SERVICE_ID,  $HASH_CODE);
 
             $user = User::where('phone', $CUSTOMER_ID)->first();
 
+
+
             if ($user) {
-                return response()->json(
-                    ['phone' =>  $user->phone, 'user' => $user->name, "code" => 0],
-                    Response::HTTP_OK
-                );
+
+                $data = [
+                    'status' => [
+                        'attributes' => [
+                            'code' => 0
+                        ],
+                        'value' => 'OK'
+                    ],
+                    'timestamp' => Carbon::now()->timestamp,
+                    'additional-info' => [
+                        'parameter' => [
+                            'attributes' => [
+                                'name' => 'user_name'
+                            ],
+                            'value' => $user->name
+                        ]
+                    ]
+                ];
+
+                return $this->XmlResponse($data);
             } else {
-                return response()->json(
-                    ['code' => 6],
-                    Response::HTTP_NOT_FOUND
-                );
+                return $this->HandleErrorCodes(6, "Customer does not exist");
             }
         } catch (InvalidHashCodeException $e) {
             return $e->render();
         } catch (BankOfGeorgiaUserCheck $e) {
             return $e->render();
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error(
-                'Error checking user existence: ' . $e->getMessage()
-            );
 
-            return response()->json(
-                ['code' => 99, "msg" => $e->getMessage()],
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
+            return $this->HandleServerError();
         }
     }
 
-
+    //    /api/ipay/verification/?OP=verify&CUSTOMER_ID=574151953
+    
 
 
     //    http://www.service-provider1.ge/payments/ipay.php?OP=pay&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=112233&SERVICE_ID=dsl&PAY_AMOUNT=500&PAY_SRC=&internet&PAYMENT_ID=123456&EXTRA_INFO=Mikheil%20Kapanadze&HASH_CODE=12341234058923958023
@@ -137,7 +141,7 @@ class BankOfGeorgia extends Controller
             $paymentID = $request->query("PAYMENT_ID");
             // Validate required parameters
             if (!$phone || !$amount || !$hash || !$paymentID || !$USERNAME || !$PASSWORD || !$PAY_SRC || !$OP) {
-                return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
+                return $this->HandleErrorCodes(4, "Parameters are lacking");
             }
 
             $this->checkUser($USERNAME, $PASSWORD);
@@ -147,10 +151,9 @@ class BankOfGeorgia extends Controller
             $this->CheckHashCode($OP . $USERNAME . $PASSWORD . $phone . $SERVICE_ID . $amount . $PAY_SRC . $paymentID,   $hash);
             // checking if payment already happend
             if ($this->checkIfTransactionAlreadyHappend($paymentID)) {
-                return response()->json(
-                    ['code' => 8],
-                    Response::HTTP_BAD_REQUEST
-                );
+
+
+                return $this->HandleErrorCodes(8, "Duplicat Payment ID");
             };
             $user = User::where('phone', $phone)->first();
             if ($user) {
@@ -170,10 +173,31 @@ class BankOfGeorgia extends Controller
                         'fast_pay'
                     );
                 }
+ 
 
-                return response()->json(['code' => 0, 'message' => 'Payment successful', 'FileId' => $fileId], Response::HTTP_OK);
+                $data = [
+                    'status' => [
+                        'attributes' => [
+                            'code' => 0
+                        ],
+                        'value' => 'OK'
+                    ],
+                    'timestamp' => Carbon::now()->timestamp,
+                    'additional-info' => [
+                        'parameter' => [
+                            'attributes' => [
+                                'name' => 'receipt-id'
+                            ],
+                            'value' =>$fileId
+                        ]
+                    ]
+                ];
+
+                   return $this->XmlResponse($data);
+                // return response()->json(['code' => 0, 'message' => 'Payment successful', 'FileId' => $fileId], Response::HTTP_OK);
             } else {
-                return response()->json(['code' => 6], Response::HTTP_NOT_FOUND); // User not found
+                 return $this->HandleErrorCodes(6, "Customer does not exist");
+
             }
         } catch (InvalidHashCodeException $e) {
             return $e->render();
@@ -181,61 +205,120 @@ class BankOfGeorgia extends Controller
             return $e->render();
         } catch (\Exception $e) {
             Log::error('Error processing payment: ' . $e->getMessage());
-            return response()->json(['code' => 99], Response::HTTP_INTERNAL_SERVER_ERROR); // General error
+            return $this->HandleErrorCodes(99, "General server error code:500");
+
+            // return response()->json(['code' => 99], Response::HTTP_INTERNAL_SERVER_ERROR); // General error
         }
     }
 
 
 
 
-    //   payment creation 
-    private function createTransactionFastPay(
-        $amount,
-        $userId,
-        $order_id,
-        $FileId,
-        $type
-    ) {
 
-        Tbctransaction::create([
-            'user_id' => $userId,
-            'amount' =>  number_format($amount / 100, 2),
-            'FileId' => $FileId,
-            'order_id' => $order_id,
-            'type' => $type,
-        ]);
-    }
+  
+  
 
 
-
-    private function checkIfTransactionAlreadyHappend($PAYMENT_ID)
+    //  http://localhost:8000/api/ipay/ping/?OP=ping&USERNAME=ipay&PASSWORD=ipay123&HASH_CODE=12341234058923958023
+    private function CheckPing(Request $request)
     {
 
-        $order = Tbctransaction::where('order_id', $PAYMENT_ID)->first();
 
-        if ($order) {
-            return true;
-        }
+        try {
 
-        return  false;
-    }
 
-    // Hash generation function
-    private function generateHash($data)
-    {
-        return md5($data . "someseacret");
-    }
-    // hash checking function 
+            $OP = $request->query("OP");
+            $USERNAME = $request->query("USERNAME");
+            $PASSWORD = $request->query("PASSWORD");
+            $HASH_CODE = $request->query("HASH_CODE");
 
-    private function CheckHashCode(string $data, string $hash)
-    {
-        $expectedHash = $this->generateHash($data);
 
-        if (strtoupper($hash) !== strtoupper($expectedHash)) {
-            throw new InvalidHashCodeException($expectedHash, $hash);
+
+            if (!$OP || !$USERNAME || !$PASSWORD || !$HASH_CODE) {
+                return $this->HandleErrorCodes(4, "Parameters are lacking");
+            }
+
+            $this->checkUser($USERNAME, $PASSWORD);
+            $this->CheckHashCode($OP . $USERNAME . $PASSWORD, $HASH_CODE);
+            return $this->HandleErrorCodes(0, "ping checked");
+
+          
+        } catch (InvalidHashCodeException $e) {
+            return $e->render();
+        } catch (BankOfGeorgiaUserCheck $e) {
+            return $e->render();
+        } catch (\Exception $e) {
+            Log::error('Error in CheckPing: ' . $e->getMessage());
+            return $this->HandleErrorCodes(99, "General server error code:500");
+
         }
     }
+//   http://www.service-provider1.ge/payments/ipay.php?OP=verify&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=112233&SERVICE_ID=dsl&PAY_AMOUNT=500&PAY_SRC=internet&HASH_CODE=12341234058923958023
+private function VerifyUser(Request $request)
+{
 
+
+    $OP = $request->query("OP");
+    $USERNAME = $request->query("USERNAME");
+    $PASSWORD = $request->query("PASSWORD");
+    $CUSTOMER_ID = $request->query("CUSTOMER_ID");
+    $SERVICE_ID = $request->query("SERVICE_ID");
+    $PAY_SRC = $request->query("PAY_SRC");
+
+    $HASH_CODE = $request->query("HASH_CODE");
+
+    try {
+        if (!$OP || !$USERNAME || !$PASSWORD || !$CUSTOMER_ID || !$SERVICE_ID || !$PAY_SRC || !$HASH_CODE) {
+
+
+            return $this->HandleErrorCodes(4, "Parameters are lacking");
+        }
+        $this->checkUser($USERNAME, $PASSWORD);
+
+        $this->CheckHashCode($OP . $USERNAME . $PASSWORD . $CUSTOMER_ID . $SERVICE_ID . $PAY_SRC, $HASH_CODE);
+
+        $user = User::where('phone', $CUSTOMER_ID)->first();
+
+        if ($user) {
+
+            $data = [
+                'status' => [
+                    'attributes' => [
+                        'code' => 0
+                    ],
+                    'value' => 'OK'
+                ],
+                'timestamp' => Carbon::now()->timestamp,
+                'additional-info' => [
+                    'parameter' => [
+                        'attributes' => [
+                            'name' => 'user_name'
+                        ],
+                        'value' => $user->name
+                    ]
+                ]
+            ];
+
+            return $this->XmlResponse($data);
+           
+        } else {
+            return $this->HandleErrorCodes(6, "Customer does not exist");
+
+        }
+    } catch (InvalidHashCodeException $e) {
+        return $e->render();
+    } catch (BankOfGeorgiaUserCheck $e) {
+        return $e->render();
+    } catch (\Exception $e) {
+        \Illuminate\Support\Facades\Log::error(
+            'Error checking user existence: ' . $e->getMessage()
+        );
+
+        return $this->HandleErrorCodes(99, "Server Error Code 500");
+
+    }
+}
+//    general methods
 
     // http://www.service-provider1.ge/payments/ipay.php?OP=pay&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=112233&SERVICE_ID=dsl&PAY_AMOUNT=500&PAY_SRC=&internet&PAYMENT_ID=123456&EXTRA_INFO=Mikheil%20Kapanadze&HASH_CODE=12341234058923958023
     // testing hash 
@@ -256,55 +339,38 @@ class BankOfGeorgia extends Controller
             Response::HTTP_OK
         );
     }
-    //  http://localhost:8000/api/ipay/ping/?OP=ping&USERNAME=ipay&PASSWORD=ipay123&HASH_CODE=12341234058923958023
-    private function CheckPing(Request $request)
+    //   payment creation 
+    private function createTransactionFastPay(
+        $amount,
+        $userId,
+        $order_id,
+        $FileId,
+        $type
+    ) {
+
+        Tbctransaction::create([
+            'user_id' => $userId,
+            'amount' =>  number_format($amount / 100, 2),
+            'FileId' => $FileId,
+            'order_id' => $order_id,
+            'type' => $type,
+        ]);
+    }
+
+    private function checkIfTransactionAlreadyHappend($PAYMENT_ID)
     {
 
+        $order = Tbctransaction::where('order_id', $PAYMENT_ID)->first();
 
-        try {
-
-
-            $OP = $request->query("OP");
-            $USERNAME = $request->query("USERNAME");
-            $PASSWORD = $request->query("PASSWORD");
-            $HASH_CODE = $request->query("HASH_CODE");
-
-
-
-            if (!$OP || !$USERNAME || !$PASSWORD || !$HASH_CODE) {
-                return response()->json(['code' => 4], Response::HTTP_BAD_REQUEST); // Missing required parameter
-
-            }
-
-            $this->checkUser($USERNAME, $PASSWORD);
-            $this->CheckHashCode($OP . $USERNAME . $PASSWORD, $HASH_CODE);
-
-            return response()->json(
-                ['code' => 0, 'timestamp' => date('Y-m-d H:i:s')],
-                Response::HTTP_OK
-            );
-        } catch (InvalidHashCodeException $e) {
-            return $e->render();
-        } catch (BankOfGeorgiaUserCheck $e) {
-            return $e->render();
-        } catch (\Exception $e) {
-            Log::error('Error in CheckPing: ' . $e->getMessage());
-
-            return response()->json(
-                ['code' => 99, 'msg' =>  $e->getMessage()],
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
+        if ($order) {
+            return true;
         }
+
+        return  false;
     }
 
 
-    private function checkUser($USERNAME, $PASSWORD)
-    {
-        $expectedUsername = env('BOG_USERNAME', 'ipay');
-        $expectedPassword = env('BOG_PASSWORD', 'ipay123');
-
-        if ($USERNAME !== $expectedUsername || $PASSWORD !== $expectedPassword) {
-            throw new BankOfGeorgiaUserCheck();
-        }
-    }
 }
+// http://localhost:8000/api/ipay/?OP=pay&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=597571441&SERVICE_ID=dsl&PAY_AMOUNT=500&PAYMENT_ID=123456&HASH_CODE=07221988AED255BD74CBCCD6E91B4528&PAY_SRC=internet
+// http://localhost:8000/api/ipay/?OP=ping&USERNAME=ipay&PASSWORD=ipay123&HASH_CODE=12341234058923958023
+// http://localhost:8000/api/ipay/?OP=verify&USERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=597571441&SERVICE_ID=dsl&PAY_SRC=internet&HASH_CODE=A1638825250CFAD6665EC5DC2631E9AD

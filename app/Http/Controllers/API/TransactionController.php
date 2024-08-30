@@ -73,7 +73,7 @@ class TransactionController extends Controller
                     'transaction_id' => $tbcTransaction->order_id,
                     'created_at' => $tbcTransaction->created_at,
                     'updated_at' => $tbcTransaction->updated_at,
-                    'type' =>  $tbcTransaction->type,
+                    'type' => 'TBC ჩასარიცხი აპარატი',
                 ];
             });
             if ($transactions->isEmpty()) {
@@ -132,7 +132,7 @@ class TransactionController extends Controller
                         'transaction_id' => $tbcTransaction->order_id,
                         'created_at' => $tbcTransaction->created_at,
                         'updated_at' => $tbcTransaction->updated_at,
-                        'type' => $tbcTransaction->type ,
+                        'type' => 'TBC ჩასარიცხი აპარატი',
                     ];
                 });
                 if ($transactions->isEmpty()) {
@@ -533,7 +533,7 @@ class TransactionController extends Controller
                                             }
                                             
                                             public function updateUserData($data, $transaction, $order_id, $isFastPay)
-                                                {
+                                            {
                                                 try {
                                                     Log::debug('აფდეითში შემოსვლა');
                                                     

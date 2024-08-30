@@ -3,18 +3,32 @@
 namespace App\Exceptions;
 
 use Exception;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Http\Response;
+use App\Providers\TransactionProvider;
+ 
 
 class BankOfGeorgiaBOException extends Exception
 {
-    public function render(): JsonResponse
+    use TransactionProvider;
+
+    public function render():Response
     {
-        return response()->json(
-            [
-                "code"=> 10,
-                "msg" => "OP services dose not exist"
+
+        $data = [
+            'status' => [
+                'attributes' => [
+                    'code' =>10
+                ],
+                'value' => 'OP services dose not exist'
             ],
-            JsonResponse::HTTP_BAD_REQUEST
-        );
+            'timestamp' => now()->timestamp,
+        ];
+  
+    $xmlData = new \SimpleXMLElement('<?xml version="1.0"?><pay-response></pay-response>');
+    $this->arrayToXmlWithAttributes($data, $xmlData);
+    $xmlContent = $xmlData->asXML();
+       
+    return response($xmlContent, Response::HTTP_BAD_REQUEST)
+    ->header('Content-Type', 'application/xml');
     }
 }
