@@ -3,15 +3,18 @@
 namespace App\Providers;
 
 use App\Models\Card;
+use App\Models\User;
 use App\Models\Device;
 use App\Models\Company;
 use App\Models\DeviceUser;
-use GuzzleHttp\Psr7\Response;
+ 
 use App\Models\LastUserAmount;
+ 
 use Illuminate\Support\Carbon;
-use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Log;
+ 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Response;
 use App\Exceptions\BankOfGeorgiaUserCheck;
 use App\Exceptions\InvalidHashCodeException;
  
@@ -47,6 +50,11 @@ trait TransactionProvider
           }
       }
  
+
+//   უსერ პაე
+
+  
+
 
     //   make FileID 
 
@@ -85,137 +93,140 @@ trait TransactionProvider
         return $string;
     }
      //     update user info
-     public function updateUserData($amount, $user_id,   $isFastPay)
+     public function updateUserData($amount, $transaction, $order_id, $isFastPay)
      {
          try {
- 
- 
-             $user = User::where('id', $user_id)
-                 ->with('devices')
-                 ->first();
-             $transfer_amount = floatval($amount);
+             Log::debug('აფდეითში შემოსვლა');
+             Log::debug($transaction );
+             $user = User::where('id', $transaction->user_id)
+             ->with('devices')
+             ->first();
+             $transfer_amount =  $amount;
+             Log::debug($transfer_amount);
              $sakomisio = 0;
              if ($isFastPay == 'e_com') {
                  $sakomisio = $transfer_amount * 0.02;
- 
+                 
                  $sakomisio = number_format($sakomisio, 2, '.', '');
              }
              $user->balance =
-                 intval($user->balance) + $transfer_amount - $sakomisio;
+             intval($user->balance) + $transfer_amount - $sakomisio;
              $userCardAmount = Card::where('user_id', $user->id)->count();
- 
+             
              foreach ($user->devices as $key => $device) {
                  if ($device->op_mode === '0') {
-                 
- 
+                     Log::debug('op_mode = 0');
+                     
                      $subscriptionDate = $device->pivot->subscription
-                         ? Carbon::parse($device->pivot->subscription)
-                         : null;
+                     ? Carbon::parse($device->pivot->subscription)
+                     : null;
                      $currentDay = Carbon::now()->day;
                      if ($currentDay < $device->pay_day) {
                          $nextMonthPayDay = Carbon::now()
- 
-                             ->startOfMonth()
-                             ->addDays($device->pay_day - 1);
-                      
+                         
+                         ->startOfMonth()
+                         ->addDays($device->pay_day - 1);
+                         Log::debug('შემდეგი თარიღი>>> 1' . $nextMonthPayDay);
                      } else {
                          $nextMonthPayDay = Carbon::now()
-                             ->addMonth()
-                             ->startOfMonth()
-                             ->addDays($device->pay_day - 1);
- 
-                      }
+                         ->addMonth()
+                         ->startOfMonth()
+                         ->addDays($device->pay_day - 1);
+                         
+                         Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
+                     }
                      if (
                          is_null($subscriptionDate) ||
                          ($subscriptionDate &&
-                             $subscriptionDate->lt($nextMonthPayDay))
-                     ) {
-                    
- 
-                         $cardAmount =
+                         $subscriptionDate->lt($nextMonthPayDay))
+                         ) {
+                            //  Log::debug('is_null');
+                             
+                             $cardAmount =
                              $userCardAmount * $user->fixed_card_amount;
-                         if (
-                             $user->balance - $user->freezed_balance >=
-                             $device->tariff_amount + $cardAmount
-                         ) {
-                             DeviceUser::where('device_id', $device->id)
-                                 ->where('user_id', $user->id)
-                                 ->update(['subscription' => $nextMonthPayDay]);
- 
-                             $user->freezed_balance = $device->tariff_amount;
-                         } elseif (
-                             $user->balance >=
-                             $device->tariff_amount + $cardAmount
-                         ) {
-                             DeviceUser::where('device_id', $device->id)
-                                 ->where('user_id', $user->id)
-                                 ->update(['subscription' => $nextMonthPayDay]);
-                             $user->freezed_balance = $device->tariff_amount;
-                         }
-                     }
-                 }
-                 $devices_ids = Device::where(
-                     'users_id',
-                     $device->users_id
-                 )->get();
-                 foreach ($devices_ids as $key2 => $value2) {
-                     if ($value2->op_mode == '1') {
-                         $lastAmount = LastUserAmount::where(
-                             'user_id',
-                             $user->id
-                         )
-                             ->where('device_id', $value2->id)
-                             ->first();
- 
-                         if (empty($lastAmount->user_id)) {
-                             LastUserAmount::insert([
-                                 'user_id' => $user->id,
-                                 'device_id' => $value2->id,
-                                 'last_amount' =>
-                                 $user->balance - $user->freezed_balance,
-                             ]);
-                         } else {
-                             $lastAmount->last_amount =
-                                 $user->balance - $user->freezed_balance;
-                             $lastAmount->save();
-                         }
-                         $payload = $this->generateHexPayload(5, [
-                             [
-                                 'type' => 'string',
-                                 'value' => str_pad(
-                                     $user->id,
-                                     6,
-                                     '0',
-                                     STR_PAD_LEFT
-                                 ),
-                             ],
-                             [
-                                 'type' => 'number',
-                                 'value' => 0,
-                             ],
-                             [
-                                 'type' => 'number16',
-                                 'value' =>
-                                 $user->balance - $user->freezed_balance,
-                             ],
-                         ]);
-                         $this->publishMessage($value2->dev_id, $payload);
-                     }
-                 }
-             }
-             $user->save();
-         } catch (\Exception $e) {
-             \Illuminate\Support\Facades\Log::error(
-                 'Error checking user existence: ' . $e->getMessage()
-             );
- 
-             return response()->json(
-                 ['code' => 99] 
-             
-             );
-         }
-     }
+                             if (
+                                 $user->balance - $user->freezed_balance >=
+                                 $device->tariff_amount + $cardAmount
+                                 ) {
+                                     DeviceUser::where('device_id', $device->id)
+                                     ->where('user_id', $user->id)
+                                     ->update(['subscription' => $nextMonthPayDay]);
+                                     
+                                     $user->freezed_balance = $device->tariff_amount;
+                                 } elseif (
+                                     $user->balance >=
+                                     $device->tariff_amount + $cardAmount
+                                     ) {
+                                         DeviceUser::where('device_id', $device->id)
+                                         ->where('user_id', $user->id)
+                                         ->update(['subscription' => $nextMonthPayDay]);
+                                         $user->freezed_balance = $device->tariff_amount;
+                                     }
+                                 }
+                             }
+                             $devices_ids = Device::where('users_id', $device->users_id)->get();
 
+                             foreach ($devices_ids as $key2 => $value2) {
+                                 // Ensure $value2 contains the expected nested object
+                                 if (isset($value2['App\Models\Device'])) {
+                                     $deviceData = $value2['App\Models\Device'];
+                                 } else {
+                                    //  Log::error('Unexpected structure in $value2', ['value2' => $value2]);
+                                     continue; // Skip to the next iteration if structure is unexpected
+                                 }
+                             
+                                 // Ensure the device object is valid and contains the required property
+                                 if ($deviceData->op_mode == '1') {
+                                     $lastAmount = LastUserAmount::where('user_id', $user->id)
+                                         ->where('device_id', $deviceData->id)
+                                         ->first();
+                             
+                                     if (is_null($lastAmount)) {
+                                        //  Log::error('No LastUserAmount found', ['user_id' => $user->id, 'device_id' => $deviceData->id]);
+                                     } else {
+                                         if (empty($lastAmount->user_id)) {
+                                             LastUserAmount::insert([
+                                                 'user_id' => $user->id,
+                                                 'device_id' => $deviceData->id,
+                                                 'last_amount' => $user->balance - $user->freezed_balance,
+                                             ]);
+                                         } else {
+                                             $lastAmount->last_amount = $user->balance - $user->freezed_balance;
+                                             $lastAmount->save();
+                                         }
+                                     }
+                             
+                                     $payload = $this->generateHexPayload(5, [
+                                         [
+                                             'type' => 'string',
+                                             'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                                         ],
+                                         [
+                                             'type' => 'number',
+                                             'value' => 0,
+                                         ],
+                                         [
+                                             'type' => 'number16',
+                                             'value' => $user->balance - $user->freezed_balance,
+                                         ],
+                                     ]);
+                             
+                                     $this->publishMessage($deviceData->dev_id, $payload);
+                                 }
+                             }
+                                 }
+                                 $user->save();
+                             } catch (\Exception $e) {
+                                 \Illuminate\Support\Facades\Log::error(
+                                     'Error checking user existence: ' . $e->getMessage()
+                                 );
+                                 
+                                 return response()->json(
+                                     ['code' => 99],
+                                     
+                                 );
+                             }
+                         }
 
      public function generateHexPayload($command, $payload)
      {
