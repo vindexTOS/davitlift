@@ -134,13 +134,13 @@ class BankOfGeorgia extends Controller
             $PAY_SRC = $request->query("PAY_SRC");
 
 
-            $phone = $request->query('CUSTOMER_ID');
+            $CUSTOMER_ID = $request->query('CUSTOMER_ID');
             $amount = $request->query('PAY_AMOUNT');
 
             $hash = $request->query('HASH_CODE');
             $paymentID = $request->query("PAYMENT_ID");
             // Validate required parameters
-            if (!$phone || !$amount || !$hash || !$paymentID || !$USERNAME || !$PASSWORD || !$PAY_SRC || !$OP) {
+            if (!$CUSTOMER_ID || !$amount || !$hash || !$paymentID || !$USERNAME || !$PASSWORD || !$PAY_SRC || !$OP) {
                 return $this->HandleErrorCodes(4, "Parameters are lacking");
             }
 
@@ -148,14 +148,14 @@ class BankOfGeorgia extends Controller
 
             // Verify hash
 
-            $this->CheckHashCode($OP . $USERNAME . $PASSWORD . $phone . $SERVICE_ID . $amount . $PAY_SRC . $paymentID,   $hash);
+            $this->CheckHashCode($OP . $USERNAME . $PASSWORD . $CUSTOMER_ID . $SERVICE_ID . $amount . $PAY_SRC . $paymentID,   $hash);
             // checking if payment already happend
             if ($this->checkIfTransactionAlreadyHappend($paymentID)) {
 
 
                 return $this->HandleErrorCodes(8, "Duplicat Payment ID");
             };
-            $user = User::where('phone', $phone)->first();
+            $user = User::where('phone', $CUSTOMER_ID)->first();
             if ($user) {
                 $fileId = $this->MakeFileId($user->id);
                 $this->createTransactionFastPay($amount, $user->id,  $paymentID, $fileId, "BO" . "-" . $PAY_SRC);
@@ -206,8 +206,7 @@ class BankOfGeorgia extends Controller
         } catch (\Exception $e) {
             Log::error('Error processing payment: ' . $e->getMessage());
             return $this->HandleErrorCodes(99, "General server error code:500");
-
-            // return response()->json(['code' => 99], Response::HTTP_INTERNAL_SERVER_ERROR); // General error
+ 
         }
     }
 
