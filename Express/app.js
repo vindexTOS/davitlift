@@ -28,7 +28,7 @@ app.listen(port, () => { });
 const generalTopic = "Lift/+/events/general";
 const heartbeatTopic = "Lift/+/events/heartbeat";
 
-const client = mqtt.connect("mqtt://138.197.229.66", {
+const client = mqtt.connect("mqtt://3.71.18.216", {
     port: 1883,
 });
 app.get("/mqtt/general/force", (req, res) => {
@@ -67,7 +67,7 @@ client.on("message", (topic, message) => {
             msgJson.card = payload.toString("utf8", 2, 10);
         }
         axios
-            .get("https://138.197.229.66/api/mqtt/general", {
+            .get("https://3.71.18.216/api/mqtt/general", {
                 params: {
                     payload: msgJson,
                     topic: topic,
@@ -82,7 +82,7 @@ client.on("message", (topic, message) => {
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
         // Handle heartbeat event messages
         axios
-            .get("https://138.197.229.66/api/mqtt/heartbeat", {
+            .get("https://3.71.18.216/api/mqtt/heartbeat", {
                 params: {
                     payload: msgJson,
                     topic: topic,
