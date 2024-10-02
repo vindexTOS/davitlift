@@ -57,15 +57,15 @@ class UserSubscriptionCheck extends Command
                 // როცა დევაისის ტარიფი უდრის ნულს
 
               
-                if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
+                if ( $userCardAmount > 0 && $device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                     $userBalance = $user->balance;
                    
                     $user->freezed_balance = $fixedCard;
-                                        if (
+                 if (
                             $user->balance >=$fixedCard &&
                             $user->freezed_balance >= $fixedCard &&
                         !is_null($subscriptionDate) &&
-                        $subscriptionDate->lt($nextMonthPayDay)
+                        $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount > 0 
                     ) {
                         DB::beginTransaction();
 
@@ -114,7 +114,7 @@ class UserSubscriptionCheck extends Command
                         $user->balance >= $device->tariff_amount + $fixedCard &&
                         $user->freezed_balance >= $device->tariff_amount &&
                         !is_null($subscriptionDate) &&
-                        $subscriptionDate->lt($nextMonthPayDay)
+                        $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount > 0 
                     ) {
                         // Start transaction
                         DB::beginTransaction();

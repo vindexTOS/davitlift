@@ -373,7 +373,7 @@ class MqttService
                                                                     
                                                                     $this->noMoney($device->dev_id);
                                                                     
-                                                                }else if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
+                                                                }else if ($userCardAmount  > 0 && $device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                                                                     
                                                                     $userFixedBalnce = $user->fixed_card_amount;
                                                                     $userCardAmount = Card::where('user_id', $user->id)->count();
@@ -387,7 +387,7 @@ class MqttService
                                                                     
                                                                     
                                                                     
-                                                                    if ($user->balance - $user->freezed_balance >= $fixedCard) {
+                                                                    if ($userCardAmount  > 0 && $user->balance - $user->freezed_balance >= $fixedCard) {
                                                                         
                                                                         $user->balance -= $fixedCard;
                                                                         $user->freezed_balance -= $fixedCard;
@@ -422,7 +422,7 @@ class MqttService
                                                                         ]);
                                                                         $this->publishMessage($device->dev_id, $payload);
                                                                     }
-                                                                } else if ($user->balance >= $deviceTariffWithCardBalance) {
+                                                                } else if ($user->balance >= $deviceTariffWithCardBalance && $userCardAmount > 0) {
                                                                     $user->freezed_balance = $device->tariff_amount;
                                                                     $user->save();
                                                                     $currentDay = Carbon::now()->day;
@@ -462,7 +462,7 @@ class MqttService
                                                             }
                                                             ///////////////////////////////////////////////////////////////////////
                                                             else {
-                                                                if ((int) $user->balance > $device->tariff_amount) {
+                                                                if ((int) $user->balance > $device->tariff_amount  ) {
                                                                     $lastAmount = LastUserAmount::where('user_id', $user->id)
                                                                     ->where('device_id', $device->id)
                                                                     ->first();

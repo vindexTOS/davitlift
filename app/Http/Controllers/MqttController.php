@@ -408,6 +408,8 @@ class MqttController extends Controller
             $this->publishMessage($device->dev_id, $payload);
         } else {
             $user = User::where('id', $card->user_id)->first();
+            $userCardAmount = Card::where('user_id', $user->id)->count();
+
             if ($device->op_mode == 0) {
 
                 $userDevice = DeviceUser::where('user_id', $user->id)
@@ -438,9 +440,11 @@ class MqttController extends Controller
                         ],
                     ]);
                     $this->publishMessage($device->dev_id, $payload);
-                } else if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
+
+
+                
+                } else if (  $userCardAmount > 0 &&  $userCardAmount > 0 &&  $device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0" ) {
                     $userFixedBalnce = $user->fixed_card_amount;
-                    $userCardAmount = Card::where('user_id', $user->id)->count();
                     $fixedCard = $userFixedBalnce * $userCardAmount;
 
 
@@ -451,7 +455,7 @@ class MqttController extends Controller
 
 
 
-                    if ($user->balance - $user->freezed_balance >= $fixedCard) {
+                    if ($user->balance - $user->freezed_balance >= $fixedCard &&   $userCardAmount > 0 ) {
                         Log::debug("შემოვიდა mqttController");
                         $user->balance -= $fixedCard;
                         $user->freezed_balance -= $fixedCard;
@@ -489,7 +493,7 @@ class MqttController extends Controller
                     // თუ დევაისი ტარიფი ნულია
                     else if (
                         $user->balance - $user->freezed_balance >=
-                        $device->tariff_amount
+                        $device->tariff_amount &&   $userCardAmount > 0 
                     ) {
                         $user->freezed_balance =
                             $user->freezed_balance + $device->tariff_amount;
@@ -530,7 +534,7 @@ class MqttController extends Controller
                 }
             } else if (
                 (int) $user->balance - $user->freezed_balance >=
-                $device->tariff_amount
+                $device->tariff_amount 
             ) {
                 $lastAmount = LastUserAmount::where('user_id', $user->id)
                     ->where('device_id', $device->id)

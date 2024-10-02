@@ -17,6 +17,8 @@ use App\Services\SubscriptionService;
 
 class TestController extends   Controller 
 {  
+
+ 
     public function TestTimeZone()
     {
         $currentTime = Carbon::now('Asia/Tbilisi');
@@ -39,34 +41,37 @@ class TestController extends   Controller
         $devices = Device::where('pay_day', $today)
         ->where('op_mode', 0)
         ->get();
-    
+
         foreach ($devices as $device) {
+         
             $deviceEarning = 0;
             $users = $device->users; // Assuming DeviceUser is the related model name, and 'users' is the relationship method name in Device model.
-            
+           
             foreach ($users as $user) {
                 $userFixedBalance = $user->fixed_card_amount;
                 $userCardAmount = Card::where('user_id', $user->id)->count();
                 $fixedCard = $userFixedBalance * $userCardAmount;
-                
+           
                 $subscriptionDate = $user->pivot->subscription
                 ? Carbon::parse($user->pivot->subscription)
                 : null;
-                
+         
                 $nextMonthPayDay = Carbon::now(4)
                 ->addMonth()
                 ->startOfMonth()
                 ->addDays($device->pay_day - 1);
                 
-                if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
+                if ($userCardAmount > 0 && ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0")) {
                     $userBalance = $user->balance;
-                    
+                 
+
                     // Handle user balances and subscriptions
                     if ($user->balance >= $fixedCard &&
                     $user->freezed_balance >= $fixedCard &&
                     !is_null($subscriptionDate) &&
-                    $subscriptionDate->lt($nextMonthPayDay)) {
-                        
+                    $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount > 0) {
+                        Log::debug("Shemosval pirvel IF shi", ['userCardAmount' => $userCardAmount]);
+
                         DB::beginTransaction();
                         
                         try {
@@ -97,8 +102,9 @@ class TestController extends   Controller
                     if ($user->balance >= $device->tariff_amount + $fixedCard &&
                     $user->freezed_balance >= $device->tariff_amount &&
                     !is_null($subscriptionDate) &&
-                    $subscriptionDate->lt($nextMonthPayDay)) {
-                        
+                    $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount > 0) {
+                        Log::debug("Shemosval meore IF shi");
+
                         DB::beginTransaction();
                         
                         try {

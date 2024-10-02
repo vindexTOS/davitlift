@@ -576,7 +576,7 @@ class TransactionController extends Controller
                                                             if (
                                                                 is_null($subscriptionDate) ||
                                                                 ($subscriptionDate &&
-                                                                $subscriptionDate->lt($nextMonthPayDay))
+                                                                $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount  > 0)
                                                                 ) {
                                                                     Log::debug('is_null');
                                                                     
