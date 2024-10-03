@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\API;
+
 use Carbon\Carbon;
 use App\Models\Card;
 use App\Models\User;
@@ -52,8 +53,8 @@ class UserController extends Controller
             );
         }
         $user = User::where('phone', $user_search)
-        ->orWhere('email', $user_search)
-        ->first();
+            ->orWhere('email', $user_search)
+            ->first();
         if (empty($user)) {
             return response()->json(
                 ['message' => 'ასეთი მომხამრებელი არ არსებობს'],
@@ -61,8 +62,8 @@ class UserController extends Controller
             );
         }
         $isAdd = DeviceUser::where('user_id', $user->id)
-        ->where('device_id', $device_id)
-        ->first();
+            ->where('device_id', $device_id)
+            ->first();
         if (!empty($isAdd)) {
             return response()->json(
                 ['message' => 'ასეთი მომხამრებელი უკვე დამატებულია'],
@@ -73,21 +74,21 @@ class UserController extends Controller
             'user_id' => $user->id,
             'device_id' => $device_id,
         ];
-        
+
         $currentDay = Carbon::now()->day;
         $userCardAmount = Card::where('user_id', $user->id)->count();
 
         if ($device->op_mode == '0') {
-            if ($device->tariff_amount <= $user->balance && $device->tariff_amount > 0 ) {
+            if ($device->tariff_amount <= $user->balance && $device->tariff_amount > 0 || $device->fixed_card_amount > 0  && $device->fixed_card_amount >=  $user->balance) {
                 if ($currentDay < $device->pay_day && $userCardAmount > 0) {
                     $create['subscription'] = Carbon::now()
-                    ->startOfMonth()
-                    ->addDays($device->pay_day - 1);
+                        ->startOfMonth()
+                        ->addDays($device->pay_day - 1);
                 } else {
                     $create['subscription'] = Carbon::now()
-                    ->addMonth()
-                    ->startOfMonth()
-                    ->addDays($device->pay_day - 1);
+                        ->addMonth()
+                        ->startOfMonth()
+                        ->addDays($device->pay_day - 1);
                 }
             }
         }
@@ -101,30 +102,30 @@ class UserController extends Controller
     {
         try {
             DeviceUser::where('user_id', $user_id)
-            ->where('device_id', $device_id)
-            ->delete();
+                ->where('device_id', $device_id)
+                ->delete();
             Card::where('user_id', $user_id)
-            ->where('device_id', $device_id)
-            ->delete();
+                ->where('device_id', $device_id)
+                ->delete();
             return response()->json(['a' => 'b'], 200);
         } catch (\Throwable $th) {
             return response()->json(['err' => 'err'], 500);
         }
     }
-    
+
     public function store(Request $request)
     {
         $user = User::create($request->all());
         return response()->json($user, 201);
     }
-    
+
     public function show(User $user)
     {
         return $user;
     }
-    
-    
-    
+
+
+
     public function destroy(User $user)
     {
         $user->delete();
@@ -134,21 +135,21 @@ class UserController extends Controller
     {
         $code = Str::random(4); // Generates a random 4-character code
         $expiresAt = Carbon::now()->addHour(); // Set the expiration timestamp to 1 hour from now
-        
+
         DB::table('elevator_codes')->insert([
             'code' => $code,
             'user_id' => Auth::id(),
             'device_id' => $request->device,
             'expires_at' => $expiresAt,
         ]);
-        
+
         return $code;
     }
     public function changeManager($company_id, $user_id, $new_email)
     {
         $newUser = User::where('email', $new_email)->first();
         $oldUser = User::where('id', $user_id)->first();
-        
+
         if (empty($newUser)) {
             return response()->json(
                 ['message' => 'ასეთი მომხმარებელი არ არსებობს'],
@@ -160,13 +161,13 @@ class UserController extends Controller
         $newUser->cashback = $oldUser->cashback;
         $newUser->save();
         CompanyTransaction::where('manager_id', $oldUser->id)
-        ->where('company_id', $company_id)
-        ->withTrashed()
-        ->update(['manager_id' => $newUser->id]);
+            ->where('company_id', $company_id)
+            ->withTrashed()
+            ->update(['manager_id' => $newUser->id]);
         return Device::where('users_id', $oldUser->id)
-        ->where('company_id', $company_id)
-        ->withTrashed()
-        ->update(['users_id' => $newUser->id]);
+            ->where('company_id', $company_id)
+            ->withTrashed()
+            ->update(['users_id' => $newUser->id]);
     }
     public function changeUserPassword(Request $request)
     {
@@ -175,9 +176,9 @@ class UserController extends Controller
             'old_password' => 'required|string',
             'password' => 'required|string|min:8|confirmed',
         ]);
-        
+
         $user = Auth::user();
-        
+
         // Check if the provided old password is correct
         if (!Hash::check($validator['old_password'], $user->password)) {
             return response()->json(
@@ -185,12 +186,12 @@ class UserController extends Controller
                 422
             );
         }
-        
+
         // Set the new password and save the user
         $user->password = Hash::make($request->password);
         $user->save();
         return response()->json(['message' => 'პაროლი შეცვლილია']);
-        
+
         // Optionally, logout the user
     }
     public function changePassword($user_id, $password)
@@ -199,8 +200,8 @@ class UserController extends Controller
         $user->password = Hash::make($password);
         $user->save();
     }
-    
-    
+
+
     public function updateUserSubscription(Request $request)
     {
         $validator = $request->validate([
@@ -213,13 +214,13 @@ class UserController extends Controller
             'subscription' => 'required',
             'role' => 'required',
         ]);
-        
+
         $user = User::find($request->id);
         $deviceUser = DeviceUser::where('user_id', $request->id)->first();
         if (!$user || !$deviceUser) {
             return response()->json(['error' => 'User not found'], 404);
         }
-        
+
         $user->update([
             'balance' => $request->balance,
             'freezed_balance' => $request->freezed_balance,
@@ -228,14 +229,14 @@ class UserController extends Controller
             'phone' => $request->phone,
             'role' => $request->role,
         ]);
-        
+
         $deviceUser->update([
             'subscription' => $request->subscription,
         ]);
-        
+
         return response()->json(['message' => $request->freezed_balance]);
     }
-    
+
     public function UserTransactionsBasedOnDevice($device_id)
     {
         $users = DeviceUser::where('device_id', $device_id)->get();
@@ -246,141 +247,140 @@ class UserController extends Controller
         foreach ($users as $user) {
             $id = $user->id;
             $transactions = Transaction::where('user_id', $id)
-            ->where('status', 'Succeeded')
-            ->get();
+                ->where('status', 'Succeeded')
+                ->get();
             // Format transactions
             $formattedTransactionsForUser = $transactions->map(function (
                 $transaction
-                ) {
-                    return [
-                        'amount' => +$transaction->amount,
-                        'transaction_id' => $transaction->transaction_id,
-                        'created_at' => $transaction->created_at->format(
-                            'Y-m-d H:i:s'
-                        ),
-                    ];
-                });
-                
-                // Append formatted transactions for this user to the accumulated array
-                $formattedTransactions = $formattedTransactions->merge(
-                    $formattedTransactionsForUser
+            ) {
+                return [
+                    'amount' => +$transaction->amount,
+                    'transaction_id' => $transaction->transaction_id,
+                    'created_at' => $transaction->created_at->format(
+                        'Y-m-d H:i:s'
+                    ),
+                ];
+            });
+
+            // Append formatted transactions for this user to the accumulated array
+            $formattedTransactions = $formattedTransactions->merge(
+                $formattedTransactionsForUser
+            );
+
+            // Fetch TbcTransactions for the same user
+            $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
+
+            // Format TbcTransactions
+            $formattedTbcTransactionsForUser = $tbcTransactions->map(function (
+                $tbcTransaction
+            ) {
+                // Format and return the transaction data
+                return [
+                    'amount' => +$tbcTransaction->amount,
+                    'transaction_id' => $tbcTransaction->order_id,
+                    'created_at' => $tbcTransaction->created_at->format(
+                        'Y-m-d H:i:s'
+                    ),
+                ];
+            });
+
+            $formattedTbcTransactions = $formattedTbcTransactions->merge(
+                $formattedTbcTransactionsForUser
+            );
+            if (!$formattedTransactions->isEmpty()) {
+                // Merge formatted transactions with formatted TbcTransactions
+                $combinedTransactions = $combinedTransactions->merge(
+                    $formattedTbcTransactions
                 );
-                
-                // Fetch TbcTransactions for the same user
-                $tbcTransactions = TbcTransaction::where('user_id', $id)->get();
-                
-                // Format TbcTransactions
-                $formattedTbcTransactionsForUser = $tbcTransactions->map(function (
-                    $tbcTransaction
-                    ) {
-                        // Format and return the transaction data
-                        return [
-                            'amount' => +$tbcTransaction->amount,
-                            'transaction_id' => $tbcTransaction->order_id,
-                            'created_at' => $tbcTransaction->created_at->format(
-                                'Y-m-d H:i:s'
-                            ),
-                        ];
-                    });
-                    
-                    $formattedTbcTransactions = $formattedTbcTransactions->merge(
-                        $formattedTbcTransactionsForUser
+                $combinedTransactions = $combinedTransactions->merge(
+                    $formattedTransactions
+                );
+                // Append combined transactions to transactionsData for this user
+                $transactionsData[$id] = $combinedTransactions;
+            }
+        }
+
+        $result = [];
+        $ids = [];
+        // Accumulate transactions outside the loop
+
+        foreach ($transactionsData as $singleTransaction) {
+            foreach ($singleTransaction as $transaction) {
+                try {
+                    // Extract month and year from the created_at field
+                    $monthYear = date(
+                        'Y-m',
+                        strtotime($transaction['created_at'])
                     );
-                    if (!$formattedTransactions->isEmpty()) {
-                        // Merge formatted transactions with formatted TbcTransactions
-                        $combinedTransactions = $combinedTransactions->merge(
-                            $formattedTbcTransactions
-                        );
-                        $combinedTransactions = $combinedTransactions->merge(
-                            $formattedTransactions
-                        );
-                        // Append combined transactions to transactionsData for this user
-                        $transactionsData[$id] = $combinedTransactions;
+
+                    // If the month doesn't exist in $result yet, initialize it to 0
+                    if (!isset($result[$monthYear])) {
+                        $result[$monthYear] = 0;
                     }
-                }
-                
-                $result = [];
-                $ids = [];
-                // Accumulate transactions outside the loop
-                
-                foreach ($transactionsData as $singleTransaction) {
-                    foreach ($singleTransaction as $transaction) {
-                        try {
-                            // Extract month and year from the created_at field
-                            $monthYear = date(
-                                'Y-m',
-                                strtotime($transaction['created_at'])
-                            );
-                            
-                            // If the month doesn't exist in $result yet, initialize it to 0
-                            if (!isset($result[$monthYear])) {
-                                $result[$monthYear] = 0;
-                            }
-                            
-                            // Add the amount to the corresponding month
-                            if (!in_array($transaction['transaction_id'], $ids)) {
-                                // Add the amount to the corresponding month
-                                if (!isset($result[$monthYear])) {
-                                    $result[$monthYear] = 0;
-                                }
-                                $result[$monthYear] += $transaction['amount'];
-                                
-                                // Add the transaction ID to the $ids array to mark it as processed
-                                $ids[] = $transaction['transaction_id'];
-                            }
-                        } catch (\Exception $e) {
-                            // Log or handle the error as needed
-                            // For now, skipping the transaction
-                            continue;
+
+                    // Add the amount to the corresponding month
+                    if (!in_array($transaction['transaction_id'], $ids)) {
+                        // Add the amount to the corresponding month
+                        if (!isset($result[$monthYear])) {
+                            $result[$monthYear] = 0;
                         }
+                        $result[$monthYear] += $transaction['amount'];
+
+                        // Add the transaction ID to the $ids array to mark it as processed
+                        $ids[] = $transaction['transaction_id'];
                     }
-                }
-                
-                return response()->json([
-                    'data' => $result,
-                ]);
-            }
-            
-            
-            
-            public function UpdateUsersFixedCardTarriff(Request $request){
-                $deviceId = $request["device_id"];
-                $amount = $request["amount"];
-                try {
-                    $device = Device::find($deviceId);
-                    $device->fixed_card_amount = $amount;
-                    $device->save();
-                    $deviceUsers = DeviceUser::where('device_id', $deviceId)->get();
-                    $users = [];
-                    foreach ($deviceUsers as $deviceUser) {
-                        $user = $deviceUser->user;  
-                        
-                        $user->update(['fixed_card_amount' => $amount]);
-                    }
-                    return response()->json(["msg"=> "Device Has Been Updated"]);
                 } catch (\Exception $e) {
-                    return response()->json(["msg"=> $e]);
-                }
-                
-            }
-            
-            public function GetUsersElevatorUse(string $user_id){
-                
-                try {
-                    
-                    $eleveatorUses = ElevatorUse::where("user_id", $user_id)->get();
-                    
-                    if(count($eleveatorUses) <= 0){
-                        return [];
-                        
-                    }
-                    return response()->json(["data"=> $eleveatorUses ]);
-                    
-                } catch (\Throwable $e) {
-                    return response()->json(["msg"=> $e]);
+                    // Log or handle the error as needed
+                    // For now, skipping the transaction
+                    continue;
                 }
             }
         }
+
+        return response()->json([
+            'data' => $result,
+        ]);
+    }
+
+
+
+    public function UpdateUsersFixedCardTarriff(Request $request)
+    {
+        $deviceId = $request["device_id"];
+        $amount = $request["amount"];
+        try {
+            $device = Device::find($deviceId);
+            $device->fixed_card_amount = $amount;
+            $device->save();
+            $deviceUsers = DeviceUser::where('device_id', $deviceId)->get();
+            $users = [];
+            foreach ($deviceUsers as $deviceUser) {
+                $user = $deviceUser->user;
+
+                $user->update(['fixed_card_amount' => $amount]);
+            }
+            return response()->json(["msg" => "Device Has Been Updated"]);
+        } catch (\Exception $e) {
+            return response()->json(["msg" => $e]);
+        }
+    }
+
+    public function GetUsersElevatorUse(string $user_id)
+    {
+
+        try {
+
+            $eleveatorUses = ElevatorUse::where("user_id", $user_id)->get();
+
+            if (count($eleveatorUses) <= 0) {
+                return [];
+            }
+            return response()->json(["data" => $eleveatorUses]);
+        } catch (\Throwable $e) {
+            return response()->json(["msg" => $e]);
+        }
+    }
+}
         
         // balance
         // :
@@ -436,4 +436,3 @@ class UserController extends Controller
         // updated_at
         // :
         // "2024-03-29T07:12:43.000000Z"
-        

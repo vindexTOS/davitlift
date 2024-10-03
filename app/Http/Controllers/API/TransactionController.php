@@ -712,14 +712,15 @@ class TransactionController extends Controller
                                                                                     ->startOfMonth()
                                                                                     ->addDays($device->pay_day - 1);
                                                                                 }
+                                                                                //   ამ იფის შემოწმება არ არის საჭირო უსერ საბსქრიშენის კერნელის შემოწმებაში რადგან უსერის დამატების დროს უკვე ისედაც უნულდებათ საბსქრიბშენ თარიღი
                                                                                 if (
                                                                                     is_null($subscriptionDate) ||
-                                                                                    ($subscriptionDate &&
-                                                                                    $subscriptionDate->lt($nextMonthPayDay) &&  $userCardAmount > 0 &&  $user->balance >= $device->tariff_amount)
+                                                                                    ($subscriptionDate &&                              
+                                                                                    $subscriptionDate->lt($nextMonthPayDay) &&  $userCardAmount > 0 &&  $user->balance >= $device->tariff_amount && $device->tariff_amount > 0 ||  $device->fixed_card_amount > 0  && $device->fixed_card_amount >=  $user->balance)
                                                                                     ) {
                                                                                         if (
                                                                                             $userCardAmount > 0 &&  $user->balance - $user->freezed_balance >=
-                                                                                            $device->tariff_amount
+                                                                                            $device->tariff_amount &&    $device->tariff_amount > 0
                                                                                             ) {
                                                                                                 DeviceUser::where('device_id', $device->id)
                                                                                                 ->where('user_id', $user->id)
