@@ -718,7 +718,7 @@ class TransactionController extends Controller
                                                                                     $subscriptionDate->lt($nextMonthPayDay) &&  $userCardAmount > 0 &&  $user->balance >= $device->tariff_amount)
                                                                                     ) {
                                                                                         if (
-                                                                                            $user->balance - $user->freezed_balance >=
+                                                                                            $userCardAmount > 0 &&  $user->balance - $user->freezed_balance >=
                                                                                             $device->tariff_amount
                                                                                             ) {
                                                                                                 DeviceUser::where('device_id', $device->id)
