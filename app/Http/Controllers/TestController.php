@@ -61,17 +61,17 @@ class TestController extends   Controller
                    ->startOfMonth()
                    ->addDays($device->pay_day - 1);
                // როცა დევაისის ტარიფი უდრის ნულს
-                   
+
              
-               if ( $userCardAmount > 0 && $device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
+               if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                    $userBalance = $user->balance;
                   
                    $user->freezed_balance = $fixedCard;
-                if (
+                                       if (
                            $user->balance >=$fixedCard &&
                            $user->freezed_balance >= $fixedCard &&
                        !is_null($subscriptionDate) &&
-                       $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount > 0 
+                       $subscriptionDate->lt($nextMonthPayDay)
                    ) {
                        DB::beginTransaction();
 
@@ -120,7 +120,7 @@ class TestController extends   Controller
                        $user->balance >= $device->tariff_amount + $fixedCard &&
                        $user->freezed_balance >= $device->tariff_amount &&
                        !is_null($subscriptionDate) &&
-                       $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount > 0 
+                       $subscriptionDate->lt($nextMonthPayDay)
                    ) {
                        // Start transaction
                        DB::beginTransaction();
@@ -238,7 +238,7 @@ class TestController extends   Controller
                    $deviceEarn->earnings += $deviceEarning;
                    $deviceEarn->save();
                }
-           } 
+           }
        }
 
 
@@ -247,6 +247,10 @@ class TestController extends   Controller
         200
     );
    }
+// 
+
+     
+  
  
     //   
        
