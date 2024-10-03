@@ -716,7 +716,7 @@ class TransactionController extends Controller
                                                                                 if (
                                                                                     is_null($subscriptionDate) ||
                                                                                     ($subscriptionDate &&                              
-                                                                                    $subscriptionDate->lt($nextMonthPayDay) &&  $userCardAmount > 0 &&  $user->balance >= $device->tariff_amount && $device->tariff_amount > 0 ||  $device->fixed_card_amount > 0  && $device->fixed_card_amount >=  $user->balance)
+                                                                                    $subscriptionDate->lt($nextMonthPayDay) &&  $userCardAmount > 0 &&  $user->balance >= $device->tariff_amount && $device->tariff_amount > 0 ||  $device->fixed_card_amount > 0  && $device->fixed_card_amount  <=  $user->balance)
                                                                                     ) {
                                                                                         if (
                                                                                             $userCardAmount > 0 &&  $user->balance - $user->freezed_balance >=
