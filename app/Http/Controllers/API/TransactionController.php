@@ -693,6 +693,8 @@ class TransactionController extends Controller
                                                                         $user = User::where('id', $data['id'])
                                                                         ->with('devices')
                                                                         ->first();
+
+                                                                        $userCardAmount = Card::where('user_id', $user->id)->count();
                                                                         $user->balance = $transfer_amount;
                                                                         foreach ($user->devices as $key => $device) {
                                                                             if ($device->op_mode === '0') {
@@ -713,7 +715,7 @@ class TransactionController extends Controller
                                                                                 if (
                                                                                     is_null($subscriptionDate) ||
                                                                                     ($subscriptionDate &&
-                                                                                    $subscriptionDate->lt($nextMonthPayDay))
+                                                                                    $subscriptionDate->lt($nextMonthPayDay) &&  $userCardAmount > 0 &&  $user->balance >= $device->tariff_amount)
                                                                                     ) {
                                                                                         if (
                                                                                             $user->balance - $user->freezed_balance >=

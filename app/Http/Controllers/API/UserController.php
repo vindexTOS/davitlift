@@ -75,9 +75,11 @@ class UserController extends Controller
         ];
         
         $currentDay = Carbon::now()->day;
+        $userCardAmount = Card::where('user_id', $user->id)->count();
+
         if ($device->op_mode == '0') {
-            if ($device->tariff_amount <= $user->balance) {
-                if ($currentDay < $device->pay_day) {
+            if ($device->tariff_amount <= $user->balance && $device->tariff_amount > 0 ) {
+                if ($currentDay < $device->pay_day && $userCardAmount > 0) {
                     $create['subscription'] = Carbon::now()
                     ->startOfMonth()
                     ->addDays($device->pay_day - 1);
