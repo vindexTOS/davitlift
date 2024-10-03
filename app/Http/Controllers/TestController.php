@@ -62,7 +62,7 @@ class TestController extends   Controller
                    ->addDays($device->pay_day - 1);
                // როცა დევაისის ტარიფი უდრის ნულს
 
-             
+
                if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
                    $userBalance = $user->balance;
                   
@@ -116,12 +116,17 @@ class TestController extends   Controller
 
                    //  როცა დვაისის ტარიფი ნოლზე მეტია
                } else {
+
+                Log::debug("If is garet" , ["user id"=> $user->balance , $user->freezed_balance ]);
+
                    if (
                        $user->balance >= $device->tariff_amount + $fixedCard &&
                        $user->freezed_balance >= $device->tariff_amount &&
                        !is_null($subscriptionDate) &&
                        $subscriptionDate->lt($nextMonthPayDay)
-                   ) {
+                   ) { 
+
+                    Log::debug("shemosvla");
                        // Start transaction
                        DB::beginTransaction();
                        try {
@@ -134,11 +139,14 @@ class TestController extends   Controller
 
                            $deviceTariffWithCardBalance =
                                $device->tariff_amount + $fixedCard;
-
+                           
                            if (
                                $user->balance - $user->freezed_balance >=
                                $deviceTariffWithCardBalance
                            ) {
+
+                            Log::debug("shemosvla device trafikshi" , ["user id"=> $user->id]);
+
                                $currentDay = Carbon::now()->day;
 
                                if ($currentDay < $device->pay_day) {
