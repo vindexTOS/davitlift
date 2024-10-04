@@ -20,15 +20,18 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
-use App\Services\FixedTarrifOpModeService;
-use App\Services\TarriffCardOpModeService;
+ 
+use App\Providers\MQTTServiceProvider;
+use App\Services\TransactionHandlerForOpMode;
 use Symfony\Component\HttpFoundation\Response;
 
 class TransactionController extends Controller
 {
 
-    use FixedTarrifOpModeService;
-    use TarriffCardOpModeService;
+ 
+    use TransactionHandlerForOpMode;
+    use MQTTServiceProvider;
+
     // private $client_id = '77841';
     // private $client_secret = 'OOsQRvWG33n4';
 
@@ -702,18 +705,15 @@ class TransactionController extends Controller
                 ->with('devices')
                 ->first();
 
-            $userCardAmount = Card::where('user_id', $user->id)->count();
-            $user->balance = $transfer_amount;
+            // $userCardAmount = Card::where('user_id', $user->id)->count();
+            $user->balance = $user->balance + $transfer_amount;
+            $user->save();
             foreach ($user->devices as $key => $device) {
-                if ($device->op_mode === '0') {
-                    $this->handleOpModeZeroTransaction($user, $device);
-                } else if ($device->op_mode === "1") {
-                    $this->handleOpModeOneTransaction($user, $device);
-                }
-                // არა ფიქრისრებული ტარიფი
-               
-            }
-              $user->save();
+                //ფიქსირებული და არა ფიქსირებული ტარიფების ჰენდლერი
+          
+                $this->handleOpMode($device->op_mode,$user, $device);
+             }
+            
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
                 'Error checking user existence: ' . $e->getMessage()
@@ -737,24 +737,24 @@ class TransactionController extends Controller
         return json_decode($response->body())->access_token;
     }
 
-    public function generateHexPayload($command, $payload)
-    {
-        return [
-            'command' => $command,
-            'payload' => $payload,
-        ];
-    }
+    // public function generateHexPayload($command, $payload)
+    // {
+    //     return [
+    //         'command' => $command,
+    //         'payload' => $payload,
+    //     ];
+    // }
 
-    public function publishMessage($device_id, $payload)
-    {
-        $data = [
-            'device_id' => $device_id,
-            'payload' => $payload,
-        ];
-        $queryParams = http_build_query($data);
-        $response = Http::get(
-            'http://localhost:3000/mqtt/general?' . $queryParams
-        );
-        return $response->json(['data' => ['dasd']]);
-    }
+    // public function publishMessage($device_id, $payload)
+    // {
+    //     $data = [
+    //         'device_id' => $device_id,
+    //         'payload' => $payload,
+    //     ];
+    //     $queryParams = http_build_query($data);
+    //     $response = Http::get(
+    //         'http://localhost:3000/mqtt/general?' . $queryParams
+    //     );
+    //     return $response->json(['data' => ['dasd']]);
+    // }
 }

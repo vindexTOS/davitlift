@@ -20,5 +20,12 @@ trait  MQTTServiceProvider
         return $response->json(['data' => ['dasd']]);
     }
 
+    public function generateHexPayload($command, $payload)
+    {
+        return [
+            'command' => $command,
+            'payload' => $payload,
+        ];
+    }
 
 }

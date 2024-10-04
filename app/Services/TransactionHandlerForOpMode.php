@@ -5,26 +5,23 @@ namespace App\Services;
 
 
 
-
-class TransactionHandlerForOpMode{
+trait  TransactionHandlerForOpMode{
   
- 
+use FixedTarrifOpModeService;
+use TarriffCardOpModeService;
 
 
 
-   public function handleOpMode($OP_MODE){
+   public function handleOpMode($OP_MODE, $user,$device ){
 
-//     switch ($OP_MODE) {
-//              case "1":
-//                 break
-//              case "2":
-//                 break
-//              case "3":
-//                 break
-//         default:
-         
-
-//    };
+    switch ($OP_MODE) {
+             case "0":
+                 $this-> handleOpModeZeroTransaction($user, $device);
+             case "1":
+                  $this-> handleOpModeOneTransaction($user, $device);
+             default:
+               break;
+   };
 }
 
 
