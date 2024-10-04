@@ -123,6 +123,7 @@ export const ka = {
     "Tariff":'ტარიფი',
     "Tetri": 'თეთრი',
     "Fixed": 'ფიქსირებული',
+    "Card Only": 'ბარათის ტარიფი',
     "Mode of payment": 'გადახდის რეჟიმი',
     "Number of cards per user": "ბარათების რაოდენობა ერთ მომხმარებელზე",
     "Automatic user addition":'მომხმარებლის ავტომატური დამატება',

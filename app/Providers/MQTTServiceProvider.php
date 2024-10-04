@@ -2,23 +2,23 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 
-class MQTTServiceProvider extends ServiceProvider
+trait  MQTTServiceProvider  
 {
-    /**
-     * Register services.
-     */
-    public function register(): void
+    public function publishMessage($device_id, $payload)
     {
-        //
+        $data = [
+            'device_id' => $device_id,
+            'payload' => $payload,
+        ];
+        $queryParams = http_build_query($data);
+        $response = Http::get(
+            'http://localhost:3000/mqtt/general?' . $queryParams
+        );
+        return $response->json(['data' => ['dasd']]);
     }
 
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
-        //
-    }
+
 }

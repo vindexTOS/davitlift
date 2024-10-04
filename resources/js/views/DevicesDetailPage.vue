@@ -388,6 +388,7 @@
                                           data.tariff_amount / 100 +
                                           this.$t("Lari")
                                 }}
+                         
                             </h4>
                             <h4>
                                 {{ $t("გადახდის თარიღი") }}: {{ data.pay_day }}
@@ -601,6 +602,7 @@
                                 v-model="editedItem.op_mode"
                                 :inline="true"
                             >
+                            <!--     radio heads for tarrif change           -->
                                 <v-radio
                                     :label="$t('Tariff')"
                                     :value="1"
@@ -609,7 +611,14 @@
                                     :label="$t('Fixed')"
                                     :value="0"
                                 ></v-radio>
+                                <v-radio
+                                    :label="$t('Card Only')"
+                                    :value="2"
+                                ></v-radio>
                             </v-radio-group>
+
+         <!--     radio heads for tarrif change           -->
+
                         </v-col>
                         <v-col v-if="dialogBussines" cols="12">
                             <v-text-field
@@ -1306,6 +1315,7 @@ export default {
             this.editedItem.can_search = !!this.editedItem.can_search;
             this.editedItem.storage_disable = !!this.editedItem.storage_disable;
             this.editedItem.op_mode = Number(this.editedItem.op_mode);
+            console.log(this.editedItem.op_mode)
             this.dialogBussines = type === "bussines";
             this.dialogAppConf = type === "appConf";
             this.dialogExtConf = type === "extConf";

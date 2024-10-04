@@ -336,10 +336,21 @@ return  $device;
 
     }
     public function setAppConf(Request $request, Device $device) {
+      
+
+
+
+        
         $this->update($request,$device);
         $mqttService = app(MqttConnectionService::class);
         $mqtt = $mqttService->connect();
+      
+         if($device->op_mode == 2){
+            $device->op_mode = 0;
+         }   
 
+
+     
         $this->publishMessage( $device->dev_id, $this->sendDeviceParameters($device));
         $mqtt->loop(true, true);
 
