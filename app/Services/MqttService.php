@@ -6,6 +6,7 @@ namespace App\Services;
 
 use PDOException;
 use Carbon\Carbon;
+use DeviceMessages;
 use App\Models\Card;
 use App\Models\User;
 use RuntimeException;
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Storage;
 class MqttService
 {
     public $mqtt;
-    
+    use DeviceMessages;
     public function __construct()
     {
         $mqttService = app(MqttConnectionService::class);
@@ -49,33 +50,36 @@ class MqttService
                 
                 if (!empty($device)) {
                     if ($device->isBlocked) {
-                        $payload = $this->generateHexPayload(6, [
-                            [
-                                'type' => 'string',
-                                'value' => 'servisi',
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                            [
-                                'type' => 'string',
-                                'value' => 'droebiT',
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                            [
-                                'type' => 'string',
-                                'value' => 'SezRudulia',
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                        ]);
-                        $this->publishMessage($device_id, $payload);
+
+                        $this->ServiceNotAvalableMessage($device_id);
+                          
+                        // $payload = $this->generateHexPayload(6, [
+                        //     [
+                        //         'type' => 'string',
+                        //         'value' => 'servisi',
+                        //     ],
+                        //     [
+                        //         'type' => 'number',
+                        //         'value' => 0,
+                        //     ],
+                        //     [
+                        //         'type' => 'string',
+                        //         'value' => 'droebiT',
+                        //     ],
+                        //     [
+                        //         'type' => 'number',
+                        //         'value' => 0,
+                        //     ],
+                        //     [
+                        //         'type' => 'string',
+                        //         'value' => 'SezRudulia',
+                        //     ],
+                        //     [
+                        //         'type' => 'number',
+                        //         'value' => 0,
+                        //     ],
+                        // ]);
+                        // $this->publishMessage($device_id, $payload);
                     } else {
                         $this->callToNeededFunction(
                             $device,

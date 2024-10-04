@@ -132,7 +132,7 @@ trait TransactionProvider
                          ->addMonth()
                          ->startOfMonth()
                          ->addDays($device->pay_day - 1);
-                         
+                         ყ
                          Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
                      }
                      if (

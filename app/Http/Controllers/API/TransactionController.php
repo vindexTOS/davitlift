@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use Carbon\Carbon;
+use DeviceMessages;
 use Monolog\Logger;
 use App\Models\Card;
 use App\Models\User;
@@ -19,8 +20,8 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
-use Illuminate\Support\Facades\Http;
  
+use Illuminate\Support\Facades\Http;
 use App\Providers\MQTTServiceProvider;
 use App\Services\TransactionHandlerForOpMode;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +31,7 @@ class TransactionController extends Controller
 
  
     use TransactionHandlerForOpMode;
-    use MQTTServiceProvider;
+    use DeviceMessages;
 
     // private $client_id = '77841';
     // private $client_secret = 'OOsQRvWG33n4';

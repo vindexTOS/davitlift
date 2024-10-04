@@ -2,8 +2,10 @@
 
 namespace   App\Services;
 
+use DeviceMessages;
 use App\Models\LastUserAmount;
 use App\Providers\MQTTServiceProvider;
+use App\Services\UpdateDeviceEarnings;
 
 
 
@@ -12,7 +14,8 @@ use App\Providers\MQTTServiceProvider;
 
 trait TarriffCardOpModeService
 {
-    use MQTTServiceProvider;
+    use DeviceMessages;
+    use UpdateDeviceEarnings;
 
 //    უცვლელად დავტოვე რადგან პრობლემა არ ქონია ამ კოდს 
 
@@ -30,11 +33,11 @@ trait TarriffCardOpModeService
                 'user_id' => $user->id,
                 'device_id' => $device->id,
                 'last_amount' =>
-                $user->balance - $user->freezed_balance,
+                $user->balance - $device->tariff_amount,
             ]);
         } else {
             $lastAmount->last_amount =
-                $user->balance - $user->freezed_balance;
+                $user->balance -  $device->tariff_amount ;
             $lastAmount->save();
         }
         $payload = $this->generateHexPayload(5, [
@@ -54,9 +57,10 @@ trait TarriffCardOpModeService
             [
                 'type' => 'number16',
                 'value' =>
-                $user->balance - $user->freezed_balance,
+                $user->balance - $device->tariff_amount,
             ],
         ]);
+        $this->UpdateDevicEarn($device);
         $this->publishMessage($device->dev_id, $payload);
     }
 }
