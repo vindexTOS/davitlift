@@ -24,16 +24,22 @@ trait FixedTarrifOpModeService
     public function handleOpModeZeroSubscriptionCheck($deviceUser,   $device)
     {
 
-        Log::info("user", ['user'=> $deviceUser]);
+ 
 
 
-
-
+        Log::info("user", ["user"=> $deviceUser->subscription]);
+        if (is_null($deviceUser->subscription)) {
+            // Try another old date
+            $deviceUser->subscription = '2000-01-01 00:00:00';  
+            $deviceUser->save(); 
+        }
+        
         if ( Carbon::parse($deviceUser->subscription) < Carbon::now()->startOfDay()) {
 
             $user = User::where("id", $deviceUser->user_id)->first();
-         
 
+   
+        
             if ($user->balance >= $device->tariff_amount &&  $device->tariff_amount > 0) {
 
                 $user->balance = $user->balance - $device->tariff_amount;
@@ -73,7 +79,12 @@ trait FixedTarrifOpModeService
             // დღვეანდელი დღე 
             $today = Carbon::now()->startOfDay();
 
-
+            if (is_null($deviceUser->subscription)) {
+                // Try another old date
+                $deviceUser->subscription = '2000-01-01 00:00:00';  
+                $deviceUser->save(); 
+            }
+            
             //  ვამოწმებთ თუ უსერს უკვე აქვს გააქტიურებული თუ არა 
             if (Carbon::parse($deviceUser->subscription)->lte($today)) {
 

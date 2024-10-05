@@ -45,7 +45,7 @@ class TestController extends   Controller
     public function TestFixedCard($device_id)
     {
     
-
+        Log::info("user", ['user'=> "TEST"]);
         // Get Devices where pay_day is equal to today and op_mode is equal to 0
         $devices = Device::where('id', $device_id)
             ->get();
