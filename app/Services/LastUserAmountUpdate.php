@@ -3,8 +3,9 @@
 
 namespace App\Services;
 
-use DeviceMessages;
+ 
 use App\Models\LastUserAmount;
+use App\Services\DeviceMessages;
 use App\Providers\MQTTServiceProvider;
 
 trait LastUserAmountUpdate {

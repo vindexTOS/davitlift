@@ -5,6 +5,7 @@
 namespace   App\Services;
 
 use Carbon\Carbon;
+ 
 use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceUser;
@@ -17,10 +18,40 @@ trait FixedTarrifOpModeService
 {
 
     use UpdateDeviceEarnings;
+ 
+
+
+    public function handleOpModeZeroSubscriptionCheck($deviceUser,   $device)
+    {
+
+        Log::info("user", ['user'=> $deviceUser]);
 
 
 
-    public function handleOpModeZeroSubscriptionCheck($user) {}
+
+        if ( Carbon::parse($deviceUser->subscription) < Carbon::now()->startOfDay()) {
+
+            $user = User::where("id", $deviceUser->user_id)->first();
+         
+
+            if ($user->balance >= $device->tariff_amount &&  $device->tariff_amount > 0) {
+
+                $user->balance = $user->balance - $device->tariff_amount;
+
+                $nextMonthPayDay = Carbon::now()->addMonth()->startOfDay();
+
+                DeviceUser::where('device_id', $device->id)
+                    ->where('user_id', $deviceUser->user_id)
+                    ->update(['subscription' => $nextMonthPayDay]);
+
+
+                $user->save();
+
+
+                $this->UpdateDevicEarn($device);
+            }
+        }
+    }
 
 
     public function handleOpModeZeroTransaction($user,  $device)
@@ -45,7 +76,6 @@ trait FixedTarrifOpModeService
 
             //  ვამოწმებთ თუ უსერს უკვე აქვს გააქტიურებული თუ არა 
             if (Carbon::parse($deviceUser->subscription)->lte($today)) {
-                Log::debug("gamarjoba robika");
 
                 //  ვაჭრით თანხას უსერს 
                 $user->balance =  $user->balance - $device->tariff_amount;
@@ -61,26 +91,5 @@ trait FixedTarrifOpModeService
     }
 
 
-
- public function ReturnSubscriptionTypeToDevice( $userDevice , $data, $device){
-    Log::debug("MQTT CONTROLLER Carbon");
-    $payload = $this->generateHexPayload(4, [
-        [
-            'type' => 'timestamp',
-            'value' => Carbon::parse($userDevice->subscription)
-                ->timestamp,
-        ],
-        [
-            'type' => 'string',
-            'value' => $data['payload'],
-        ],
-        [
-            'type' => 'number',
-            'value' => 0,
-        ],
-    ]);
-    $this->publishMessage($device->dev_id, $payload);
-
- }
 
 }

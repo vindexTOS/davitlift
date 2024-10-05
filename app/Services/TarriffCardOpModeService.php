@@ -2,9 +2,9 @@
 
 namespace   App\Services;
 
-use DeviceMessages;
-use App\Models\LastUserAmount;
-use App\Providers\MQTTServiceProvider;
+ use App\Models\LastUserAmount;
+ use App\Providers\MQTTServiceProvider;
+use App\Services\DeviceMessages;
 use App\Services\UpdateDeviceEarnings;
 
 

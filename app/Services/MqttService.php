@@ -6,7 +6,7 @@ namespace App\Services;
 
 use PDOException;
 use Carbon\Carbon;
-use DeviceMessages;
+ 
 use App\Models\Card;
 use App\Models\User;
 use RuntimeException;
@@ -20,6 +20,7 @@ use App\Models\Transaction;
 use App\Models\LastUserAmount;
 use App\Models\UpdatingDevice;
 use PhpMqtt\Client\MqttClient;
+use App\Services\DeviceMessages;
 use App\Models\UnregisteredDevice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -52,34 +53,7 @@ class MqttService
                     if ($device->isBlocked) {
 
                         $this->ServiceNotAvalableMessage($device_id);
-                          
-                        // $payload = $this->generateHexPayload(6, [
-                        //     [
-                        //         'type' => 'string',
-                        //         'value' => 'servisi',
-                        //     ],
-                        //     [
-                        //         'type' => 'number',
-                        //         'value' => 0,
-                        //     ],
-                        //     [
-                        //         'type' => 'string',
-                        //         'value' => 'droebiT',
-                        //     ],
-                        //     [
-                        //         'type' => 'number',
-                        //         'value' => 0,
-                        //     ],
-                        //     [
-                        //         'type' => 'string',
-                        //         'value' => 'SezRudulia',
-                        //     ],
-                        //     [
-                        //         'type' => 'number',
-                        //         'value' => 0,
-                        //     ],
-                        // ]);
-                        // $this->publishMessage($device_id, $payload);
+                  
                     } else {
                         $this->callToNeededFunction(
                             $device,
@@ -93,33 +67,8 @@ class MqttService
                             $device->save();
                         }
                     } else {
-                        $payload = $this->generateHexPayload(6, [
-                            [
-                                'type' => 'string',
-                                'value' => 'mowyobiloba',
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                            [
-                                'type' => 'string',
-                                'value' => 'araa',
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                            [
-                                'type' => 'string',
-                                'value' => 'sistemaSi',
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                        ]);
-                        $this->publishMessage($device_id, $payload);
+                        $this->DeviceNotInSystem($device_id);
+                    
                         $device = UnregisteredDevice::where(
                             'dev_id',
                             $device_id
@@ -222,33 +171,9 @@ class MqttService
                                                 $phone = substr($data['payload'], 3); //This will output 'lo, World!'
                                                 $user = User::where('phone', $phone)->first();
                                                 if (empty($user)) {
-                                                    $payload = $this->generateHexPayload(6, [
-                                                        [
-                                                            'type' => 'string',
-                                                            'value' => 'nomeri',
-                                                        ],
-                                                        [
-                                                            'type' => 'number',
-                                                            'value' => 0,
-                                                        ],
-                                                        [
-                                                            'type' => 'string',
-                                                            'value' => 'ver',
-                                                        ],
-                                                        [
-                                                            'type' => 'number',
-                                                            'value' => 0,
-                                                        ],
-                                                        [
-                                                            'type' => 'string',
-                                                            'value' => 'moiZebna',
-                                                        ],
-                                                        [
-                                                            'type' => 'number',
-                                                            'value' => 0,
-                                                        ],
-                                                    ]);
-                                                    $this->publishMessage($device_id, $payload);
+                                                  
+
+                                                    $this->PhoneNumberNotFound($device_id);
                                                 } else {
                                                     if ($device->op_mode == 0) {
                                                         $userDevice = DeviceUser::where('user_id', $user->id)
@@ -258,23 +183,9 @@ class MqttService
                                                         if (
                                                             time() < Carbon::parse($userDevice->subscription)->timestamp
                                                             ) {
-                                                                $payload = $this->generateHexPayload(2, [
-                                                                    [
-                                                                        'type' => 'timestamp',
-                                                                        'value' => Carbon::parse($userDevice->subscription)
-                                                                        ->timestamp,
-                                                                    ],
-                                                                    [
-                                                                        'type' => 'string',
-                                                                        'value' => $data['payload'],
-                                                                    ],
-                                                                    [
-                                                                        'type' => 'number',
-                                                                        'value' => 0,
-                                                                    ],
-                                                                ]);
-                                                                
-                                                                $this->publishMessage($device_id, $payload);
+
+                                                                $this->SendingDeviceSubscriptionDate($device_id, $userDevice->subscription,$data);
+                                                               
                                                             } else {
                                                                 $this->noMoney($device_id);
                                                             }
@@ -307,33 +218,8 @@ class MqttService
                                                     ->first();
                                                     if (empty($card)) {
                                                         $code = $this->getActivationCode($device->id, $data['payload']);
-                                                        $payload = $this->generateHexPayload(6, [
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => 'Tqveni',
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => 'kodia',
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => $code,
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                        ]);
-                                                        $this->publishMessage($device->dev_id, $payload);
+                                                      
+                                                        $this->GetCode($device->dev_id, $code);
                                                     } else {
                                                         // უსერის ნახავა
                                                         $user = User::where('id', $card->user_id)->first();
@@ -524,7 +410,7 @@ class MqttService
                                                         ->first();
                                                         $user = User::where('id', $code->user_id)->first();
                                                         if ($device->op_mode == 0) {
-                                                            Log::debug("MQTT SERVICE shemsvla 2");
+                                                         
                                                             $payload = $this->generateHexPayload(1, []);
                                                             $this->publishMessage($device->dev_id, $payload);
                                                         } else {
@@ -742,36 +628,7 @@ class MqttService
                                                         return $byteString;
                                                     }
                                                     
-                                                    public function noMoney($device_id)
-                                                    {
-                                                        $payload = $this->generateHexPayload(6, [
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => 'araa',
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => 'sakmarisi',
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => 'Tanxa',
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                        ]);
-                                                        $this->publishMessage($device_id, $payload);
-                                                    }
+                                                 
                                                     
                                                     public function appConfig($data = [], $device_id)
                                                     {
