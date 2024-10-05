@@ -75,23 +75,17 @@ class UserController extends Controller
             'device_id' => $device_id,
         ];
 
-        $currentDay = Carbon::now()->day;
-        $userCardAmount = Card::where('user_id', $user->id)->count();
-        $create['subscription'] = Carbon::now()->format('Y-m-d H:i:s');
-        if ($device->op_mode == '0') {
-            if ($device->tariff_amount <= $user->balance && $device->tariff_amount  > 0 ) {
-                if ($currentDay < $device->pay_day && $userCardAmount > 0) {
-                    $create['subscription'] = Carbon::now()
-                        ->startOfMonth()
-                        ->addDays($device->pay_day - 1);
-                } else {
-                    $create['subscription'] = Carbon::now()
-                        ->addMonth()
-                        ->startOfMonth()
-                        ->addDays($device->pay_day - 1);
-                }
-            }
-        }
+      
+        // $create['subscription'] = Carbon::now()->format('Y-m-d H:i:s');
+     
+        $create['subscription'] = '2020-01-01 00:00:00';
+        $subscriptionDate = $isAdd ? Carbon::parse($isAdd->subscription) : null; // Get existing subscription date
+    
+        // Combined logic for subscription date
+        if ( Carbon::parse(  $subscriptionDate) < Carbon::now()->startOfDay()) {
+            // Keep the current subscription
+            $create['subscription'] = $subscriptionDate->format('Y-m-d H:i:s');
+        } 
         DeviceUser::create($create);
         return response()->json(
             ['message' => 'ასეთი მომხამრებელი უკვე დამატებულია'],
