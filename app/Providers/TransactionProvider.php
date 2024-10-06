@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Response;
 use App\Exceptions\BankOfGeorgiaUserCheck;
 use App\Exceptions\InvalidHashCodeException;
 use App\Services\TransactionHandlerForOpMode;
+ 
 
 trait TransactionProvider
 {
@@ -214,4 +215,8 @@ trait TransactionProvider
         return response($xmlContent,  \Illuminate\Http\Response::HTTP_BAD_REQUEST)
             ->header('Content-Type', 'application/xml');
     }
+
+
+     
+   
 }

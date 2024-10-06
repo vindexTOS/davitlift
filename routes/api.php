@@ -19,6 +19,7 @@ use App\Http\Controllers\UpdatingDeviceController;
 use App\Http\Controllers\API\TransactionController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
+use App\Models\Tbctransaction;
 
 //  ADMIN ONLY
 
@@ -118,6 +119,18 @@ Route::post('/transaction/tbcfastpay', [
     TransactionController::class,
     'makeTbcFastPayOrder',
 ]);
+
+// Route::post('/transaction/checkuser', [
+//     Tbctransaction::class,
+//     'checkIfUserExists',
+// ]);
+
+// Route::post('/transaction/tbcfastpay', [
+//     Tbctransaction::class,
+//     'makeTbcFastPayOrder',
+// ]);
+
+
 //  liberty bank
 Route::post('/transaction/lbfastpay', [
     TransactionController::class,

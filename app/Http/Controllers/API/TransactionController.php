@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use App\Providers\MQTTServiceProvider;
+use App\Providers\TransactionProvider;
 use App\Services\TransactionHandlerForOpMode;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,7 +34,7 @@ class TransactionController extends Controller
  
     use TransactionHandlerForOpMode;
     use DeviceMessages;
-
+    use  TransactionProvider;
     // private $client_id = '77841';
     // private $client_secret = 'OOsQRvWG33n4';
 
@@ -220,37 +221,10 @@ class TransactionController extends Controller
 
         try {
             $user = User::where('phone', $phone)->first();
-            $userId = $user->id;
-            $string = '' . $user->id;
+         
+            $string = $this->MakeFileId($user->id);
 
-            $deviceId = DeviceUser::where('user_id', $userId)->first();
-            if ($deviceId) {
-                $device = Device::where('id', $deviceId->device_id)->first();
-                $manager = User::where('id', $device->users_id)->first();
-                $company = Company::where('id', $device->company_id)->first();
-                if (
-                    isset($manager) &&
-                    isset($manager->phone) &&
-                    isset($company) &&
-                    isset($company->sk_code)
-                ) {
-                    $string .= '#' . $company->sk_code;
-                    $length = strlen($string);
-
-                    // If the length is greater than 30, truncate the string to 30 characters
-                    if ($length > 30) {
-                        $string = substr($string, 0, 30);
-                    }
-
-                    // Calculate the remaining length available for the manager's name
-                    $remainingLength = 30 - strlen($string);
-
-                    // Append the portion of the manager's name that fits into the remaining length
-                    $string .=
-                        '#' . substr($manager->phone, 0, $remainingLength);
-                }
-            }
-
+             
             // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
             $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
             if ($isOrderExit) {
@@ -259,7 +233,7 @@ class TransactionController extends Controller
 
             $this->createTransactionFastPay(
                 $amount,
-                $userId,
+                $user->id,
                 $order_id,
                 $string,
                 'LB'
@@ -382,36 +356,7 @@ class TransactionController extends Controller
         $data = $request->all();
         try {
             $user = User::where('phone', $phone)->first();
-            $userId = $user->id;
-            $string = '' . $user->id;
-
-            $deviceId = DeviceUser::where('user_id', $userId)->first();
-            if ($deviceId) {
-                $device = Device::where('id', $deviceId->device_id)->first();
-                $manager = User::where('id', $device->users_id)->first();
-                $company = Company::where('id', $device->company_id)->first();
-                if (
-                    isset($manager) &&
-                    isset($manager->phone) &&
-                    isset($company) &&
-                    isset($company->sk_code)
-                ) {
-                    $string .= '#' . $company->sk_code;
-                    $length = strlen($string);
-
-                    // If the length is greater than 30, truncate the string to 30 characters
-                    if ($length > 30) {
-                        $string = substr($string, 0, 30);
-                    }
-
-                    // Calculate the remaining length available for the manager's name
-                    $remainingLength = 30 - strlen($string);
-
-                    // Append the portion of the manager's name that fits into the remaining length
-                    $string .=
-                        '#' . substr($manager->phone, 0, $remainingLength);
-                }
-            }
+                $string = $this->MakeFileId($user->id);
 
             // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
             $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
@@ -421,7 +366,7 @@ class TransactionController extends Controller
 
             $this->createTransactionFastPay(
                 $amount,
-                $userId,
+                $user->id,
                 $order_id,
                 $string,
                 'TBC'
@@ -457,33 +402,9 @@ class TransactionController extends Controller
     public function makeOrderTransaction($amount, $user, $token)
     {
         $data = [];
-        $string = '' . $user->id;
-        $deviceId = DeviceUser::where('user_id', $user->id)->first();
-        if ($deviceId) {
-            $device = Device::where('id', $deviceId->device_id)->first();
-            $manager = User::where('id', $device->users_id)->first();
-            $company = Company::where('id', $device->company_id)->first();
-            if (
-                isset($manager) &&
-                isset($manager->phone) &&
-                isset($company) &&
-                isset($company->sk_code)
-            ) {
-                $string .= '#' . $company->sk_code;
-                $length = strlen($string);
+        $string = $this->MakeFileId($user->id);
 
-                // If the length is greater than 30, truncate the string to 30 characters
-                if ($length > 30) {
-                    $string = substr($string, 0, 30);
-                }
-
-                // Calculate the remaining length available for the manager's name
-                $remainingLength = 30 - strlen($string);
-
-                // Append the portion of the manager's name that fits into the remaining length
-                $string .= '#' . substr($manager->phone, 0, $remainingLength);
-            }
-        }
+     
         $url = 'https://api.tbcbank.ge/v1/tpay/payments';
         $response = Http::withHeaders([
             'Accept-Language' => 'ka',
@@ -738,25 +659,5 @@ class TransactionController extends Controller
             ->post('https://api.tbcbank.ge/v1/tpay/access-token');
         return json_decode($response->body())->access_token;
     }
-
-    // public function generateHexPayload($command, $payload)
-    // {
-    //     return [
-    //         'command' => $command,
-    //         'payload' => $payload,
-    //     ];
-    // }
-
-    // public function publishMessage($device_id, $payload)
-    // {
-    //     $data = [
-    //         'device_id' => $device_id,
-    //         'payload' => $payload,
-    //     ];
-    //     $queryParams = http_build_query($data);
-    //     $response = Http::get(
-    //         'http://localhost:3000/mqtt/general?' . $queryParams
-    //     );
-    //     return $response->json(['data' => ['dasd']]);
-    // }
+ 
 }
