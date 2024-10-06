@@ -80,8 +80,7 @@ trait DeviceMessages
         $this->publishMessage($device->dev_id, $payload);
     }
 
-    public function GetCode($device_id, $code)
-    {
+    public function getDeviceCode($device_id, $code){
         $payload = $this->generateHexPayload(6, [
             [
                 'type' => 'string',

@@ -219,7 +219,7 @@ class MqttService
                                                     if (empty($card)) {
                                                         $code = $this->getActivationCode($device->id, $data['payload']);
                                                       
-                                                        $this->GetCode($device->dev_id, $code);
+                                                        $this->getDeviceCode($device->dev_id, $code);
                                                     } else {
                                                         // უსერის ნახავა
                                                         $user = User::where('id', $card->user_id)->first();

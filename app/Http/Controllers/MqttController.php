@@ -243,7 +243,7 @@ class MqttController extends Controller
             $code = $this->getActivationCode($device->id, $data['payload']);
 
 
-            $this->GetCode($device->dev_id, $code);
+            $this->getDeviceCode($device->dev_id, $code);
        
         } else {
             //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad

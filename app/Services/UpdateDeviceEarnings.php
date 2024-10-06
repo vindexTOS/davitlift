@@ -17,7 +17,7 @@ trait UpdateDeviceEarnings
 
 
 
-   public function UpdateDevicEarn(  $device)
+   public function UpdateDevicEarn(  $device,  $combinedTarffToBepayed)
    {
       // შესაძლოა დასჭირდეს დამატება კარტების გადახდისაც   $fixedCard = $userFixedBalnce * $userCardAmount ;
     
@@ -41,7 +41,7 @@ trait UpdateDeviceEarnings
  
       if (empty($deviceEarn)) {
 
-         $deviceEarning = $device->tariff_amount;
+         $deviceEarning =  $combinedTarffToBepayed;
 
         
          if (    $companyUser && $device) {
@@ -76,7 +76,7 @@ trait UpdateDeviceEarnings
          }
       } else {
 
-         $deviceEarning =   $deviceEarn->earnings + $device->tariff_amount;
+         $deviceEarning =   $deviceEarn->earnings +  $combinedTarffToBepayed;
 
         
          if (    $companyUser && $device) {

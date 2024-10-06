@@ -169,7 +169,7 @@ class BankOfGeorgia extends Controller
 
                     $this->updateUserData(
                         $amount,
-                        $transaction ,
+                        $transaction,
                         "",
                         'fast_pay'
                     );
@@ -206,7 +206,6 @@ class BankOfGeorgia extends Controller
         } catch (\Exception $e) {
             Log::error('Error processing payment: ' . $e->getMessage());
             return $this->HandleErrorCodes(99, "General server error code:500");
- 
         }
     }
 

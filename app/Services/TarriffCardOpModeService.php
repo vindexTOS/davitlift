@@ -5,6 +5,7 @@ namespace   App\Services;
  use App\Models\LastUserAmount;
  use App\Providers\MQTTServiceProvider;
 use App\Services\DeviceMessages;
+use Illuminate\Support\Facades\Log;
 use App\Services\UpdateDeviceEarnings;
 
 
@@ -19,8 +20,10 @@ trait TarriffCardOpModeService
 
 //    უცვლელად დავტოვე რადგან პრობლემა არ ქონია ამ კოდს 
 
-    public function handleOpModeOneTransaction($user, $device)
+    public function handleOpModeOneTransaction($user, $device, $OP_MODE)
     {
+
+  Log::info("op mod", ["op"=>$OP_MODE]);
         $lastAmount = LastUserAmount::where(
             'user_id',
             $user->id
@@ -60,7 +63,7 @@ trait TarriffCardOpModeService
                 $user->balance - $device->tariff_amount,
             ],
         ]);
-        $this->UpdateDevicEarn($device);
+        $this->UpdateDevicEarn($device, $device->tariff_amount);
         $this->publishMessage($device->dev_id, $payload);
     }
 }
