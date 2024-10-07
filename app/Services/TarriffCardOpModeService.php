@@ -52,7 +52,7 @@ trait TarriffCardOpModeService
             }
 
             Log::info("info", ["info" => $dataPayload]);
-            $payload = $this->generateHexPayload(5, [
+            $payload = $this->generateHexPayload(1, [
                 [
                     'type' => 'string',
                     'value' => str_pad(
