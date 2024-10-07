@@ -247,17 +247,16 @@ class MqttController extends Controller
 
 
             $this->getDeviceCode($device->dev_id, $code);
-       
+    //     aq OP mode if sacchiroa
         } else {
-            //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad
             $user = User::where('id', $card->user_id)->first();
             $userDevice = DeviceUser::where('user_id', $user->id)
                 ->where('device_id', $card->device_id)
                 ->first();
                
-
-
-            // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
+            if($device->op_mode == '0'){
+                    //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad
+             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
             if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
                 //და გავაჩერებთ ყველაფერს რეთურნით
                 //  aq vart ///
@@ -274,7 +273,11 @@ class MqttController extends Controller
                 $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
 
             }
-            // ოპ მოდ ჰენდლდერი ამოწმებს ორივე ტარიფს 
+            }else if ($device->op_mode == "1"){
+                $this->handleOpMode($device->op_mode, $user, $device, $data);
+            }
+        
+ 
         }
     }
 
