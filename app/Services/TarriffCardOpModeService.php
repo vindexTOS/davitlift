@@ -24,7 +24,7 @@ trait TarriffCardOpModeService
     {
         if ((int) $user->balance - $device->tariff_amount >= $device->tariff_amount) {
 
-            $user->balance -  $device->tariff_amount ;
+            $user->balance =    $user->balance  -  $device->tariff_amount ;
             $user->save();
 
             $lastAmount = LastUserAmount::where(
@@ -70,7 +70,7 @@ trait TarriffCardOpModeService
                 ],
                 [
                     'type' => 'number16',
-                    'value' => $user->balance - $user->freezed_balance,
+                    'value' => $user->balance - $device->tariff_amount ,
                 ],
             ]);
 
