@@ -268,7 +268,11 @@ class MqttController extends Controller
                 return;
             }
             //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
-         
+          
+            if(time()  < Carbon::parse($userDevice->subscription)->timestamp){
+                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
+
+            }
             // ოპ მოდ ჰენდლდერი ამოწმებს ორივე ტარიფს 
         }
     }
