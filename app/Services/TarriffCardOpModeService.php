@@ -20,7 +20,7 @@ trait TarriffCardOpModeService
 
     //    უცვლელად დავტოვე რადგან პრობლემა არ ქონია ამ კოდს 
 
-    public function handleOpModeOneTransaction($user, $device, $OP_MODE)
+    public function handleOpModeOneTransaction($user, $device, $OP_MODE, $dataPayload  = null)
     {
         if ((int) $user->balance - $device->tariff_amount >= $device->tariff_amount) {
             $lastAmount = LastUserAmount::where(
@@ -44,16 +44,37 @@ trait TarriffCardOpModeService
 
                 $lastAmount->save();
 
-             }
+                Log::info("else ", ["op" => $OP_MODE]);
+            }
 
 
 
 
+            $payload = $this->generateHexPayload(3, [
+                [
+                    'type' => 'string',
+                    'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                ['type' => 'string', 'value' => $dataPayload],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'number16',
+                    'value' => $user->balance - $user->freezed_balance,
+                ],
+            ]);
 
             $user->save();
             $this->UpdateDevicEarn($device, $device->tariff_amount);
 
-             $this->DeviceSTR_PAD_0($user, $device);
+         
+            $this->publishMessage($device->dev_id, $payload);
         } else {
             $this->noMoney($device->dev_id);
         }

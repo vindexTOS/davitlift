@@ -20,7 +20,7 @@ trait  TransactionHandlerForOpMode{
                  break; 
              case "1":
               
-                  $this-> handleOpModeOneTransaction($user, $device, $OP_MODE);
+                  $this-> handleOpModeOneTransaction($user, $device, $OP_MODE, $dataPayload );
                   break; 
              default:
                break;
