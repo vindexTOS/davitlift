@@ -275,6 +275,8 @@ class MqttController extends Controller
             }
             }else if ($device->op_mode == "1"){
                 $this->handleOpMode($device->op_mode, $user, $device, $data);
+                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
+
             }
         
  
