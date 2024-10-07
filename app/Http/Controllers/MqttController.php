@@ -311,7 +311,7 @@ class MqttController extends Controller
                     ->where('id', '=', $code->id)
                     ->delete();
             } else {
-                // $this->noMoney($device->dev_id);
+                $this->noMoney($device->dev_id);
             }
         }
     }
