@@ -23,6 +23,10 @@ trait TarriffCardOpModeService
     public function handleOpModeOneTransaction($user, $device, $OP_MODE, $dataPayload  = null)
     {
         if ((int) $user->balance - $device->tariff_amount >= $device->tariff_amount) {
+
+            $user->balance -  $device->tariff_amount ;
+            $user->save();
+
             $lastAmount = LastUserAmount::where(
                 'user_id',
                 $user->id
@@ -70,7 +74,6 @@ trait TarriffCardOpModeService
                 ],
             ]);
 
-            $user->save();
             $this->UpdateDevicEarn($device, $device->tariff_amount);
 
          
