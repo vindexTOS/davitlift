@@ -225,7 +225,7 @@ class MqttController extends Controller
                     }
                 }
             } else {
-                $this->noMoney($device_id);
+                // $this->noMoney($device_id);
             }
         }
     }
@@ -256,7 +256,7 @@ class MqttController extends Controller
             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
             if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
                 //და გავაჩერებთ ყველაფერს რეთურნით
-                $this->noMoney($device->dev_id);
+                // $this->noMoney($device->dev_id);
                 return;
             }
             //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
@@ -311,7 +311,7 @@ class MqttController extends Controller
                     ->where('id', '=', $code->id)
                     ->delete();
             } else {
-                $this->noMoney($device->dev_id);
+                // $this->noMoney($device->dev_id);
             }
         }
     }
