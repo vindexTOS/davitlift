@@ -337,12 +337,11 @@ class MqttController extends Controller
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
-            Log::info('cards', ['cards'=>  $deviceIds]);
 
         $card = Card::where('card_number', $cardNumber)
             ->whereIn('device_id', $deviceIds)
             ->first();
- Log::info('cards', ['cards'=> $card]);
+
         $user = User::where('id', $card->user_id)->first();
         $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
@@ -367,26 +366,70 @@ class MqttController extends Controller
         //     $lastAmount->last_amount
         // );
         $user->balance = $user->balance - $diff;
-        // $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
+        $this->Logsaver($lastAmount->last_amount, $bigEndianValue, $diff);
 
+        // $this->Logsaver(
+        //     'მეორე ლაინი userBalance and diff',
+        //     $user->balance,
+        //     $diff
+        // );
 
-        $sendPrice = $user->balance - $device->tariff_amount;
+        $sendPrice = $user->balance - $user->freezed_balance;
         $lastAmount->last_amount = $sendPrice;
+        // $this->Logsaver(
+        //     'მეოთხე ლაინი',
+        //     $lastAmount->last_amount,
+        //     'მეოთხე ლაინი'
+        // );
 
         $lastAmount->save();
 
         $user->save();
 
-        // $this->3Earnings($device->id, $diff, $device->company_id);
-        //  aq iyo adre didi kvercxoba algorithmi saveOrUpdateEarnings
-        $this->UpdateDevicEarn($device,$device->tariff_amount);
-
+        $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
+        // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
 
         $devices_ids = Device::where('users_id', $device->users_id)->get();
+        // $this->Logsaver($device_id, '178', $commandValue);
+        // $this->Logsaver('760', $device->id, 'დევაისი არსებობს');
 
         foreach ($devices_ids as $key2 => $value2) {
-            //  aq iyo adre didi kvercxoba algorithmi
-            $this->UpdateOpModeOneLastAmount($user, $value2);
+            // $this->Logsaver('763', $value2->id, 'ლუპში შესვლა');
+
+            if ($value2->op_mode == '1') {
+                $lastAmountCurrentDevice = LastUserAmount::where(
+                    'user_id',
+                    $user->id
+                )
+                    ->where('device_id', $value2->id)
+                    ->first();
+
+                if (empty($lastAmountCurrentDevice->user_id)) {
+                    LastUserAmount::insert([
+                        'user_id' => $user->id,
+                        'device_id' => $value2->id,
+                        'last_amount' => $sendPrice,
+                    ]);
+                } else {
+                    $lastAmountCurrentDevice->last_amount = $sendPrice;
+                    $lastAmountCurrentDevice->save();
+                }
+                $payload = $this->generateHexPayload(5, [
+                    [
+                        'type' => 'string',
+                        'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                    ],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                    [
+                        'type' => 'number16',
+                        'value' => $sendPrice,
+                    ],
+                ]);
+                $this->publishMessage($value2->dev_id, $payload);
+            }
         }
         $this->trackElevetorUses($user->id, $device->id, 1, strval($deviceTarff), strval($user->balance));
     }
