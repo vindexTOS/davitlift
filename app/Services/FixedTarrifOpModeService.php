@@ -101,6 +101,7 @@ trait FixedTarrifOpModeService
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
+                
             }
         }else{
             $this->noMoney($device->dev_id);

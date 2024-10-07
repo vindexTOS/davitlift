@@ -263,14 +263,12 @@ class MqttController extends Controller
                 //  aq vart ///
 
                 $this->handleOpMode($device->op_mode, $user, $device);
+                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
+
                 return;
             }
             //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
-            if (
-                time() < Carbon::parse($userDevice->subscription)->timestamp
-            ) {
-                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
-            }
+         
             // ოპ მოდ ჰენდლდერი ამოწმებს ორივე ტარიფს 
         }
     }
