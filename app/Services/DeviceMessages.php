@@ -4,6 +4,7 @@ namespace   App\Services;
 
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
 
@@ -16,6 +17,9 @@ trait DeviceMessages
 
     public function publishMessage($device_id, $payload)
     {
+
+        Log::info("medevice ", ["op"=>"DEVICE"]);
+
         $data = [
             'device_id' => $device_id,
             'payload' => $payload,
