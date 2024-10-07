@@ -255,21 +255,21 @@ class MqttController extends Controller
                 ->where('device_id', $card->device_id)
                 ->first();
                 $this->handleOpMode($device->op_mode, $user, $device);
+                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
 
 
             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
-            if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                //და გავაჩერებთ ყველაფერს რეთურნით
-                //  aq vart ///
-                $this->noMoney($device->dev_id);
-                return;
-            }
+            // if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+            //     //და გავაჩერებთ ყველაფერს რეთურნით
+            //     //  aq vart ///
+            //     $this->noMoney($device->dev_id);
+            //     return;
+            // }
             //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
-            if (
-                time() < Carbon::parse($userDevice->subscription)->timestamp
-            ) {
-                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
-            }
+            // if (
+            //     time() < Carbon::parse($userDevice->subscription)->timestamp
+            // ) {
+            // }
             // ოპ მოდ ჰენდლდერი ამოწმებს ორივე ტარიფს 
         }
     }
