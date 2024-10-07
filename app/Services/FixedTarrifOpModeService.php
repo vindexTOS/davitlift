@@ -19,7 +19,7 @@ trait FixedTarrifOpModeService
 {
 
     use UpdateDeviceEarnings;
-
+   use DeviceMessages;
 
 
     public function handleOpModeZeroSubscriptionCheck($deviceUser,   $device)
@@ -102,6 +102,9 @@ trait FixedTarrifOpModeService
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
             }
+        }else{
+            $this->noMoney($device->dev_id);
+
         }
     }
     private function GetCardTotalAmount($user, $deviceAmount)
