@@ -24,7 +24,7 @@ trait TarriffCardOpModeService
     {
         if ((int) $user->balance - $device->tariff_amount >= $device->tariff_amount) {
 
-            $user->balance =    $user->balance  -  $device->tariff_amount ;
+            $user->balance =    $user->balance -  $device->tariff_amount ;
             $user->save();
 
             $lastAmount = LastUserAmount::where(
@@ -51,7 +51,7 @@ trait TarriffCardOpModeService
                 Log::info("else ", ["op" => $OP_MODE]);
             }
 
-
+   Log::info("info" , ["info"=>$dataPayload]);
 
 
             $payload = $this->generateHexPayload(3, [
@@ -63,14 +63,15 @@ trait TarriffCardOpModeService
                     'type' => 'number',
                     'value' => 0,
                 ],
-                ['type' => 'string', 'value' => $dataPayload],
+                ['type' => 'string',
+                 'value' => $dataPayload],
                 [
                     'type' => 'number',
                     'value' => 0,
                 ],
                 [
                     'type' => 'number16',
-                    'value' => 20 ,
+                    'value' => $user->balance - $device->tariff_amount ,
                 ],
             ]);
 
