@@ -27,12 +27,14 @@ use Illuminate\Support\Facades\Http;
 use App\Providers\MQTTServiceProvider;
 use App\Services\LastUserAmountUpdate;
 use Illuminate\Support\Facades\Storage;
+use App\Services\TransactionHandlerForOpMode;
 
 class MqttController extends Controller
 {
 
     use DeviceMessages;
     use  LastUserAmountUpdate;
+    use TransactionHandlerForOpMode;
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
@@ -168,6 +170,7 @@ class MqttController extends Controller
         $userDevice = DeviceUser::where('user_id', $user->id)
             ->whereIn('device_id', $deviceIds)
             ->first();
+            $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
 
         if (empty($userDevice)) {
              $this->PhoneNumberNotFound($device_id);
@@ -176,7 +179,7 @@ class MqttController extends Controller
                 Log::debug("MQTT CONTROLLER shemsvla");
 
                 // if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                //     $this->noMoney($device_id);
+                    $this->noMoney($device_id);
                 // }
 
                 if (
@@ -214,7 +217,7 @@ class MqttController extends Controller
             
                 $user->save();
                 // trait function from updateDeviceEarnings.............
-                $this->UpdateDevicEarn($device);
+                $this->UpdateDevicEarn($device,   $device->tariff_amount);
                 $devices_ids = Device::where(
                     'users_id',
                     $device->users_id
@@ -225,7 +228,7 @@ class MqttController extends Controller
                     }
                 }
             } else {
-                // $this->noMoney($device_id);
+                $this->noMoney($device_id);
             }
         }
     }
@@ -251,11 +254,13 @@ class MqttController extends Controller
             $userDevice = DeviceUser::where('user_id', $user->id)
                 ->where('device_id', $card->device_id)
                 ->first();
+                $this->handleOpMode($device->op_mode, $user, $device);
 
 
             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
             if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
                 //და გავაჩერებთ ყველაფერს რეთურნით
+                //  aq vart ///
                 $this->noMoney($device->dev_id);
                 return;
             }
@@ -266,7 +271,6 @@ class MqttController extends Controller
                 $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
             }
             // ოპ მოდ ჰენდლდერი ამოწმებს ორივე ტარიფს 
-            $this->handleOpMode($device->op_mode, $user, $device);
         }
     }
 
@@ -366,7 +370,7 @@ class MqttController extends Controller
 
         // $this->3Earnings($device->id, $diff, $device->company_id);
         //  aq iyo adre didi kvercxoba algorithmi saveOrUpdateEarnings
-        $this->UpdateDevicEarn($device);
+        $this->UpdateDevicEarn($device,$device->tariff_amount);
 
 
         $devices_ids = Device::where('users_id', $device->users_id)->get();
