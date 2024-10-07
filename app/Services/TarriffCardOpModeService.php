@@ -73,7 +73,7 @@ trait TarriffCardOpModeService
                 ],
                 [
                     'type' => 'number16',
-                    'value' => $user->balance - $device->tariff_amount,
+                    'value' => 100,
                 ],
             ]);
 
