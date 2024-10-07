@@ -76,7 +76,7 @@ trait TarriffCardOpModeService
         $user->save();
         $this->UpdateDevicEarn($device, $device->tariff_amount);
 
-        Log::info("message published ", ["op"=>$OP_MODE]);
+        Log::info("device->dev_id ", ["op"=>$device->dev_id]);
         $this->publishMessage($device->dev_id, $payload);
     }else {
         $this->noMoney($device->dev_id);
