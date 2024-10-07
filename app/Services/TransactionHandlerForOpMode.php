@@ -11,12 +11,12 @@ trait  TransactionHandlerForOpMode{
 
   use FixedTarrifOpModeService;
 
-   public function handleOpMode($OP_MODE, $user,$device ){
+   public function handleOpMode($OP_MODE, $user,$device , $dataPayload = null){
      switch ($OP_MODE) {
 
 
              case "0":
-                 $this-> handleOpModeZeroTransaction($user, $device);
+                 $this-> handleOpModeZeroTransaction($user, $device ,$dataPayload);
                  break; 
              case "1":
               

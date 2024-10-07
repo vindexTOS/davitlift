@@ -262,8 +262,9 @@ class MqttController extends Controller
                 //და გავაჩერებთ ყველაფერს რეთურნით
                 //  aq vart ///
 
-                $this->handleOpMode($device->op_mode, $user, $device);
-                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
+                $this->handleOpMode($device->op_mode, $user, $device, $data);
+
+                
 
                 return;
             }

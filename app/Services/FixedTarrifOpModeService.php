@@ -60,8 +60,8 @@ trait FixedTarrifOpModeService
         }
     }
 
-
-    public function handleOpModeZeroTransaction($user,  $device)
+  // დატა პეილოადი მოდის დევაისიდან, ამ ფუნქციას ყოველთვის არ ჭირდება ეს პარამეტრი ამიტომაც დეფაულტად არის ნული
+    public function handleOpModeZeroTransaction($user,  $device, $dataPayload =  null)
     {
         // მეორეჯერ ჩარიცხვის შემთხვევაში არ უნდა გაუქტიურდეს თავიდან, თუ უკვე აქტიური აქვს 
 
@@ -101,7 +101,11 @@ trait FixedTarrifOpModeService
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
-                
+                if(!is_null($dataPayload) ){
+
+                    $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
+
+                }
             }
         }else{
             $this->noMoney($device->dev_id);
