@@ -22,8 +22,7 @@ trait TarriffCardOpModeService
 
     public function handleOpModeOneTransaction($user, $device, $OP_MODE)
     {
-
-  Log::info("op mod", ["op"=>$OP_MODE]);
+    if(    (int) $user->balance - $device->tariff_amount >= $device->tariff_amount ){
         $lastAmount = LastUserAmount::where(
             'user_id',
             $user->id
@@ -38,17 +37,20 @@ trait TarriffCardOpModeService
                 'last_amount' =>
                 $user->balance - $device->tariff_amount,
             ]);
-            Log::info("first if ", ["op"=>$OP_MODE]);
+           
         } else {
             $lastAmount->last_amount =
                 $user->balance -  $device->tariff_amount ;
+
+
             $lastAmount->save();
 
             Log::info("else ", ["op"=>$OP_MODE]);
 
         }
 
-        $this->UpdateDevicEarn($device, $device->tariff_amount);
+
+  
 
         $payload = $this->generateHexPayload(5, [
             [
@@ -70,6 +72,16 @@ trait TarriffCardOpModeService
                 $user->balance - $device->tariff_amount,
             ],
         ]);
+
+        $user->save();
+        $this->UpdateDevicEarn($device, $device->tariff_amount);
+
+        Log::info("message published ", ["op"=>$OP_MODE]);
         $this->publishMessage($device->dev_id, $payload);
+    }else {
+        $this->noMoney($device->dev_id);
+
+    }
+      
     }
 }
