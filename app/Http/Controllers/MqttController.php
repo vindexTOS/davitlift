@@ -327,7 +327,6 @@ class MqttController extends Controller
             }
         }
     }
-
     private function remainedAmountUpdateToApplication($device, $data)
     {
         // $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
@@ -374,7 +373,7 @@ class MqttController extends Controller
         //     $diff
         // );
 
-        $sendPrice = $user->balance - $user->freezed_balance;
+        $sendPrice = $user->balance - $deviceTarff;
         $lastAmount->last_amount = $sendPrice;
         // $this->Logsaver(
         //     'მეოთხე ლაინი',

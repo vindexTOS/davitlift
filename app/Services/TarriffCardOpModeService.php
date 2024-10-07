@@ -51,21 +51,16 @@ trait TarriffCardOpModeService
                 Log::info("else ", ["op" => $OP_MODE]);
             }
 
-            Log::info("info", ["info" => $user->balance - $device->tariff_amount]);
-
-
-            $payload = $this->generateHexPayload(3, [
+            Log::info("info", ["info" => $dataPayload]);
+            $payload = $this->generateHexPayload(5, [
                 [
                     'type' => 'string',
-                    'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
-                ],
-                [
-                    'type' => 'number',
-                    'value' => 0,
-                ],
-                [
-                    'type' => 'string',
-                    'value' => $dataPayload
+                    'value' => str_pad(
+                        $user->id,
+                        6,
+                        '0',
+                        STR_PAD_LEFT
+                    ),
                 ],
                 [
                     'type' => 'number',
@@ -73,7 +68,8 @@ trait TarriffCardOpModeService
                 ],
                 [
                     'type' => 'number16',
-                    'value' => 100,
+                    'value' =>
+                    $user->balance - $device->tariff_amount,
                 ],
             ]);
 
