@@ -254,7 +254,6 @@ class MqttController extends Controller
             $userDevice = DeviceUser::where('user_id', $user->id)
                 ->where('device_id', $card->device_id)
                 ->first();
-                $this->handleOpMode($device->op_mode, $user, $device);
                 $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
 
 
@@ -265,10 +264,11 @@ class MqttController extends Controller
             //     $this->noMoney($device->dev_id);
             //     return;
             // }
-            //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
+            // //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
             // if (
             //     time() < Carbon::parse($userDevice->subscription)->timestamp
             // ) {
+            //     $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
             // }
             // ოპ მოდ ჰენდლდერი ამოწმებს ორივე ტარიფს 
         }
