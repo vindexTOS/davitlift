@@ -38,11 +38,18 @@ trait TarriffCardOpModeService
                 'last_amount' =>
                 $user->balance - $device->tariff_amount,
             ]);
+            Log::info("first if ", ["op"=>$OP_MODE]);
         } else {
             $lastAmount->last_amount =
                 $user->balance -  $device->tariff_amount ;
             $lastAmount->save();
+
+            Log::info("else ", ["op"=>$OP_MODE]);
+
         }
+
+        $this->UpdateDevicEarn($device, $device->tariff_amount);
+
         $payload = $this->generateHexPayload(5, [
             [
                 'type' => 'string',
@@ -63,7 +70,6 @@ trait TarriffCardOpModeService
                 $user->balance - $device->tariff_amount,
             ],
         ]);
-        $this->UpdateDevicEarn($device, $device->tariff_amount);
         $this->publishMessage($device->dev_id, $payload);
     }
 }
