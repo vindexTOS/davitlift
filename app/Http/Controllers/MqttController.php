@@ -337,11 +337,12 @@ class MqttController extends Controller
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
+            Log::info('cards', ['cards'=>  $deviceIds]);
 
         $card = Card::where('card_number', $cardNumber)
             ->whereIn('device_id', $deviceIds)
             ->first();
-
+ Log::info('cards', ['cards'=> $card]);
         $user = User::where('id', $card->user_id)->first();
         $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
