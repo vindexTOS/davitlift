@@ -284,7 +284,7 @@ class MqttController extends Controller
                     $this->noMoney($device_id);
                 }
             } else if (
-                $$user->balance - $device->tariff_amount >
+                $user->balance - $device->tariff_amount >
                 $device->tariff_amount
             ) {
                 $user->balance = $user->balance - $device->tariff_amount;
