@@ -479,11 +479,7 @@ class MqttController extends Controller
                     ],
                 ]);
                 $user->save();
-                $this->saveOrUpdateEarnings(
-                    $device->id,
-                    $device->tariff_amount,
-                    $device->company_id
-                );
+                $this->UpdateDevicEarn($user, $device);
                 $this->publishMessage($device->dev_id, $payload);
             } else {
                 $this->noMoney($device->dev_id);
