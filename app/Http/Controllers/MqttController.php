@@ -838,6 +838,9 @@ class MqttController extends Controller
 
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
+
+        Log::info("calll twice ?v ", ["info"=> $earningsValue ]);
+
         // Generate the date for month_year
         // $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
         // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
