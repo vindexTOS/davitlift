@@ -428,10 +428,7 @@ class MqttController extends Controller
                 //  aq vart ///
 
                 $this->handleOpMode($device->op_mode, $user, $device, $data);
-
-                
-
-                return;
+                 return;
             }
             //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
           
@@ -881,7 +878,7 @@ class MqttController extends Controller
 
                 } else {
                  
-                    $deviceEarnings->earnings =
+                 
                     $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
@@ -889,7 +886,7 @@ class MqttController extends Controller
                     Log::info("else", ["info"=> $deviceEarnings->earnings ]);
                 }
             } else {
-                $deviceEarnings->earnings += $earningsValue;
+                $deviceEarnings->earnings + $earningsValue;
 
                 Log::info("second else", ["info"=> $deviceEarnings->earnings ]);
 
