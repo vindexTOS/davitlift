@@ -479,7 +479,11 @@ class MqttController extends Controller
                     ],
                 ]);
                 $user->save();
-                $this->UpdateDevicEarn($user, $device);
+                $this->saveOrUpdateEarnings(
+                    $device->id,
+                    $device->tariff_amount,
+                    $device->company_id
+                );
                 $this->publishMessage($device->dev_id, $payload);
             } else {
                 $this->noMoney($device->dev_id);
@@ -847,7 +851,7 @@ class MqttController extends Controller
         if ($user->cashback == 0) {
             // $this->Logsaver('876', $user->cashback, 'უსერის ქეშბექი');
 
-            $user = User::where('id', $device->users_id)->first();
+        $user = User::where('id', $device->users_id)->first();
         }
         $this->Logsaver('879', $earningsValue, ' ერნიგნები');
 
@@ -869,14 +873,13 @@ class MqttController extends Controller
                 // );
 
                 if ($device->deviceTariffAmount != null) {
-                    $deviceEarnings->earnings =
-                        $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->earning + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
                 } else {
                     $deviceEarnings->earnings =
-                        $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
                 }
