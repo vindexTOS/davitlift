@@ -877,17 +877,23 @@ class MqttController extends Controller
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
+                    Log::info("if", ["info"=> $deviceEarnings->earnings ]);
+
                 } else {
+                 
                     $deviceEarnings->earnings =
                     $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
+
+                    Log::info("else", ["info"=> $deviceEarnings->earnings ]);
                 }
             } else {
-                // $deviceEarnings->earnings += $earningsValue;
+                $deviceEarnings->earnings += $earningsValue;
 
+                Log::info("second else", ["info"=> $deviceEarnings->earnings ]);
 
-                // $deviceEarnings->save();
+                $deviceEarnings->save();
             }
         } else {
             // $this->Logsaver('906', $user->id, 'BIG ELSE');
