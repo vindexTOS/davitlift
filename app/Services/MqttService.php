@@ -211,6 +211,8 @@ class MqttService
                                             $data,
                                             $device_id
                                             ) {
+                                                Log::info("celural number", ['info'=>" service"]);
+
                                                 $deviceIds = Device::where('users_id', $device->users_id)
                                                 ->pluck('id')
                                                 ->toArray();

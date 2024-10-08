@@ -212,6 +212,8 @@ class MqttController extends Controller
         $data,
         $device_id
     ) {
+
+        Log::info("celural number", ['info'=>" controller"]);
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
