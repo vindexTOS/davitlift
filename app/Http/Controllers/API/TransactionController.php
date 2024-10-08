@@ -637,13 +637,15 @@ class TransactionController extends Controller
                 ->first();
 
             // $userCardAmount = Card::where('user_id', $user->id)->count();
-            $user->balance = $user->balance + $transfer_amount;
-            $user->save();
-            foreach ($user->devices as $key => $device) {
-                //ფიქსირებული და არა ფიქსირებული ტარიფების ჰენდლერი
 
-                $this->handleOpMode($device->op_mode, $user, $device);
-            }
+            // Log::info("balance", ['info'=>$data ]);
+            $user->balance =  $data['balance'];
+            $user->save();
+            // foreach ($user->devices as $key => $device) {
+            //     //ფიქსირებული და არა ფიქსირებული ტარიფების ჰენდლერი
+
+            //     $this->handleOpMode($device->op_mode, $user, $device);
+            // }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
                 'Error checking user existence: ' . $e->getMessage()
