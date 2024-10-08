@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use PDOException;
 use Carbon\Carbon;
- 
 use App\Models\Card;
 use App\Models\User;
 use RuntimeException;
@@ -18,23 +17,15 @@ use Illuminate\Http\Request;
 use App\Models\LastUserAmount;
 use App\Models\UpdatingDevice;
 use PhpMqtt\Client\MqttClient;
-use App\Services\DeviceMessages;
 use App\Models\UnregisteredDevice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
-use App\Providers\MQTTServiceProvider;
-use App\Services\LastUserAmountUpdate;
 use Illuminate\Support\Facades\Storage;
-use App\Services\TransactionHandlerForOpMode;
 
 class MqttController extends Controller
 {
-
-    use DeviceMessages;
-    use  LastUserAmountUpdate;
-    use TransactionHandlerForOpMode;
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
@@ -50,8 +41,33 @@ class MqttController extends Controller
         $device = Device::where('dev_id', $parts[1])->first();
         if (!empty($device)) {
             if ($device->isBlocked) {
-                // DeviceMessage trait 
-              $this->ServiceNotAvalableMessage($device_id);
+                $payload = $this->generateHexPayload(6, [
+                    [
+                        'type' => 'string',
+                        'value' => 'servisi',
+                    ],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                    [
+                        'type' => 'string',
+                        'value' => 'droebiT',
+                    ],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                    [
+                        'type' => 'string',
+                        'value' => 'SezRudulia',
+                    ],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                ]);
+                $this->publishMessage($device_id, $payload);
             } else {
                 $this->callToNeededFunction(
                     $device,
@@ -63,7 +79,33 @@ class MqttController extends Controller
                 $device->save();
             }
         } else {
-            $this->DeviceNotInSystem($device_id);
+            $payload = $this->generateHexPayload(6, [
+                [
+                    'type' => 'string',
+                    'value' => 'mowyobiloba',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => 'araa',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => 'sistemaSi',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+            ]);
+            $this->publishMessage($device_id, $payload);
             $device = UnregisteredDevice::where('dev_id', $device_id)->first();
             if (empty($device)) {
                 $newDevice = new UnregisteredDevice();
@@ -170,28 +212,68 @@ class MqttController extends Controller
         $userDevice = DeviceUser::where('user_id', $user->id)
             ->whereIn('device_id', $deviceIds)
             ->first();
-            $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
 
         if (empty($userDevice)) {
-             $this->PhoneNumberNotFound($device_id);
+            $payload = $this->generateHexPayload(6, [
+                [
+                    'type' => 'string',
+                    'value' => 'nomeri',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => 'ver',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => 'moiZebna',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+            ]);
+            $this->publishMessage($device_id, $payload);
         } else {
             if ($device->op_mode == 0) {
                 Log::debug("MQTT CONTROLLER shemsvla");
 
-                // if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
                     $this->noMoney($device_id);
-                // }
+                }
 
                 if (
                     time() < Carbon::parse($userDevice->subscription)->timestamp
                 ) {
-                 
-                    $this->SendingDeviceSubscriptionDate($device_id, $userDevice->subscription,$data  );
+                    $payload = $this->generateHexPayload(2, [
+                        [
+                            'type' => 'timestamp',
+                            'value' => Carbon::parse($userDevice->subscription)
+                                ->timestamp,
+                        ],
+                        [
+                            'type' => 'string',
+                            'value' => $data['payload'],
+                        ],
+                        [
+                            'type' => 'number',
+                            'value' => 0,
+                        ],
+                    ]);
+
+                    $this->publishMessage($device_id, $payload);
                 } else {
                     $this->noMoney($device_id);
                 }
             } else if (
-                $user->balance - $device->tariff_amount >
+                $$user->balance - $device->tariff_amount >
                 $device->tariff_amount
             ) {
                 $user->balance = $user->balance - $device->tariff_amount;
@@ -204,27 +286,80 @@ class MqttController extends Controller
                         'user_id' => $user->id,
                         'device_id' => $device->id,
                         'last_amount' =>
-                        $user->balance -$device->tariff_amount,
+                        $user->balance - $user->freezed_balance,
                     ]);
                 } else {
                     $lastAmount->last_amount =
-                        $user->balance - $device->tariff_amount;
+                        $user->balance - $user->freezed_balance;
                     $lastAmount->save();
                 }
-                //thired
-               $this->DeviceSTR_PAD_0($user,$device);
-
-            
+                $payload = $this->generateHexPayload(1, [
+                    [
+                        'type' => 'string',
+                        'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                    ],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                    [
+                        'type' => 'number16',
+                        'value' => $user->balance - $user->freezed_balance,
+                    ],
+                ]);
+                $this->publishMessage($device_id, $payload);
                 $user->save();
-                // trait function from updateDeviceEarnings.............
-                $this->UpdateDevicEarn($device,   $device->tariff_amount);
+                $this->saveOrUpdateEarnings(
+                    $device->id,
+                    $device->tariff_amount,
+                    $device->company_id
+                );
                 $devices_ids = Device::where(
                     'users_id',
                     $device->users_id
                 )->get();
                 foreach ($devices_ids as $key2 => $value2) {
                     if ($value2->op_mode == '1') {
-                        $this->UpdateOpModeOneLastAmount($user, $value2);
+                        $lastAmountCurrentDevice = LastUserAmount::where(
+                            'user_id',
+                            $user->id
+                        )
+                            ->where('device_id', $value2->id)
+                            ->first();
+
+                        if (empty($lastAmountCurrentDevice->user_id)) {
+                            LastUserAmount::insert([
+                                'user_id' => $user->id,
+                                'device_id' => $value2->id,
+                                'last_amount' =>
+                                $user->balance - $user->freezed_balance,
+                            ]);
+                        } else {
+                            $lastAmountCurrentDevice->last_amount =
+                                $user->balance - $user->freezed_balance;
+                            $lastAmountCurrentDevice->save();
+                        }
+                        $payload = $this->generateHexPayload(5, [
+                            [
+                                'type' => 'string',
+                                'value' => str_pad(
+                                    $user->id,
+                                    6,
+                                    '0',
+                                    STR_PAD_LEFT
+                                ),
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                            [
+                                'type' => 'number16',
+                                'value' =>
+                                $user->balance - $user->freezed_balance,
+                            ],
+                        ]);
+                        $this->publishMessage($value2->dev_id, $payload);
                     }
                 }
             } else {
@@ -244,41 +379,204 @@ class MqttController extends Controller
             ->first();
         if (empty($card)) {
             $code = $this->getActivationCode($device->id, $data['payload']);
-
-
-            $this->getDeviceCode($device->dev_id, $code);
-    //     aq OP mode if sacchiroa
+            $payload = $this->generateHexPayload(6, [
+                [
+                    'type' => 'string',
+                    'value' => 'Tqveni',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => 'kodia',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => $code,
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+            ]);
+            $this->publishMessage($device->dev_id, $payload);
         } else {
             $user = User::where('id', $card->user_id)->first();
-            $userDevice = DeviceUser::where('user_id', $user->id)
-                ->where('device_id', $card->device_id)
-                ->first();
-               
-            if($device->op_mode == '0'){
-                    //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad
-             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
-            if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                //და გავაჩერებთ ყველაფერს რეთურნით
-                //  aq vart ///
+            if ($device->op_mode == 0) {
 
-                $this->handleOpMode($device->op_mode, $user, $device, $data);
+                $userDevice = DeviceUser::where('user_id', $user->id)
+                    ->where('device_id', $card->device_id)
+                    ->first();
+                if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                    Log::debug("No date");
+                    $this->noMoney($device->dev_id);
+                    return;
+                }
+                if (
+                    time() < Carbon::parse($userDevice->subscription)->timestamp
+                ) {
+                    Log::debug("MQTT CONTROLLER Carbon");
+                    $payload = $this->generateHexPayload(4, [
+                        [
+                            'type' => 'timestamp',
+                            'value' => Carbon::parse($userDevice->subscription)
+                                ->timestamp,
+                        ],
+                        [
+                            'type' => 'string',
+                            'value' => $data['payload'],
+                        ],
+                        [
+                            'type' => 'number',
+                            'value' => 0,
+                        ],
+                    ]);
+                    $this->publishMessage($device->dev_id, $payload);
+                } else if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
+                    $userFixedBalnce = $user->fixed_card_amount;
+                    $userCardAmount = Card::where('user_id', $user->id)->count();
+                    $fixedCard = $userFixedBalnce * $userCardAmount;
 
-                
 
-                return;
+                    $userBalance = $user->balance;
+
+                    $user->freezed_balance = $fixedCard;
+
+
+
+
+                    if ($user->balance - $user->freezed_balance >= $fixedCard) {
+                        Log::debug("შემოვიდა mqttController");
+                        $user->balance -= $fixedCard;
+                        $user->freezed_balance -= $fixedCard;
+                        $currentDay = Carbon::now()->day;
+                        if ($currentDay < $device->pay_day) {
+                            $nextMonthPayDay = Carbon::now()
+                                ->startOfMonth()
+                                ->addDays($device->pay_day - 1);
+                        } else {
+                            $nextMonthPayDay = Carbon::now()
+                                ->addMonth()
+                                ->startOfMonth()
+                                ->addDays($device->pay_day - 1);
+                        }
+                        $userDevice->subscription = $nextMonthPayDay;
+
+                        $userDevice->save();
+                        $payload = $this->generateHexPayload(4, [
+                            [
+                                'type' => 'timestamp',
+                                'value' => Carbon::parse($nextMonthPayDay)
+                                    ->timestamp,
+                            ],
+                            [
+                                'type' => 'string',
+                                'value' => $data['payload'],
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                        ]);
+                        $this->publishMessage($device->dev_id, $payload);
+                    }
+                    // თუ დევაისი ტარიფი ნულია
+                    else if (
+                        $user->balance - $user->freezed_balance >=
+                        $device->tariff_amount
+                    ) {
+                        $user->freezed_balance =
+                            $user->freezed_balance + $device->tariff_amount;
+                        $user->save();
+                        $currentDay = Carbon::now()->day;
+                        if ($currentDay < $device->pay_day) {
+                            $nextMonthPayDay = Carbon::now()
+                                ->startOfMonth()
+                                ->addDays($device->pay_day - 1);
+                        } else {
+                            $nextMonthPayDay = Carbon::now()
+                                ->addMonth()
+                                ->startOfMonth()
+                                ->addDays($device->pay_day - 1);
+                        }
+                        $userDevice->subscription = $nextMonthPayDay;
+
+                        $userDevice->save();
+                        $payload = $this->generateHexPayload(4, [
+                            [
+                                'type' => 'timestamp',
+                                'value' => Carbon::parse($nextMonthPayDay)
+                                    ->timestamp,
+                            ],
+                            [
+                                'type' => 'string',
+                                'value' => $data['payload'],
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                        ]);
+                        $this->publishMessage($device->dev_id, $payload);
+                    } else {
+                        $this->noMoney($device->dev_id);
+                    }
+                }
+            } else if (
+                (int) $user->balance - $user->freezed_balance >=
+                $device->tariff_amount
+            ) {
+                $lastAmount = LastUserAmount::where('user_id', $user->id)
+                    ->where('device_id', $device->id)
+                    ->first();
+
+                if (empty($lastAmount->user_id)) {
+                    LastUserAmount::insert([
+                        'user_id' => $user->id,
+                        'device_id' => $device->id,
+                        'last_amount' =>
+                        $user->balance - $user->freezed_balance,
+                    ]);
+                } else {
+                    $lastAmount->last_amount =
+                        $user->balance - $user->freezed_balance;
+                    $lastAmount->save();
+                }
+                $payload = $this->generateHexPayload(3, [
+                    [
+                        'type' => 'string',
+                        'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                    ],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                    ['type' => 'string', 'value' => $data['payload']],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                    [
+                        'type' => 'number16',
+                        'value' => $user->balance - $user->freezed_balance,
+                    ],
+                ]);
+                $user->save();
+                $this->saveOrUpdateEarnings(
+                    $device->id,
+                    $device->tariff_amount,
+                    $device->company_id
+                );
+                $this->publishMessage($device->dev_id, $payload);
+            } else {
+                $this->noMoney($device->dev_id);
             }
-            //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
-          
-            if(time()  < Carbon::parse($userDevice->subscription)->timestamp){
-                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
-
-            }
-            }else if ($device->op_mode == "1"){
-                $this->handleOpMode($device->op_mode, $user, $device, $data);
- 
-            }
-        
- 
         }
     }
 
@@ -290,25 +588,74 @@ class MqttController extends Controller
             ->where('expires_at', '>', Carbon::now())
             ->first();
         if (empty($code)) {
-
-            $this->WrongeCode($device->dev_id);
-         
+            $payload = $this->generateHexPayload(6, [
+                [
+                    'type' => 'string',
+                    'value' => 'araswori',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => 'kodi',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'string',
+                    'value' => '',
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+            ]);
+            $this->publishMessage($device->dev_id, $payload);
         }
         $user = User::where('id', $code->user_id)->first();
         if ($device->op_mode == 0) {
             Log::debug("MQTT CONTROLLER shemsvla 2");
- 
-            $this->DeviceSTR_PAD_0($user,$device);
+
+            $payload = $this->generateHexPayload(1, [
+                [
+                    'type' => 'string',
+                    'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+                [
+                    'type' => 'number16',
+                    'value' => $user->balance - $user->freezed_balance,
+                ],
+            ]);
+            $this->publishMessage($device->dev_id, $payload);
             DB::table('elevator_codes')
                 ->where('id', '=', $code->id)
                 ->delete();
         } else {
-            // messagebia dasamtavrebeli 
             if ((int) $user->balance > $device->tariff_amount) {
                 $user->balance = (int) $user->balance - $device->tariff_amount;
-               
-                $this->DeviceSTR_PAD_0($user,$device);
-
+                $payload = $this->generateHexPayload(1, [
+                    [
+                        'type' => 'string',
+                        'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                    ],
+                    [
+                        'type' => 'number',
+                        'value' => 0,
+                    ],
+                    [
+                        'type' => 'number16',
+                        'value' => $user->balance - $user->freezed_balance,
+                    ],
+                ]);
+                $this->publishMessage($device->dev_id, $payload);
                 $user->save();
                 $devices_ids = Device::where(
                     'users_id',
@@ -316,7 +663,94 @@ class MqttController extends Controller
                 )->get();
                 foreach ($devices_ids as $key2 => $value2) {
                     if ($value2->op_mode == '1') {
-                        $this->UpdateOpModeOneLastAmount($user, $value2);
+                        $lastAmountCurrentDevice = LastUserAmount::where(
+                            'user_id',
+                            $user->id
+                        )
+                            ->where('device_id', $value2->id)
+                            ->first();
+
+                        if (empty($lastAmountCurrentDevice->user_id)) {
+                            LastUserAmount::insert([
+                                'user_id' => $user->id,
+                                'device_id' => $value2->id,
+                                'last_amount' =>
+                                $user->balance - $user->freezed_balance,
+                            ]);
+                        } else {
+                            $lastAmountCurrentDevice->last_amount =
+                                $user->balance - $user->freezed_balance;
+                            $lastAmountCurrentDevice->save();
+                        }
+                        $payload = $this->generateHexPayload(5, [
+                            [
+                                'type' => 'string',
+                                'value' => str_pad(
+                                    $user->id,
+                                    6,
+                                    '0',
+                                    STR_PAD_LEFT
+                                ),
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                            [
+                                'type' => 'number16',
+                                'value' =>
+                                $user->balance - $user->freezed_balance,
+                            ],
+                        ]);
+                        $this->publishMessage($value2->dev_id, $payload);
+                    }
+                }
+                $devices_ids = Device::where(
+                    'users_id',
+                    $device->users_id
+                )->get();
+                foreach ($devices_ids as $key2 => $value2) {
+                    if ($value2->op_mode == '1') {
+                        $lastAmountCurrentDevice = LastUserAmount::where(
+                            'user_id',
+                            $user->id
+                        )
+                            ->where('device_id', $value2->id)
+                            ->first();
+
+                        if (empty($lastAmountCurrentDevice->user_id)) {
+                            LastUserAmount::insert([
+                                'user_id' => $user->id,
+                                'device_id' => $value2->id,
+                                'last_amount' =>
+                                $user->balance - $user->freezed_balance,
+                            ]);
+                        } else {
+                            $lastAmountCurrentDevice->last_amount =
+                                $user->balance - $user->freezed_balance;
+                            $lastAmountCurrentDevice->save();
+                        }
+                        $payload = $this->generateHexPayload(5, [
+                            [
+                                'type' => 'string',
+                                'value' => str_pad(
+                                    $user->id,
+                                    6,
+                                    '0',
+                                    STR_PAD_LEFT
+                                ),
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                            [
+                                'type' => 'number16',
+                                'value' =>
+                                $user->balance - $user->freezed_balance,
+                            ],
+                        ]);
+                        $this->publishMessage($value2->dev_id, $payload);
                     }
                 }
                 DB::table('elevator_codes')
@@ -327,6 +761,7 @@ class MqttController extends Controller
             }
         }
     }
+
     private function remainedAmountUpdateToApplication($device, $data)
     {
         // $this->Logsaver('პრობლემური', $device->id, 'შემოსვლა');
@@ -373,7 +808,7 @@ class MqttController extends Controller
         //     $diff
         // );
 
-        $sendPrice = $user->balance - $deviceTarff;
+        $sendPrice = $user->balance - $user->freezed_balance;
         $lastAmount->last_amount = $sendPrice;
         // $this->Logsaver(
         //     'მეოთხე ლაინი',
@@ -492,7 +927,90 @@ class MqttController extends Controller
             'errorText' => $errorText,
         ]);
     }
-    //  aq iy odzveli washili saveOrUpdate modzebni garbage.php shi
+
+    public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
+    {
+        // Generate the date for month_year
+        // $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
+        // TO DO find company cashback and add  to DeviceEarn find device tariff with deviceID
+        $now = Carbon::now();
+        $user = User::where('id', $companyId)->first();
+        $device = Device::where('id', $deviceId)->first();
+
+        if ($user->cashback == 0) {
+            // $this->Logsaver('876', $user->cashback, 'უსერის ქეშბექი');
+
+            $user = User::where('id', $device->users_id)->first();
+        }
+        $this->Logsaver('879', $earningsValue, ' ერნიგნები');
+
+        // $this->Logsaver('881', $user->id, 'მენეჯერის id');
+
+        // Try to retrieve the entry for the given device and month_year
+        $deviceEarnings = DeviceEarn::where('device_id', $deviceId)
+            ->where('month', $now->month)
+            ->where('year', $now->year)
+            ->first();
+        if (!empty($deviceEarnings)) {
+            // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
+
+            if ($user && $device) {
+                // $this->Logsaver(
+                //     $earningsValue,
+                //     $user->cashback,
+                //     'device->deviceTariffAmount'
+                // );
+
+                if ($device->deviceTariffAmount != null) {
+                    $deviceEarnings->earnings =
+                        $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->cashback = $user->cashback;
+                    $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
+                    $deviceEarnings->save();
+                } else {
+                    $deviceEarnings->earnings =
+                        $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->cashback = $user->cashback;
+                    $deviceEarnings->save();
+                }
+            } else {
+                $deviceEarnings->earnings += $earningsValue;
+
+
+                $deviceEarnings->save();
+            }
+        } else {
+            // $this->Logsaver('906', $user->id, 'BIG ELSE');
+
+            if ($user && $device) {
+                // $this->Logsaver('909', $user->id, 'user && device 2 ');
+
+
+                DeviceEarn::create([
+                    'company_id' => $companyId,
+                    'device_id' => $deviceId,
+                    'month' => $now->month,
+                    'year' => $now->year,
+                    'earnings' => $earningsValue,
+                    'cashback' => $user->cashback,
+                    'deviceTariff' => $device->deviceTariffAmount,
+                ]);
+            } else {
+                // $this->Logsaver('921', $user->id, 'user && device 2  ELSE');
+
+
+                DeviceEarn::create([
+                    'company_id' => $companyId,
+                    'device_id' => $deviceId,
+                    'month' => $now->month,
+                    'year' => $now->year,
+                    'earnings' => $earningsValue,
+                ]);
+            }
+        }
+        // Save the model (either updates or creates based on existence)
+    }
+
     public function getActivationCode($dev_id, $card)
     {
         $code = rand(100000, 999999); // Generates a random 6-character code
@@ -514,8 +1032,57 @@ class MqttController extends Controller
         return $hexString;
     }
 
-    
+    public function noMoney($device_id)
+    {
+        $payload = $this->generateHexPayload(6, [
+            [
+                'type' => 'string',
+                'value' => 'araa',
+            ],
+            [
+                'type' => 'number',
+                'value' => 0,
+            ],
+            [
+                'type' => 'string',
+                'value' => 'sakmarisi',
+            ],
+            [
+                'type' => 'number',
+                'value' => 0,
+            ],
+            [
+                'type' => 'string',
+                'value' => 'Tanxa',
+            ],
+            [
+                'type' => 'number',
+                'value' => 0,
+            ],
+        ]);
+        $this->publishMessage($device_id, $payload);
+    }
 
+    public function generateHexPayload($command, $payload)
+    {
+        return [
+            'command' => $command,
+            'payload' => $payload,
+        ];
+    }
+
+    public function publishMessage($device_id, $payload)
+    {
+        $data = [
+            'device_id' => $device_id,
+            'payload' => $payload,
+        ];
+        $queryParams = http_build_query($data);
+        $response = Http::get(
+            'http://localhost:3000/mqtt/general?' . $queryParams
+        );
+        return $response->json(['data' => ['dasd']]);
+    }
 
     //  tracking elevetors 
 
@@ -528,8 +1095,8 @@ class MqttController extends Controller
                 'type' => $type,
                 "tariff" => $tariff,
                 'current_balance' => $currentBalance,
-                'created_at' => Carbon::now('Asia/Tbilisi')->addHours(4),
-            ]);
+'created_at' => Carbon::now('Asia/Tbilisi')->addHours(4),
+        ]);
         } catch (PDOException $e) {
             throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
         }
