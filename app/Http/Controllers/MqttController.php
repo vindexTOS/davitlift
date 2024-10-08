@@ -318,6 +318,8 @@ class MqttController extends Controller
                 ]);
                 $this->publishMessage($device_id, $payload);
                 $user->save();
+                Log::info("calll twice ?v ", ["info"=> "321" ]);
+
                 $this->saveOrUpdateEarnings(
                     $device->id,
                     $device->tariff_amount,
@@ -476,6 +478,8 @@ class MqttController extends Controller
                     ],
                 ]);
                 $user->save();
+                Log::info("calll twice ?v ", ["info"=> "479" ]);
+
                 $this->saveOrUpdateEarnings(
                     $device->id,
                     $device->tariff_amount,
@@ -727,6 +731,7 @@ class MqttController extends Controller
         $lastAmount->save();
 
         $user->save();
+        Log::info("calll twice ?v ", ["info"=> "730" ]);
 
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
@@ -839,7 +844,6 @@ class MqttController extends Controller
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
 
-        Log::info("calll twice ?v ", ["info"=> $earningsValue ]);
 
         // Generate the date for month_year
         // $this->Logsaver('868', $companyId, 'შემოსვლა ეივ ერნინგშ');
@@ -873,7 +877,7 @@ class MqttController extends Controller
                 // );
 
                 if ($device->deviceTariffAmount != null) {
-                    $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->earnings =  $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
@@ -889,7 +893,7 @@ class MqttController extends Controller
                     Log::info("else", ["info"=> $deviceEarnings->earnings ]);
                 }
             } else {
-                $deviceEarnings->earnings + $earningsValue;
+                $deviceEarnings->earnings  =  $deviceEarnings->earnings + $earningsValue;
 
                 Log::info("second else", ["info"=> $deviceEarnings->earnings ]);
 
