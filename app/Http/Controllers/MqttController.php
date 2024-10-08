@@ -17,18 +17,27 @@ use Illuminate\Http\Request;
 use App\Models\LastUserAmount;
 use App\Models\UpdatingDevice;
 use PhpMqtt\Client\MqttClient;
+use App\Services\DeviceMessages;
 use App\Models\UnregisteredDevice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use App\Services\LastUserAmountUpdate;
 use Illuminate\Support\Facades\Storage;
+use App\Services\TransactionHandlerForOpMode;
 
 class MqttController extends Controller
 {
+
+    use DeviceMessages;
+    use  LastUserAmountUpdate;
+    use TransactionHandlerForOpMode;
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
+
+
         // $this->Logsaver('', 'htpp shemosvla', '');
 
         // Process the general event data
@@ -409,125 +418,27 @@ class MqttController extends Controller
         } else {
             $user = User::where('id', $card->user_id)->first();
             if ($device->op_mode == 0) {
-
                 $userDevice = DeviceUser::where('user_id', $user->id)
-                    ->where('device_id', $card->device_id)
-                    ->first();
-                if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                    Log::debug("No date");
-                    $this->noMoney($device->dev_id);
-                    return;
-                }
-                if (
-                    time() < Carbon::parse($userDevice->subscription)->timestamp
-                ) {
-                    Log::debug("MQTT CONTROLLER Carbon");
-                    $payload = $this->generateHexPayload(4, [
-                        [
-                            'type' => 'timestamp',
-                            'value' => Carbon::parse($userDevice->subscription)
-                                ->timestamp,
-                        ],
-                        [
-                            'type' => 'string',
-                            'value' => $data['payload'],
-                        ],
-                        [
-                            'type' => 'number',
-                            'value' => 0,
-                        ],
-                    ]);
-                    $this->publishMessage($device->dev_id, $payload);
-                } else if ($device->tariff_amount == 0 || $device->tariff_amount <= 0 || $device->tariff_amount == "0") {
-                    $userFixedBalnce = $user->fixed_card_amount;
-                    $userCardAmount = Card::where('user_id', $user->id)->count();
-                    $fixedCard = $userFixedBalnce * $userCardAmount;
+                ->where('device_id', $card->device_id)
+                ->first();
+         //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad
+             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
+             if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                //და გავაჩერებთ ყველაფერს რეთურნით
+                //  aq vart ///
 
+                $this->handleOpMode($device->op_mode, $user, $device, $data);
 
-                    $userBalance = $user->balance;
+                
 
-                    $user->freezed_balance = $fixedCard;
+                return;
+            }
+            //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
+          
+            if(time()  < Carbon::parse($userDevice->subscription)->timestamp){
+                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
 
-
-
-
-                    if ($user->balance - $user->freezed_balance >= $fixedCard) {
-                        Log::debug("შემოვიდა mqttController");
-                        $user->balance -= $fixedCard;
-                        $user->freezed_balance -= $fixedCard;
-                        $currentDay = Carbon::now()->day;
-                        if ($currentDay < $device->pay_day) {
-                            $nextMonthPayDay = Carbon::now()
-                                ->startOfMonth()
-                                ->addDays($device->pay_day - 1);
-                        } else {
-                            $nextMonthPayDay = Carbon::now()
-                                ->addMonth()
-                                ->startOfMonth()
-                                ->addDays($device->pay_day - 1);
-                        }
-                        $userDevice->subscription = $nextMonthPayDay;
-
-                        $userDevice->save();
-                        $payload = $this->generateHexPayload(4, [
-                            [
-                                'type' => 'timestamp',
-                                'value' => Carbon::parse($nextMonthPayDay)
-                                    ->timestamp,
-                            ],
-                            [
-                                'type' => 'string',
-                                'value' => $data['payload'],
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                        ]);
-                        $this->publishMessage($device->dev_id, $payload);
-                    }
-                    // თუ დევაისი ტარიფი ნულია
-                    else if (
-                        $user->balance - $user->freezed_balance >=
-                        $device->tariff_amount
-                    ) {
-                        $user->freezed_balance =
-                            $user->freezed_balance + $device->tariff_amount;
-                        $user->save();
-                        $currentDay = Carbon::now()->day;
-                        if ($currentDay < $device->pay_day) {
-                            $nextMonthPayDay = Carbon::now()
-                                ->startOfMonth()
-                                ->addDays($device->pay_day - 1);
-                        } else {
-                            $nextMonthPayDay = Carbon::now()
-                                ->addMonth()
-                                ->startOfMonth()
-                                ->addDays($device->pay_day - 1);
-                        }
-                        $userDevice->subscription = $nextMonthPayDay;
-
-                        $userDevice->save();
-                        $payload = $this->generateHexPayload(4, [
-                            [
-                                'type' => 'timestamp',
-                                'value' => Carbon::parse($nextMonthPayDay)
-                                    ->timestamp,
-                            ],
-                            [
-                                'type' => 'string',
-                                'value' => $data['payload'],
-                            ],
-                            [
-                                'type' => 'number',
-                                'value' => 0,
-                            ],
-                        ]);
-                        $this->publishMessage($device->dev_id, $payload);
-                    } else {
-                        $this->noMoney($device->dev_id);
-                    }
-                }
+            }
             } else if (
                 (int) $user->balance - $user->freezed_balance >=
                 $device->tariff_amount
