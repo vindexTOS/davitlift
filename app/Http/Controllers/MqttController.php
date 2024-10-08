@@ -252,30 +252,37 @@ class MqttController extends Controller
             ]);
             $this->publishMessage($device_id, $payload);
         } else {
-            $card = Card::where('card_number', $data['payload'])
-            ->whereIn('device_id', $deviceIds)
-            ->first();
-            $user = User::where('id', $card->user_id)->first();
             if ($device->op_mode == 0) {
-                $userDevice = DeviceUser::where('user_id', $user->id)
-                ->where('device_id', $card->device_id)
-                ->first();
-         //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad
-             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
-             if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                //და გავაჩერებთ ყველაფერს რეთურნით
-                //  aq vart ///
+                Log::debug("MQTT CONTROLLER shemsvla");
 
-                $this->handleOpMode($device->op_mode, $user, $device, $data);
-                 return;
-            }
-            //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
-          
-            if(time()  < Carbon::parse($userDevice->subscription)->timestamp){
-                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
+                if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                    $this->noMoney($device_id);
+                }
 
-            }
-            }  else if (
+                if (
+                    time() < Carbon::parse($userDevice->subscription)->timestamp
+                ) {
+                    $payload = $this->generateHexPayload(2, [
+                        [
+                            'type' => 'timestamp',
+                            'value' => Carbon::parse($userDevice->subscription)
+                                ->timestamp,
+                        ],
+                        [
+                            'type' => 'string',
+                            'value' => $data['payload'],
+                        ],
+                        [
+                            'type' => 'number',
+                            'value' => 0,
+                        ],
+                    ]);
+
+                    $this->publishMessage($device_id, $payload);
+                } else {
+                    $this->noMoney($device_id);
+                }
+            } else if (
                 $user->balance - $device->tariff_amount >
                 $device->tariff_amount
             ) {
