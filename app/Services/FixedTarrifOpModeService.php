@@ -88,8 +88,8 @@ trait FixedTarrifOpModeService
                 $deviceUser->save();
             }
 
-            //  ვამოწმებთ თუ უსერს უკვე აქვს გააქტიურებული თუ არა 
-            if (Carbon::parse($deviceUser->subscription)->lte($today)) {
+            //  ვამოწმებთ თუ უსერს უკვე აქვს გააქტიურებული თუ არა 12
+            if (Carbon::parse($deviceUser->subscription)->lte($today) ) {
 
                 //  ვაჭრით თანხას უსერს 
                 $user->balance =  $user->balance -  $combinedTarffToBepayed;
