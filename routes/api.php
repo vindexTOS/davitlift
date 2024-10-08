@@ -119,7 +119,11 @@ Route::post('/transaction/tbcfastpay', [
     TransactionController::class,
     'makeTbcFastPayOrder',
 ]);
-
+//  liberty bank
+Route::post('/transaction/lbfastpay', [
+    TransactionController::class,
+    'makeLbrtFastPayOrder',
+]);
 // Route::post('/transaction/checkuser', [
 //     Tbctransaction::class,
 //     'checkIfUserExists',
@@ -131,11 +135,7 @@ Route::post('/transaction/tbcfastpay', [
 // ]);
 
 
-//  liberty bank
-Route::post('/transaction/lbfastpay', [
-    TransactionController::class,
-    'makeLbrtFastPayOrder',
-]);
+
 
 // USER ONLY OR SHARED
 

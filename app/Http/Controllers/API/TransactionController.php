@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use Carbon\Carbon;
- 
+
 use Monolog\Logger;
 use App\Models\Card;
 use App\Models\User;
@@ -20,7 +20,7 @@ use Monolog\Handler\StreamHandler;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
- 
+
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Http;
 use App\Providers\MQTTServiceProvider;
@@ -31,7 +31,7 @@ use Symfony\Component\HttpFoundation\Response;
 class TransactionController extends Controller
 {
 
- 
+
     use TransactionHandlerForOpMode;
     use DeviceMessages;
     use  TransactionProvider;
@@ -221,10 +221,10 @@ class TransactionController extends Controller
 
         try {
             $user = User::where('phone', $phone)->first();
-         
+
             $string = $this->MakeFileId($user->id);
 
-             
+
             // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
             $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
             if ($isOrderExit) {
@@ -340,6 +340,7 @@ class TransactionController extends Controller
             'type' => $type,
         ]);
     }
+    //  
     public function makeTbcFastPayOrder(Request $request)
     {
         $validatedData = $request->validate([
@@ -356,7 +357,7 @@ class TransactionController extends Controller
         $data = $request->all();
         try {
             $user = User::where('phone', $phone)->first();
-                $string = $this->MakeFileId($user->id);
+            $string = $this->MakeFileId($user->id);
 
             // ვამოწმებ არსებობს თუ არა მსგავსი order_id ბაზაზე რომ ორჯერ არ მოხდეს დაწერა
             $isOrderExit = $this->checkIfTransactionAlreadyHappend($order_id);
@@ -404,7 +405,7 @@ class TransactionController extends Controller
         $data = [];
         $string = $this->MakeFileId($user->id);
 
-     
+
         $url = 'https://api.tbcbank.ge/v1/tpay/payments';
         $response = Http::withHeaders([
             'Accept-Language' => 'ka',
@@ -465,12 +466,11 @@ class TransactionController extends Controller
         $data = json_decode($response->body(), true);
         return $this->updateTransactionOrder($data, $order_id);
     }
-
+    //  aq aris mtavari problema 
     public function updateUserData($data, $transaction, $order_id, $isFastPay)
     {
         try {
-            Log::debug('აფდეითში შემოსვლა');
-
+            //  es sachiroa ecomrcialistvis 
             $user = User::where('id', $transaction->user_id)
                 ->with('devices')
                 ->first();
@@ -483,59 +483,68 @@ class TransactionController extends Controller
             }
             $user->balance =
                 intval($user->balance) + $transfer_amount - $sakomisio;
-            $userCardAmount = Card::where('user_id', $user->id)->count();
 
+            $user->save();
             foreach ($user->devices as $key => $device) {
-                if ($device->op_mode === '0') {
-                    Log::debug('op_mode = 0');
-
-                    $subscriptionDate = $device->pivot->subscription
-                        ? Carbon::parse($device->pivot->subscription)
-                        : null;
-                    $currentDay = Carbon::now()->day;
-                    if ($currentDay < $device->pay_day) {
-                        $nextMonthPayDay = Carbon::now()
-
-                            ->startOfMonth()
-                            ->addDays($device->pay_day - 1);
-                        Log::debug('შემდეგი თარიღი>>> 1' . $nextMonthPayDay);
-                    } else {
-                        $nextMonthPayDay = Carbon::now()
-                            ->addMonth()
-                            ->startOfMonth()
-                            ->addDays($device->pay_day - 1);
-
-                        Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
-                    }
-                    if (
-                        is_null($subscriptionDate) ||
-                        ($subscriptionDate &&
-                            $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount  > 0)
-                    ) {
-                        Log::debug('is_null');
-
-                        $cardAmount =
-                            $userCardAmount * $user->fixed_card_amount;
-                        if (
-                            $user->balance - $user->freezed_balance >=
-                            $device->tariff_amount + $cardAmount
-                        ) {
-                            DeviceUser::where('device_id', $device->id)
-                                ->where('user_id', $user->id)
-                                ->update(['subscription' => $nextMonthPayDay]);
-
-                            $user->freezed_balance = $device->tariff_amount;
-                        } elseif (
-                            $user->balance >=
-                            $device->tariff_amount + $cardAmount
-                        ) {
-                            DeviceUser::where('device_id', $device->id)
-                                ->where('user_id', $user->id)
-                                ->update(['subscription' => $nextMonthPayDay]);
-                            $user->freezed_balance = $device->tariff_amount;
-                        }
-                    }
+                if ($device->op_mode == '0') {
+                    $this->handleOpMode($device->op_mode, $user, $device);
                 }
+
+
+
+
+
+
+                // if ($device->op_mode === '0') {
+                //     Log::debug('op_mode = 0');
+
+                //     $subscriptionDate = $device->pivot->subscription
+                //         ? Carbon::parse($device->pivot->subscription)
+                //         : null;
+                //     $currentDay = Carbon::now()->day;
+                //     if ($currentDay < $device->pay_day) {
+                //         $nextMonthPayDay = Carbon::now()
+
+                //             ->startOfMonth()
+                //             ->addDays($device->pay_day - 1);
+                //         Log::debug('შემდეგი თარიღი>>> 1' . $nextMonthPayDay);
+                //     } else {
+                //         $nextMonthPayDay = Carbon::now()
+                //             ->addMonth()
+                //             ->startOfMonth()
+                //             ->addDays($device->pay_day - 1);
+
+                //         Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
+                //     }
+                //     if (
+                //         is_null($subscriptionDate) ||
+                //         ($subscriptionDate &&
+                //             $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount  > 0)
+                //     ) {
+                //         Log::debug('is_null');
+
+                //         $cardAmount =
+                //             $userCardAmount * $user->fixed_card_amount;
+                //         if (
+                //             $user->balance - $user->freezed_balance >=
+                //             $device->tariff_amount + $cardAmount
+                //         ) {
+                //             DeviceUser::where('device_id', $device->id)
+                //                 ->where('user_id', $user->id)
+                //                 ->update(['subscription' => $nextMonthPayDay]);
+
+                //             $user->freezed_balance = $device->tariff_amount;
+                //         } elseif (
+                //             $user->balance >=
+                //             $device->tariff_amount + $cardAmount
+                //         ) {
+                //             DeviceUser::where('device_id', $device->id)
+                //                 ->where('user_id', $user->id)
+                //                 ->update(['subscription' => $nextMonthPayDay]);
+                //             $user->freezed_balance = $device->tariff_amount;
+                //         }
+                //     }
+                // }
                 $devices_ids = Device::where(
                     'users_id',
                     $device->users_id
@@ -554,11 +563,11 @@ class TransactionController extends Controller
                                 'user_id' => $user->id,
                                 'device_id' => $value2->id,
                                 'last_amount' =>
-                                $user->balance - $user->freezed_balance,
+                                $user->balance - $device->tariff_amount,
                             ]);
                         } else {
                             $lastAmount->last_amount =
-                                $user->balance - $user->freezed_balance;
+                                $user->balance - $device->tariff_amount;
                             $lastAmount->save();
                         }
                         $payload = $this->generateHexPayload(5, [
@@ -578,14 +587,13 @@ class TransactionController extends Controller
                             [
                                 'type' => 'number16',
                                 'value' =>
-                                $user->balance - $user->freezed_balance,
+                                $user->balance - $device->tariff_amount,
                             ],
                         ]);
                         $this->publishMessage($value2->dev_id, $payload);
                     }
                 }
             }
-            $user->save();
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
                 'Error checking user existence: ' . $e->getMessage()
@@ -633,10 +641,9 @@ class TransactionController extends Controller
             $user->save();
             foreach ($user->devices as $key => $device) {
                 //ფიქსირებული და არა ფიქსირებული ტარიფების ჰენდლერი
-          
-                $this->handleOpMode($device->op_mode,$user, $device);
-             }
-            
+
+                $this->handleOpMode($device->op_mode, $user, $device);
+            }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
                 'Error checking user existence: ' . $e->getMessage()
@@ -659,5 +666,4 @@ class TransactionController extends Controller
             ->post('https://api.tbcbank.ge/v1/tpay/access-token');
         return json_decode($response->body())->access_token;
     }
- 
 }

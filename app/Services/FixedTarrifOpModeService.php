@@ -28,9 +28,8 @@ trait FixedTarrifOpModeService
 
 
 
-        Log::info("user", ["user" => $deviceUser->subscription]);
-        if (is_null($deviceUser->subscription)) {
-            // Try another old date
+         if (is_null($deviceUser->subscription)) {
+            
             $deviceUser->subscription = '2000-01-01 00:00:00';
             $deviceUser->save();
         }
@@ -97,7 +96,10 @@ trait FixedTarrifOpModeService
                 DeviceUser::where('device_id', $device->id)
                     ->where('user_id', $user->id)
                     ->update(['subscription' => $nextMonthPayDay]);
-                $user->save();
+           
+
+
+                    $user->save();
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);

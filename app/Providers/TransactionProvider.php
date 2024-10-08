@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Response;
 use App\Exceptions\BankOfGeorgiaUserCheck;
 use App\Exceptions\InvalidHashCodeException;
 use App\Services\TransactionHandlerForOpMode;
- 
+
 
 trait TransactionProvider
 {
@@ -105,7 +105,7 @@ trait TransactionProvider
                 ->with('devices')
                 ->first();
             $transfer_amount =  $amount;
-        
+
             $sakomisio = 0;
             if ($isFastPay == 'e_com') {
                 $sakomisio = $transfer_amount * 0.02;
@@ -116,8 +116,11 @@ trait TransactionProvider
             $user->save();
             foreach ($user->devices as $key => $device) {
                 //ფიქსირებული და არა ფიქსირებული ტარიფების ჰენდლერი
-                    Log::info("user inof",["user info"=> $user->devices]);
-                $this->handleOpMode($device->op_mode, $user, $device);
+                if ($device->op_mode == '0') {
+                    Log::info("user inof", ["user info" => $device->op_mode]);
+
+                    $this->handleOpMode($device->op_mode, $user, $device);
+                }
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
@@ -215,8 +218,4 @@ trait TransactionProvider
         return response($xmlContent,  \Illuminate\Http\Response::HTTP_BAD_REQUEST)
             ->header('Content-Type', 'application/xml');
     }
-
-
-     
-   
 }
