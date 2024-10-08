@@ -452,11 +452,11 @@ class MqttController extends Controller
                         'user_id' => $user->id,
                         'device_id' => $device->id,
                         'last_amount' =>
-                        $user->balance - $user->freezed_balance,
+                        $user->balance -$device->tariff_amount,
                     ]);
                 } else {
                     $lastAmount->last_amount =
-                        $user->balance - $user->freezed_balance;
+                        $user->balance -$device->tariff_amount;
                     $lastAmount->save();
                 }
                 $payload = $this->generateHexPayload(3, [
@@ -475,7 +475,7 @@ class MqttController extends Controller
                     ],
                     [
                         'type' => 'number16',
-                        'value' => $user->balance - $user->freezed_balance,
+                        'value' => $user->balance -$device->tariff_amount,
                     ],
                 ]);
                 $user->save();
