@@ -870,7 +870,7 @@ class MqttController extends Controller
                 // );
 
                 if ($device->deviceTariffAmount != null) {
-                    $deviceEarnings->earning + $earningsValue;
+                    $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
@@ -879,7 +879,7 @@ class MqttController extends Controller
                 } else {
                  
                  
-                    $deviceEarnings->earnings + $earningsValue;
+                    $deviceEarnings->earnings=  $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
 
