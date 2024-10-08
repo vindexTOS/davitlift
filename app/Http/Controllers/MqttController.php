@@ -884,10 +884,10 @@ class MqttController extends Controller
                     $deviceEarnings->save();
                 }
             } else {
-                $deviceEarnings->earnings += $earningsValue;
+                // $deviceEarnings->earnings += $earningsValue;
 
 
-                $deviceEarnings->save();
+                // $deviceEarnings->save();
             }
         } else {
             // $this->Logsaver('906', $user->id, 'BIG ELSE');
