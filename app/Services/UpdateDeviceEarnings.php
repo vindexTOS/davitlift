@@ -37,11 +37,11 @@ trait UpdateDeviceEarnings
          ->first();
         
 
-         $deviceEarning = 0; 
+  
  
       if (empty($deviceEarn)) {
 
-         $deviceEarning =  $combinedTarffToBepayed;
+         
 
         
          if ( $companyUser && $device) {
@@ -50,7 +50,7 @@ trait UpdateDeviceEarnings
                   'device_id' => $device->id,
                   'month' => $currentMonth,
                   'year' => $currentYear,
-                  'earnings' => $deviceEarning,
+                  'earnings' => $combinedTarffToBepayed,
                   'cashback' =>     $companyUser->cashback,
                   'deviceTariff' => $device->deviceTariffAmount,
                ]);
@@ -59,7 +59,7 @@ trait UpdateDeviceEarnings
                   'device_id' => $device->id,
                   'month' => $currentMonth,
                   'year' => $currentYear,
-                  'earnings' => $deviceEarning,
+                  'earnings' => $combinedTarffToBepayed,
                   'cashback' =>     $companyUser->cashback,
                   'deviceTariff' => 0,
                ]);
@@ -71,7 +71,7 @@ trait UpdateDeviceEarnings
                'device_id' => $device->id,
                'month' => $currentMonth,
                'year' => $currentYear,
-               'earnings' => $deviceEarning,
+               'earnings' => $combinedTarffToBepayed,
             ]);
          }
       } else {
@@ -81,16 +81,16 @@ trait UpdateDeviceEarnings
         
          if (    $companyUser && $device) {
             if ($device->deviceTariffAmount !== null) {
-               $deviceEarn->earnings = $deviceEarning;
+               $deviceEarn->earnings =   $deviceEarn->earnings  + $combinedTarffToBepayed;
                $deviceEarn->cashback =     $companyUser->cashback;
                $deviceEarn->deviceTariff = $device->deviceTariffAmount;
                $deviceEarn->save();
             }
-            $deviceEarn->earnings = $deviceEarning;
+            $deviceEarn->earnings = $deviceEarn->earnings  + $combinedTarffToBepayed;
             $deviceEarn->cashback = $companyUser->cashback;
             $deviceEarn->save();
          } else {
-            $deviceEarn->earnings += $deviceEarning;
+            $deviceEarn->earnings +=$deviceEarn->earnings  + $combinedTarffToBepayed;
             $deviceEarn->save();
          }
       }
