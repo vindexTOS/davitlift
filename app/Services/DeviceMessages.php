@@ -64,7 +64,7 @@ trait DeviceMessages
 
     public function ReturnSubscriptionTypeToDevice($userDevice, $data, $device)
     {
- 
+        Log::info("som", ['date'=> $data]);
         $payload = $this->generateHexPayload(4, [
             [
                 'type' => 'timestamp',
