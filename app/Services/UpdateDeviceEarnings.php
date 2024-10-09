@@ -44,7 +44,7 @@ trait UpdateDeviceEarnings
          $deviceEarning =  $combinedTarffToBepayed;
 
         
-         if (    $companyUser && $device) {
+         if ( $companyUser && $device) {
             if ($device->deviceTariffAmount !== null) {
                DeviceEarn::create([
                   'device_id' => $device->id,
@@ -76,7 +76,7 @@ trait UpdateDeviceEarnings
          }
       } else {
 
-         $deviceEarning =   $deviceEarn->earnings +  $combinedTarffToBepayed;
+        
 
         
          if (    $companyUser && $device) {
@@ -87,7 +87,7 @@ trait UpdateDeviceEarnings
                $deviceEarn->save();
             }
             $deviceEarn->earnings = $deviceEarning;
-            $deviceEarn->cashback =     $companyUser->cashback;
+            $deviceEarn->cashback = $companyUser->cashback;
             $deviceEarn->save();
          } else {
             $deviceEarn->earnings += $deviceEarning;
