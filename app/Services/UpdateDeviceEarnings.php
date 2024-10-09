@@ -90,7 +90,7 @@ trait UpdateDeviceEarnings
             $deviceEarn->cashback = $companyUser->cashback;
             $deviceEarn->save();
          } else {
-            $deviceEarn->earnings +=$deviceEarn->earnings  + $combinedTarffToBepayed;
+            $deviceEarn->earnings =$deviceEarn->earnings  + $combinedTarffToBepayed;
             $deviceEarn->save();
          }
       }
