@@ -733,7 +733,7 @@ class MqttController extends Controller
         $user->save();
         Log::info("calll twice ?v ", ["info"=> "730" ]);
 
-        // $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
+        $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
 
         $devices_ids = Device::where('users_id', $device->users_id)->get();
