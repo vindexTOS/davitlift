@@ -88,11 +88,8 @@ trait UpdateDeviceEarnings
             Log::info("shemosvla 5", ['info'=> $combinedTarffToBepayed]);
 
             if ($device->deviceTariffAmount !== null) {
-               $deviceEarn->earnings =   $deviceEarn->earnings  + $combinedTarffToBepayed;
-               $deviceEarn->cashback =     $companyUser->cashback;
                $deviceEarn->deviceTariff = $device->deviceTariffAmount;
-               $deviceEarn->save();
-            }
+               }
             $deviceEarn->earnings = $deviceEarn->earnings  + $combinedTarffToBepayed;
             $deviceEarn->cashback = $companyUser->cashback;
             $deviceEarn->save();
