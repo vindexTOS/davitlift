@@ -392,9 +392,10 @@ class MqttController extends Controller
             ->whereIn('device_id', $deviceIds)
             ->first();
 
-            Log::info("company id ================>", ["company id"=>$device->company_id ]);
 
         if (empty($card)) {
+            Log::info("CARD IS EMPTY", ["company id"=>$device->company_id ]);
+
             $code = $this->getActivationCode($device->id, $data['payload']);
             $payload = $this->generateHexPayload(6, [
                 [
@@ -424,8 +425,12 @@ class MqttController extends Controller
             ]);
             $this->publishMessage($device->dev_id, $payload);
         } else {
+
+
             $user = User::where('id', $card->user_id)->first();
             if ($device->op_mode == 0) {
+                Log::info("0 mode if ", ["company id"=>$device->company_id ]);
+
                 $userDevice = DeviceUser::where('user_id', $user->id)
                 ->where('device_id', $card->device_id)
                 ->first();
@@ -434,6 +439,7 @@ class MqttController extends Controller
              if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
                 //და გავაჩერებთ ყველაფერს რეთურნით
                 //  aq vart ///
+                Log::info("USER USER USER  ", ["USER USER"=>$user ]);
 
                 $this->handleOpMode($device->op_mode, $user, $device, $data);
                  return;
