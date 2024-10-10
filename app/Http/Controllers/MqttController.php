@@ -392,7 +392,7 @@ class MqttController extends Controller
             ->whereIn('device_id', $deviceIds)
             ->first();
 
-            Log::info("device info", ["device info"=>$card ]);
+            Log::info("company id ================>", ["company id"=>$device->company_id ]);
 
         if (empty($card)) {
             $code = $this->getActivationCode($device->id, $data['payload']);
