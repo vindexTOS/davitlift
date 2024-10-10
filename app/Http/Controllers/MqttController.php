@@ -384,17 +384,17 @@ class MqttController extends Controller
     private function accessRequestForRFIDCard($device, $data)
     {
      
-        $deviceIds = Device::where('users_id', $device->company_id)
+        $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
- 
+            Log::info("CARD IS EMPTY", ["company id"=>$device->users_id ]);
+
          $card = Card::where('card_number', $data['payload'])
             ->whereIn('device_id', $deviceIds)
             ->first();
 
 
         if (empty($card)) {
-            Log::info("CARD IS EMPTY", ["company id"=>$device->company_id ]);
 
             $code = $this->getActivationCode($device->id, $data['payload']);
             $payload = $this->generateHexPayload(6, [
