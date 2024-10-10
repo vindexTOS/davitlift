@@ -93,8 +93,7 @@ trait FixedTarrifOpModeService
 
                 //  ვაჭრით თანხას უსერს 
                 $user->balance =  $user->balance -  $combinedTarffToBepayed;
-                DeviceUser::where('device_id', $device->id)
-                    ->where('user_id', $user->id)
+                DeviceUser::where('user_id', $user->id)
                     ->update(['subscription' => $nextMonthPayDay]);
            
 
