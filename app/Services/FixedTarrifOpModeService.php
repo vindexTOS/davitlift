@@ -68,6 +68,7 @@ trait FixedTarrifOpModeService
 
         $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
 
+        Log::info("USER USER USER  ", ["USER USER"=>$user ]);
 
         if ($user->balance >=  $combinedTarffToBepayed &&  $combinedTarffToBepayed > 0) {
 

@@ -387,7 +387,6 @@ class MqttController extends Controller
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
-            Log::info("CARD IS EMPTY", ["company id"=>$device->users_id ]);
 
          $card = Card::where('card_number', $data['payload'])
             ->whereIn('device_id', $deviceIds)
@@ -429,7 +428,6 @@ class MqttController extends Controller
 
             $user = User::where('id', $card->user_id)->first();
             if ($device->op_mode == 0) {
-                Log::info("0 mode if ", ["company id"=>$device->company_id ]);
 
                 $userDevice = DeviceUser::where('user_id', $user->id)
                 ->where('device_id', $card->device_id)
@@ -439,7 +437,6 @@ class MqttController extends Controller
              if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
                 //და გავაჩერებთ ყველაფერს რეთურნით
                 //  aq vart ///
-                Log::info("USER USER USER  ", ["USER USER"=>$user ]);
 
                 $this->handleOpMode($device->op_mode, $user, $device, $data);
                  return;
