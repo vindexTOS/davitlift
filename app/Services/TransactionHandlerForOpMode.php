@@ -19,8 +19,7 @@ trait  TransactionHandlerForOpMode{
                  $this-> handleOpModeZeroTransaction($user, $device ,$dataPayload);
                  break; 
              case "1":
-              
-                  $this-> handleOpModeOneTransaction($user, $device, $OP_MODE, $dataPayload );
+                 $this-> handleOpModeOneTransaction($user, $device, $OP_MODE, $dataPayload );
                   break; 
              default:
                break;
