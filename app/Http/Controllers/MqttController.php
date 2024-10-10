@@ -384,10 +384,10 @@ class MqttController extends Controller
     private function accessRequestForRFIDCard($device, $data)
     {
      
-        $deviceIds = Device::where('users_id', $device->users_id)
+        $deviceIds = Device::where('users_id', $device->company_id)
             ->pluck('id')
             ->toArray();
-
+ 
          $card = Card::where('card_number', $data['payload'])
             ->whereIn('device_id', $deviceIds)
             ->first();
