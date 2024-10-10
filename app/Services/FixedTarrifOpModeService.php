@@ -73,8 +73,7 @@ trait FixedTarrifOpModeService
         if ($user->balance >=  $combinedTarffToBepayed &&  $combinedTarffToBepayed > 0) {
 
             // ავიღოთ უსერის საბსქრიბშიენი
-            $deviceUser = DeviceUser::where('device_id', $device->id)
-                ->where('user_id', $user->id)
+            $deviceUser = DeviceUser::where('user_id', $user->id)
                 ->first();
 
             // გამოვთვალოთ შემდეგი თვე ჩარიცხვის დღიდან
