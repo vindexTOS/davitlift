@@ -15,11 +15,11 @@ use App\Services\UpdateDeviceEarnings;
 
 
 
-trait FixedTarrifOpModeService  
+trait FixedTarrifOpModeService
 {
 
     use UpdateDeviceEarnings;
-   use DeviceMessages;
+    use DeviceMessages;
 
 
     public function handleOpModeZeroSubscriptionCheck($deviceUser,   $device)
@@ -28,8 +28,8 @@ trait FixedTarrifOpModeService
 
 
 
-         if (is_null($deviceUser->subscription)) {
-            
+        if (is_null($deviceUser->subscription)) {
+
             $deviceUser->subscription = '2000-01-01 00:00:00';
             $deviceUser->save();
         }
@@ -59,7 +59,7 @@ trait FixedTarrifOpModeService
         }
     }
 
-  // დატა პეილოადი მოდის დევაისიდან, ამ ფუნქციას ყოველთვის არ ჭირდება ეს პარამეტრი ამიტომაც დეფაულტად არის ნული
+    // დატა პეილოადი მოდის დევაისიდან, ამ ფუნქციას ყოველთვის არ ჭირდება ეს პარამეტრი ამიტომაც დეფაულტად არის ნული
     public function handleOpModeZeroTransaction($user,  $device, $dataPayload =  null)
     {
         // მეორეჯერ ჩარიცხვის შემთხვევაში არ უნდა გაუქტიურდეს თავიდან, თუ უკვე აქტიური აქვს 
@@ -68,11 +68,11 @@ trait FixedTarrifOpModeService
 
         $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
 
-     
-        if ($user->balance >=  $combinedTarffToBepayed &&  $combinedTarffToBepayed > 0) {
- 
 
-        
+        if ($user->balance >=  $combinedTarffToBepayed &&  $combinedTarffToBepayed > 0) {
+
+
+
             // ავიღოთ უსერის საბსქრიბშიენი
             $deviceUser = DeviceUser::where('user_id', $user->id)
                 ->first();
@@ -90,48 +90,38 @@ trait FixedTarrifOpModeService
             }
 
             //  ვამოწმებთ თუ უსერს უკვე აქვს გააქტიურებული თუ არა 12
-            if (Carbon::parse($deviceUser->subscription)->lte($today) ) {
+            if (Carbon::parse($deviceUser->subscription)->lte($today)) {
 
                 //  ვაჭრით თანხას უსერს 
                 $user->balance =  $user->balance -  $combinedTarffToBepayed;
-            //  es im shemtxvevashi tu devices gawerili aqvs rom yovel tve erti da imave dros iyos gadaxda
-             if( $device->isFixed == '0'){
+                //  es im shemtxvevashi tu devices gawerili aqvs rom yovel tve erti da imave dros iyos gadaxda
+                if ($device->isFixed == '0') {
                     DeviceUser::where('user_id', $user->id)
-                    ->update(['subscription' => $nextMonthPayDay]);
-           
-                }else{
-                    
-                    $payDay = $device->pay_day;  
-                    $today = Carbon::now();  
-                    // vamowmebt to shemdegi tarigi am tveshia tu shemdeg tveshi
-                    $nextPayDay = Carbon::createFromDate($today->year, $today->month, $payDay);
-                    if ($today->greaterThan($nextPayDay)) {
-             
-                        $nextPayDay->addMonth();
-                    }
+                        ->update(['subscription' => $nextMonthPayDay]);
+                } else {
+
+                    $nextPayDay = $this->isFixedMonthCalculator($device);
                     DeviceUser::where('user_id', $user->id)
-                    ->update(['subscription' => $nextPayDay->toDateString()]);
+                        ->update(['subscription' => $nextPayDay->toDateString()]);
                 }
-             
 
 
-                    $user->save();
+
+                $user->save();
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
-                if(!is_null($dataPayload) ){
-                    $user->subscription = Carbon::now()->addMonth()->startOfDay();
+                if (!is_null($dataPayload)) {
+                    if ($device->isFixed == '0') {
+                        $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
+                    } else {
+                        $user->subscription = Carbon::now()->addMonth()->startOfDay();
+                    }
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
-
-                }    }
-
-
-
-          
-            
-        }else{
+                }
+            }
+        } else {
             $this->noMoney($device->dev_id);
-
         }
     }
     private function GetCardTotalAmount($user, $deviceAmount)
@@ -144,5 +134,19 @@ trait FixedTarrifOpModeService
         $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined;
 
         return $combinedTarffToBepayed;
+    }
+
+    private function isFixedMonthCalculator($device)
+    {
+        $payDay = $device->pay_day;
+        $today = Carbon::now();
+        // vamowmebt to shemdegi tarigi am tveshia tu shemdeg tveshi
+        $nextPayDay = Carbon::createFromDate($today->year, $today->month, $payDay);
+        if ($today->greaterThan($nextPayDay)) {
+
+            return    $nextPayDay->addMonth();
+        }
+
+        return $nextPayDay;
     }
 }
