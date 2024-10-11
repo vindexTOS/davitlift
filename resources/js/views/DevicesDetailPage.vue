@@ -3,16 +3,19 @@
     .zoom-in-icon {
         display: none;
     }
+
     .user-tabe-base {
         width: 350px;
         overflow-x: scroll;
     }
 }
+
 .user-tabe-base {
     width: 100%;
     padding: 20px;
     background-color: white;
 }
+
 .zoom-in-icon {
     font-size: 50px;
     cursor: pointer;
@@ -44,44 +47,24 @@
 }
 </style>
 <template>
-    <v-container
-        :class="{
-            'pa-0': $vuetify.display.xs,
-        }"
-        v-if="data"
-    >
+    <v-container :class="{
+        'pa-0': $vuetify.display.xs,
+    }" v-if="data">
         <v-card class="pa-sm-2">
             <template v-slot:title>
-                <div
-                    v-if="$vuetify.display.mdAndUp"
-                    class="d-flex justify-space-between"
-                >
+                <div v-if="$vuetify.display.mdAndUp" class="d-flex justify-space-between">
                     <div class="d-flex">
                         <h1>
-                            <v-btn
-                                icon="mdi-arrow-left"
-                                size="small"
-                                @click="goBack"
-                            ></v-btn>
+                            <v-btn icon="mdi-arrow-left" size="small" @click="goBack"></v-btn>
                             {{ data.name }}
                         </h1>
-                        <v-chip
-                            v-if="
-                                new Date(data.lastBeat).getTime() >
-                                new Date().getTime()
-                            "
-                            class="ma-2"
-                            color="green"
-                            text-color="white"
-                        >
+                        <v-chip v-if="
+                            new Date(data.lastBeat).getTime() >
+                            new Date().getTime()
+                        " class="ma-2" color="green" text-color="white">
                             აქტიური
                         </v-chip>
-                        <v-chip
-                            v-else
-                            class="ma-2"
-                            color="red"
-                            text-color="white"
-                        >
+                        <v-chip v-else class="ma-2" color="red" text-color="white">
                             {{ $t("Inactive") }}
                         </v-chip>
                     </div>
@@ -89,64 +72,36 @@
                     <div class="d-flex align-center">
                         <SignalIcon :signal="Math.ceil(data.signal / 20)" />
 
-                        <v-icon
-                            v-if="data.errors.length"
-                            size="small"
-                            color="red"
-                        >
+                        <v-icon v-if="data.errors.length" size="small" color="red">
                             mdi-alert
                         </v-icon>
                         <v-menu v-if="$store.state.auth.user.lvl >= 3">
                             <template v-slot:activator="{ props }">
-                                <v-icon
-                                    size="small"
-                                    icon="mdi-dots-vertical"
-                                    v-bind="props"
-                                ></v-icon>
+                                <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
                             </template>
 
                             <v-card class="pa-0 ma-0">
-                                <v-btn
-                                    style="width: 100%"
-                                    @click="editItem(data, 'bussines')"
-                                    small
-                                >
+                                <v-btn style="width: 100%" @click="editItem(data, 'bussines')" small>
                                     <v-icon size="small">mdi-pencil</v-icon>
                                     {{ $t("Edit") }}
                                 </v-btn>
-                                <v-btn
-                                    v-if="$store.state.auth.user.lvl >= 4"
-                                    style="width: 100%"
-                                    @click="deleteItem(data)"
-                                    small
-                                >
+                                <v-btn v-if="$store.state.auth.user.lvl >= 4" style="width: 100%"
+                                    @click="deleteItem(data)" small>
                                     <v-icon size="small">mdi-delete</v-icon>
                                     {{ $t("Delete") }}
                                 </v-btn>
 
-                                <v-btn
-                                    style="width: 100%"
-                                    v-if="$store.state.auth.user.lvl >= 4"
-                                    @click="setConfToDevice(data)"
-                                    small
-                                >
+                                <v-btn style="width: 100%" v-if="$store.state.auth.user.lvl >= 4"
+                                    @click="setConfToDevice(data)" small>
                                     <v-icon size="small">mdi-save</v-icon>
                                     {{ $t("App Configuration") }}
                                 </v-btn>
-                                <v-btn
-                                    style="width: 100%"
-                                    @click="setExtToDevice(data)"
-                                    small
-                                >
+                                <v-btn style="width: 100%" @click="setExtToDevice(data)" small>
                                     <v-icon size="small">mdi-save</v-icon>
                                     {{ $t("Extend Configuration") }}
                                 </v-btn>
-                                <v-btn
-                                    style="width: 100%"
-                                    v-if="$store.state.auth.user.lvl >= 4"
-                                    @click="resetDevice(data)"
-                                    small
-                                >
+                                <v-btn style="width: 100%" v-if="$store.state.auth.user.lvl >= 4"
+                                    @click="resetDevice(data)" small>
                                     <v-icon size="small">mdi-refresh</v-icon>
                                     {{ $t("Factory Reset") }}
                                 </v-btn>
@@ -156,100 +111,58 @@
                 </div>
                 <div v-if="$vuetify.display.smAndDown" class=" ">
                     <div class="  ">
-                        <v-btn
-                            icon="mdi-arrow-left"
-                            size="small"
-                            @click="goBack"
-                        ></v-btn>
+                        <v-btn icon="mdi-arrow-left" size="small" @click="goBack"></v-btn>
 
                         <span style="font-size: 26px" class="">
                             {{ data.name }}
                         </span>
                         <div class="d-flex align-center">
-                            <v-chip
-                                v-if="
-                                    new Date(data.lastBeat).getTime() >
-                                    new Date().getTime()
-                                "
-                                class="ma-2"
-                                color="green"
-                                text-color="white"
-                            >
+                            <v-chip v-if="
+                                new Date(data.lastBeat).getTime() >
+                                new Date().getTime()
+                            " class="ma-2" color="green" text-color="white">
                                 აქტიური
                             </v-chip>
-                            <v-chip
-                                v-else
-                                class="ma-2"
-                                color="red"
-                                text-color="white"
-                            >
+                            <v-chip v-else class="ma-2" color="red" text-color="white">
                                 {{ $t("Inactive") }}
                             </v-chip>
                             <SignalIcon :signal="Math.ceil(data.signal / 20)" />
 
-                            <v-icon
-                                v-if="data.errors.length"
-                                size="small"
-                                color="red"
-                            >
+                            <v-icon v-if="data.errors.length" size="small" color="red">
                                 mdi-alert
                             </v-icon>
                             <v-menu v-if="$store.state.auth.user.lvl >= 3">
                                 <template v-slot:activator="{ props }">
-                                    <v-icon
-                                        size="small"
-                                        icon="mdi-dots-vertical"
-                                        v-bind="props"
-                                    ></v-icon>
+                                    <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
                                 </template>
 
                                 <v-card class="pa-0 ma-0">
-                                    <v-btn
-                                        style="width: 100%"
-                                        @click="editItem(data, 'bussines')"
-                                        small
-                                    >
+                                    <v-btn style="width: 100%" @click="editItem(data, 'bussines')" small>
                                         <v-icon size="small">
                                             mdi-pencil
                                         </v-icon>
                                         {{ $t("Edit") }}
                                     </v-btn>
-                                    <v-btn
-                                        v-if="$store.state.auth.user.lvl >= 4"
-                                        style="width: 100%"
-                                        @click="deleteItem(data)"
-                                        small
-                                    >
+                                    <v-btn v-if="$store.state.auth.user.lvl >= 4" style="width: 100%"
+                                        @click="deleteItem(data)" small>
                                         <v-icon size="small">
                                             mdi-delete
                                         </v-icon>
                                         {{ $t("Delete") }}
                                     </v-btn>
 
-                                    <v-btn
-                                        style="width: 100%"
-                                        v-if="$store.state.auth.user.lvl >= 4"
-                                        @click="setConfToDevice(data)"
-                                        small
-                                    >
+                                    <v-btn style="width: 100%" v-if="$store.state.auth.user.lvl >= 4"
+                                        @click="setConfToDevice(data)" small>
                                         <v-icon size="small">mdi-save</v-icon>
                                         #
                                         {{ $t("App Configuration") }}
                                     </v-btn>
-                                    <v-btn
-                                        style="width: 100%"
-                                        @click="setExtToDevice(data)"
-                                        small
-                                    >
+                                    <v-btn style="width: 100%" @click="setExtToDevice(data)" small>
                                         <v-icon size="small">mdi-save</v-icon>
                                         {{ $t("Extend Configuration") }}
                                     </v-btn>
-                                    <v-btn
-                                        style="width: 100%"
-                                        v-if="$store.state.auth.user.lvl >= 4"
-                                        @click="resetDevice(data)"
-                                        small
-                                    >
+                                    <v-btn style="width: 100%" v-if="$store.state.auth.user.lvl >= 4"
+                                        @click="resetDevice(data)" small>
                                         <v-icon size="small">
                                             mdi-refresh
                                         </v-icon>
@@ -280,12 +193,7 @@
                             </v-card-text>
                         </v-card>
                     </v-col>
-                    <v-col
-                        class="px-0"
-                        style="min-height: 100%"
-                        cols="12"
-                        sm="6"
-                    >
+                    <v-col class="px-0" style="min-height: 100%" cols="12" sm="6">
                         <v-card style="min-height: 100%">
                             <v-card-text>
                                 <h3>{{ $t("Statistics") }}</h3>
@@ -324,18 +232,14 @@
                         </v-card>
                     </v-col>
                 </div>
-                <div
-                    style="
+                <div style="
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         width: 100%;
                         padding: 20px;
-                    "
-                    v-if="isAdmin"
-                >
-                    <div
-                        style="
+                    " v-if="isAdmin">
+                    <div style="
                             width: 40%;
 
                             flex-direction: column;
@@ -344,11 +248,9 @@
                             justify-content: center;
                             gap: 5px;
                             box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.75);
-                        "
-                    >
+                        ">
                         <h4>ტრანზაქციების ჯამი</h4>
-                        <ul
-                            style="
+                        <ul style="
                                 height: 200px;
                                 overflow-y: scroll;
                                 width: 100%;
@@ -356,17 +258,12 @@
                                 justify-content: center;
                                 flex-direction: column;
                                 padding: 50px;
-                            "
-                        >
-                            <li
-                                style="font-size: 20px"
-                                v-for="(value, key) in transactionTotalByMonth"
-                                :key="key"
-                            >
+                            ">
+                            <li style="font-size: 20px" v-for="(value, key) in transactionTotalByMonth" :key="key">
                                 {{ key }}:
                                 <span style="color: green">{{
                                     value.toFixed(2)
-                                }}</span>
+                                    }}</span>
                             </li>
                         </ul>
                     </div>
@@ -382,13 +279,13 @@
                                 {{
                                     data.op_mode == 1
                                         ? $t("Tariff") +
-                                          data.tariff_amount +
-                                          $t("Tetri")
+                                        data.tariff_amount +
+                                        $t("Tetri")
                                         : this.$t("Fixed") +
-                                          data.tariff_amount / 100 +
-                                          this.$t("Lari")
+                                        data.tariff_amount / 100 +
+                                        this.$t("Lari")
                                 }}
-                         
+
                             </h4>
                             <h4>
                                 {{ $t("გადახდის თარიღი") }}: {{ data.pay_day }}
@@ -474,12 +371,12 @@
                             <h4>
                                 {{ $t("Last update") }}:{{
                                     data.last_update &&
-                                    data.last_update.updated_at
+                                        data.last_update.updated_at
                                         ? formatDateToCustomFormat(
-                                              new Date(
-                                                  data.last_update.updated_at
-                                              )
-                                          )
+                                            new Date(
+                                                data.last_update.updated_at
+                                            )
+                                        )
                                         : "-"
                                 }}
                             </h4>
@@ -498,9 +395,7 @@
                             <h3>{{ $t("Amounts earned") }}</h3>
                         </template>
                         <template v-slot:text>
-                            <EarningTable
-                                :server-items="data.earnings"
-                            ></EarningTable>
+                            <EarningTable :server-items="data.earnings"></EarningTable>
                         </template>
                     </v-expansion-panel>
                     <!--                    <v-expansion-panel>-->
@@ -528,10 +423,7 @@
                                             -
                                         </b>
                                         {{ error.errorText }}
-                                        <v-icon
-                                            color="red"
-                                            @click="deleteError(error.id)"
-                                        >
+                                        <v-icon color="red" @click="deleteError(error.id)">
                                             mdi-delete
                                         </v-icon>
                                     </li>
@@ -557,246 +449,139 @@
                 <v-container>
                     <v-row>
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field
-                                v-model="editedItem.name"
-                                class="text-capitalize"
-                                :label="$t('Name')"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.name" class="text-capitalize" :label="$t('Name')"
+                                required></v-text-field>
+                           
                         </v-col>
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field
-                                v-model.number="editedItem.pay_day"
-                                class="text-capitalize"
-                                :label="$t('Payment number (from 1 to -28)')"
-                                type="number"
-                                required
-                            ></v-text-field>
+                            <div>
+                                <v-text-field v-model.number="editedItem.pay_day" class="text-capitalize"
+                                    :label="$t('Payment number (from 1 to -28)')" type="number" required></v-text-field>
+                                    <v-checkbox 
+      :value="1" 
+      v-model="editedItem.isFixed" 
+      :true-value="1" 
+      :false-value="0" 
+      label="ფიქსირებული თარიღი"
+    ></v-checkbox>
+                           
+                            </div>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="12">
-                            <v-autocomplete
-                                v-model="editedItem.dev_id"
-                                label="UUID"
-                                :items="unregistered_device"
-                            ></v-autocomplete>
+                            <v-autocomplete v-model="editedItem.dev_id" label="UUID"
+                                :items="unregistered_device"></v-autocomplete>
                         </v-col>
                         <v-col v-if="dialogExtConf" cols="12">
-                            <v-radio-group
-                                :label="$t('Elevator mode')"
-                                v-model="editedItem.relay1_node"
-                                :inline="true"
-                            >
-                                <v-radio
-                                    :label="$t('Free')"
-                                    :value="1"
-                                ></v-radio>
-                                <v-radio
-                                    :label="$t('Tariff')"
-                                    :value="0"
-                                ></v-radio>
+                            <v-radio-group :label="$t('Elevator mode')" v-model="editedItem.relay1_node" :inline="true">
+                                <v-radio :label="$t('Free')" :value="1"></v-radio>
+                                <v-radio :label="$t('Tariff')" :value="0"></v-radio>
                             </v-radio-group>
                         </v-col>
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-radio-group
-                                :label="$t('Mode of payment')"
-                                v-model="editedItem.op_mode"
-                                :inline="true"
-                            >
+                            <v-radio-group :label="$t('Mode of payment')" v-model="editedItem.op_mode" :inline="true">
+
+                                <!--     radio heads for tarrif change           -->
+                                <v-radio :label="$t('Tariff')" :value="1"></v-radio>
+                                <v-radio :label="$t('Fixed')" :value="0"></v-radio>
+                                <v-radio :label="$t('Card Only')" :value="2"></v-radio>
+                            </v-radio-group>
+
                             <!--     radio heads for tarrif change           -->
-                                <v-radio
-                                    :label="$t('Tariff')"
-                                    :value="1"
-                                ></v-radio>
-                                <v-radio
-                                    :label="$t('Fixed')"
-                                    :value="0"
-                                ></v-radio>
-                                <v-radio
-                                    :label="$t('Card Only')"
-                                    :value="2"
-                                ></v-radio>
-                            </v-radio-group>
-
-         <!--     radio heads for tarrif change           -->
 
                         </v-col>
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field
-                                v-model.number="editedItem.tariff_amount"
-                                class="text-capitalize"
-                                :label="$t('Charge (in Tetri)')"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model.number="editedItem.tariff_amount" class="text-capitalize"
+                                :label="$t('Charge (in Tetri)')" required></v-text-field>
                         </v-col>
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field
-                                v-model.number="editedItem.fixed_card_amount"
-                                class="text-capitalize"
-                                :label="'ბარათის ტარიფი(თეთრებში)'"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model.number="editedItem.fixed_card_amount" class="text-capitalize"
+                                :label="'ბარათის ტარიფი(თეთრებში)'" required></v-text-field>
                         </v-col>
 
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field
-                                v-model="editedItem.admin_email"
-                                class="text-capitalize"
-                                :label="$t('Chairman mail')"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.admin_email" class="text-capitalize"
+                                :label="$t('Chairman mail')" required></v-text-field>
                         </v-col>
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field
-                                v-model="editedItem.sim_card_number"
-                                class="text-capitalize"
-                                :label="$t('sim_card_number')"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.sim_card_number" class="text-capitalize"
+                                :label="$t('sim_card_number')" required></v-text-field>
                         </v-col>
 
                         <v-col v-if="dialogAppConf" cols="12">
-                            <v-text-field
-                                v-model="editedItem.guest_msg_L1"
-                                class="text-capitalize"
-                                :label="
-                                    $t('The first line of the guest message')
-                                "
-                                :rules="[maxLengthRule15]"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.guest_msg_L1" class="text-capitalize" :label="$t('The first line of the guest message')
+                                " :rules="[maxLengthRule15]" required></v-text-field>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="12">
-                            <v-text-field
-                                v-model="editedItem.guest_msg_L2"
-                                class="text-capitalize"
-                                :label="
-                                    $t('The second line of the guest message')
-                                "
-                                :rules="[maxLengthRule15]"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.guest_msg_L2" class="text-capitalize" :label="$t('The second line of the guest message')
+                                " :rules="[maxLengthRule15]" required></v-text-field>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="12">
-                            <v-text-field
-                                v-model="editedItem.guest_msg_L3"
-                                :rules="[maxLengthRule15]"
-                                class="text-capitalize"
-                                :label="$t('The Third line of guest message')"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.guest_msg_L3" :rules="[maxLengthRule15]"
+                                class="text-capitalize" :label="$t('The Third line of guest message')"
+                                required></v-text-field>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="12">
-                            <v-text-field
-                                v-model="editedItem.validity_msg_L1"
-                                class="text-capitalize"
-                                :label="
-                                    $t(
-                                        'The first line of the validation message'
-                                    )
-                                "
-                                :rules="[maxLengthRule15]"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.validity_msg_L1" class="text-capitalize" :label="$t(
+                                'The first line of the validation message'
+                            )
+                                " :rules="[maxLengthRule15]" required></v-text-field>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="12">
-                            <v-text-field
-                                v-model="editedItem.validity_msg_L2"
-                                class="text-capitalize"
-                                :label="
-                                    $t(
-                                        'The second line of the validation message'
-                                    )
-                                "
-                                :rules="[maxLengthRule15]"
-                                required
-                            ></v-text-field>
+                            <v-text-field v-model="editedItem.validity_msg_L2" class="text-capitalize" :label="$t(
+                                'The second line of the validation message'
+                            )
+                                " :rules="[maxLengthRule15]" required></v-text-field>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="11">
                             <span>
                                 {{ $t("LCD brightness") }}:
                                 {{ editedItem.lcd_brightness }}
                             </span>
-                            <v-slider
-                                v-model="editedItem.lcd_brightness"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                            ></v-slider>
+                            <v-slider v-model="editedItem.lcd_brightness" :min="0" :max="100" :step="1"></v-slider>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="11">
                             <span>
                                 {{ $t("LED brightness") }}:
                                 {{ editedItem.led_brightness }}
                             </span>
-                            <v-slider
-                                v-model="editedItem.led_brightness"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                            ></v-slider>
+                            <v-slider v-model="editedItem.led_brightness" :min="0" :max="100" :step="1"></v-slider>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="11">
                             <span>
                                 {{ $t("Message display time") }}:
                                 {{ editedItem.msg_appear_time }}
                             </span>
-                            <v-slider
-                                v-model="editedItem.msg_appear_time"
-                                :min="0"
-                                :max="60"
-                                :step="1"
-                            ></v-slider>
+                            <v-slider v-model="editedItem.msg_appear_time" :min="0" :max="60" :step="1"></v-slider>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="11">
                             <span>
                                 {{ $t("Relay pulse time") }}:
                                 {{ editedItem.relay_pulse_time }}
                             </span>
-                            <v-slider
-                                v-model="editedItem.relay_pulse_time"
-                                :min="0"
-                                :max="30"
-                                :step="1"
-                            ></v-slider>
+                            <v-slider v-model="editedItem.relay_pulse_time" :min="0" :max="30" :step="1"></v-slider>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="11">
                             <span>
                                 {{ $t("Card reading time") }}:
                                 {{ editedItem.card_read_delay }}
                             </span>
-                            <v-slider
-                                v-model="editedItem.card_read_delay"
-                                :min="0"
-                                :max="30"
-                                :step="1"
-                            ></v-slider>
+                            <v-slider v-model="editedItem.card_read_delay" :min="0" :max="30" :step="1"></v-slider>
                         </v-col>
                         <v-col v-if="dialogBussines" cols="11">
                             <span>
                                 {{ $t("Number of cards per user") }}:
                                 {{ editedItem.limit }}
                             </span>
-                            <v-slider
-                                v-model="editedItem.limit"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                            ></v-slider>
+                            <v-slider v-model="editedItem.limit" :min="0" :max="100" :step="1"></v-slider>
                         </v-col>
 
                         <v-col v-if="dialogBussines" cols="12">
-                            <v-textarea
-                                v-model="editedItem.comment"
-                                class="text-capitalize"
-                                :label="$t('Comment')"
-                                required
-                            ></v-textarea>
+                            <v-textarea v-model="editedItem.comment" class="text-capitalize" :label="$t('Comment')"
+                                required></v-textarea>
                         </v-col>
                         <v-col cols="12" v-if="dialogAppConf">
-                            <v-checkbox
-                                v-model="editedItem.storage_disable"
-                                :label="$t('Disable storage')"
-                            ></v-checkbox>
+                            <v-checkbox v-model="editedItem.storage_disable"
+                                :label="$t('Disable storage')"></v-checkbox>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -813,16 +598,10 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
-    <div
-        @click="zoomIn()"
-        :class="!isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'"
-    >
+    <div @click="zoomIn()" :class="!isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'">
         <i class="mdi mdi-fullscreen-exit zoom-in-icon"></i>
     </div>
-    <div
-        v-if="isAdmin"
-        @click="sendTest()"
-        style="
+    <div v-if="isAdmin" @click="sendTest()" style="
             font-size: 14px;
             cursor: pointer;
             border-radius: 20px;
@@ -831,34 +610,22 @@
             color: white;
             aligntext: center;
             background-color: green;
-        "
-    >
+        ">
         ტესტი
     </div>
 
     <div :class="isZoom ? 'user-table-zoom ' : 'user-table-hidden'">
-        <UserTable
-            :deviceId="data.id"
-            @loadDevice="loadItems"
-            :is-fixed="data.op_mode == 0"
-            :server-items="usersInfo"
-        ></UserTable>
+        <UserTable :deviceId="data.id" @loadDevice="loadItems" :is-fixed="data.op_mode == 0" :server-items="usersInfo">
+        </UserTable>
     </div>
     <!-- meore -->
-    <div
-        @click="zoomIn()"
-        :class="isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'"
-    >
+    <div @click="zoomIn()" :class="isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'">
         <i class="mdi mdi-fullscreen zoom-in-icon"></i>
     </div>
 
     <div :class="isZoom ? 'user-table-hidden' : 'user-tabe-base'">
-        <UserTable
-            :deviceId="data.id"
-            @loadDevice="loadItems"
-            :is-fixed="data.op_mode == 0"
-            :server-items="usersInfo"
-        ></UserTable>
+        <UserTable :deviceId="data.id" @loadDevice="loadItems" :is-fixed="data.op_mode == 0" :server-items="usersInfo">
+        </UserTable>
     </div>
 </template>
 <script>
@@ -920,6 +687,8 @@ export default {
             storage_disable: false,
             can_search: false,
             relay1_node: 0,
+            isFixed: false
+
         },
         defaultItem: {
             company_id: null,
@@ -1056,7 +825,7 @@ export default {
                 },
             ],
             errors: [
-           
+
             ],
         },
     }),
@@ -1115,10 +884,10 @@ export default {
             axios
                 .get("/api/devices/" + this.$route.params.id)
                 .then(({ data }) => {
-                    this.$nextTick(() => {});
+                    this.$nextTick(() => { });
 
                     this.data = data;
-
+                        console.log(data) 
                     this.totalUserBalance = data.users
                         .map((val) => val.balance)
                         .reduce((a, b) => a + b);
@@ -1148,7 +917,7 @@ export default {
                 });
         },
         sendTest() {
-            axios.post(`/api/testing-fix/${ this.$route.params.id}`).then((res) => {
+            axios.post(`/api/testing-fix/${this.$route.params.id}`).then((res) => {
                 this.$swal.fire({
                     title: "გაიგზავნა",
                 });
@@ -1284,7 +1053,7 @@ export default {
             this.editedItem.can_search = !!this.editedItem.can_search;
             this.editedItem.storage_disable = !!this.editedItem.storage_disable;
             this.editedItem.op_mode = Number(this.editedItem.op_mode);
-            console.log(this.editedItem.op_mode)
+ 
             this.dialogBussines = type === "bussines";
             this.dialogAppConf = type === "appConf";
             this.dialogExtConf = type === "extConf";

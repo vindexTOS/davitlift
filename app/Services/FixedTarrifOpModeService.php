@@ -15,7 +15,7 @@ use App\Services\UpdateDeviceEarnings;
 
 
 
-trait FixedTarrifOpModeService
+trait FixedTarrifOpModeService  
 {
 
     use UpdateDeviceEarnings;
@@ -68,10 +68,11 @@ trait FixedTarrifOpModeService
 
         $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
 
-        Log::info("USER USER USER  ", ["USER USER"=>$user ]);
-
+     
         if ($user->balance >=  $combinedTarffToBepayed &&  $combinedTarffToBepayed > 0) {
+ 
 
+        
             // ავიღოთ უსერის საბსქრიბშიენი
             $deviceUser = DeviceUser::where('user_id', $user->id)
                 ->first();
@@ -93,9 +94,25 @@ trait FixedTarrifOpModeService
 
                 //  ვაჭრით თანხას უსერს 
                 $user->balance =  $user->balance -  $combinedTarffToBepayed;
-                DeviceUser::where('user_id', $user->id)
+            //  es im shemtxvevashi tu devices gawerili aqvs rom yovel tve erti da imave dros iyos gadaxda
+             if(!$device->isFixed){
+                    DeviceUser::where('user_id', $user->id)
                     ->update(['subscription' => $nextMonthPayDay]);
            
+                }else{
+                    
+                    $payDay = $device->pay_day;  
+                    $today = Carbon::now();  
+                    // vamowmebt to shemdegi tarigi am tveshia tu shemdeg tveshi
+                    $nextPayDay = Carbon::createFromDate($today->year, $today->month, $payDay);
+                    if ($today->greaterThan($nextPayDay)) {
+             
+                        $nextPayDay->addMonth();
+                    }
+                    DeviceUser::where('user_id', $user->id)
+                    ->update(['subscription' => $nextPayDay->toDateString()]);
+                }
+             
 
 
                     $user->save();
@@ -106,8 +123,12 @@ trait FixedTarrifOpModeService
                     $user->subscription = Carbon::now()->addMonth()->startOfDay();
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
 
-                }
-            }
+                }    }
+
+
+
+          
+            
         }else{
             $this->noMoney($device->dev_id);
 

@@ -54,6 +54,7 @@ class Device extends Model
         'pay_day',
         'isBlocked',
         'deviecTariffAmount',
+        'isFixed'
     ];
 
     /**

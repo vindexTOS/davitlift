@@ -13,18 +13,16 @@ trait NotificationsService
     {
         DB::beginTransaction();
 
-try {
-    Notifications::create([
-        "user_id" => $user_id,
-        'message' => $message,
-        'meta-data' => $metaData,
-        'message-type' => $messageType
-    ]);
-    DB::commit();
-} catch (\Throwable $th) {
-    DB::rollback();
-    
-}
-     
+        try {
+            Notifications::create([
+                "user_id" => $user_id,
+                'message' => $message,
+                'meta-data' => $metaData,
+                'message-type' => $messageType
+            ]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollback();
+        }
     }
 }
