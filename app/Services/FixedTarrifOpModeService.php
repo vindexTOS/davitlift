@@ -95,7 +95,7 @@ trait FixedTarrifOpModeService
                 //  ვაჭრით თანხას უსერს 
                 $user->balance =  $user->balance -  $combinedTarffToBepayed;
             //  es im shemtxvevashi tu devices gawerili aqvs rom yovel tve erti da imave dros iyos gadaxda
-             if(!$device->isFixed){
+             if( $device->isFixed == '0'){
                     DeviceUser::where('user_id', $user->id)
                     ->update(['subscription' => $nextMonthPayDay]);
            
