@@ -303,6 +303,9 @@ class MqttController extends Controller
                         $user->balance - $user->freezed_balance;
                     $lastAmount->save();
                 }
+
+                Log::info("caUser ID Two 2222", ["info"=> $user->id ]);
+
                 $payload = $this->generateHexPayload(1, [
                     [
                         'type' => 'string',
@@ -319,7 +322,6 @@ class MqttController extends Controller
                 ]);
                 $this->publishMessage($device_id, $payload);
                 $user->save();
-                Log::info("calll twice ?v ", ["info"=> "321" ]);
 
                 $this->saveOrUpdateEarnings(
                     $device->id,
