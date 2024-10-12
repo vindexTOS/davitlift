@@ -489,7 +489,7 @@ class MqttController extends Controller
                     ],
                     [
                         'type' => 'number16',
-                        'value' => 2000,
+                        'value' => $user->balance  
                     ],
                 ]);
                 $user->save();
