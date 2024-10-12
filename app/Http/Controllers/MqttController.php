@@ -874,7 +874,7 @@ class MqttController extends Controller
             ->where('month', $now->month)
             ->where('year', $now->year)
             ->first();
-        if (!empty($deviceEarnings)) {
+        if (false) {
             // $this->Logsaver('889', $user->id, 'devais ერნინგები ცარიელია');
 
             if ($user && $device) {
