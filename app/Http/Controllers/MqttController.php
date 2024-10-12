@@ -467,6 +467,8 @@ class MqttController extends Controller
                         $user->balance -$device->tariff_amount;
                     $lastAmount->save();
                 }
+
+                Log::info("info",['user info <>><><><><><><><><><<<><><><><><><><'=> $user->id]);
                 $payload = $this->generateHexPayload(3, [
                     [
                         'type' => 'string',
