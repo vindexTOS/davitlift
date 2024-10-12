@@ -489,11 +489,11 @@ class MqttController extends Controller
                 $user->save();
                 Log::info("calll twice ?v ", ["info"=> "479" ]);
 
-                $this->saveOrUpdateEarnings(
-                    $device->id,
-                    $device->tariff_amount,
-                    $device->company_id
-                );
+                // $this->saveOrUpdateEarnings(
+                //     $device->id,
+                //     $device->tariff_amount,
+                //     $device->company_id
+                // );
                 $this->publishMessage($device->dev_id, $payload);
             } else {
                 $this->noMoney($device->dev_id);
