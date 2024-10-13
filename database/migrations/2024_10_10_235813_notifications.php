@@ -17,8 +17,10 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->boolean('isRead')->default(false);
             $table->string('message');
-            $table->string('meta-data');
-            $table->string('message-type');
+            $table->string('meta-data')->default(null);
+            $table->string('message-type')->default(\App\Enums\NotificationType::general);
+            $table->unsignedBigInteger('device_id')->nullable();
+            $table->date("updated_at");
             $table->date('created_at');
         });
     }

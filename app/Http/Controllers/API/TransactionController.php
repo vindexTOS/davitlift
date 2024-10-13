@@ -35,6 +35,8 @@ class TransactionController extends Controller
     use TransactionHandlerForOpMode;
     use DeviceMessages;
     use  TransactionProvider;
+    
+
     // private $client_id = '77841';
     // private $client_secret = 'OOsQRvWG33n4';
 
@@ -240,6 +242,8 @@ class TransactionController extends Controller
             );
 
             $this->updateTransactionOrderFastPay($data, $order_id, $amount);
+            // this is coming from TransactionProvider that uses NotifcationProvider trait
+            $this->createUserGenericNotification($user->id, "თქვენ ჩაგერიცხათ $amount ლარი, ლიბერთი ბანკიდან $order_id","+", \App\Enums\NotificationType::transaction );
 
             return response()->json(['FileId' => $string, 'code' => 0], 200);
         } catch (\Exception $e) {
@@ -374,6 +378,9 @@ class TransactionController extends Controller
             );
 
             $this->updateTransactionOrderFastPay($data, $order_id, $amount);
+                 // this is coming from TransactionProvider that uses NotifcationProvider trait
+
+            $this->createUserGenericNotification($user->id, "თქვენ ჩაგერიცხათ $amount ლარი, TBC ბანკიდან $order_id","+", \App\Enums\NotificationType::transaction );
 
             return response()->json(['FileId' => $string, 'code' => 0], 200);
         } catch (\Exception $e) {
@@ -397,6 +404,7 @@ class TransactionController extends Controller
         }
         $transaction->status = $data['status'];
         $transaction->save();
+        
         return $data;
     }
 

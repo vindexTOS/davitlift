@@ -23,11 +23,11 @@ class BankOfGeorgia extends Controller
 {
 
     use TransactionProvider;
- 
 
-   
 
-     // Endpoint:https://lift.eideas.io/api/ipay/?OP=payUSERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=597571441&SERVICE_ID=dsl&PAY_AMOUNT=500&PAYMENT_ID=123456&HASH_CODE=089423FFE1AACD403CA8A6D60E3F83871&PAY_SRC=internet
+
+
+    // Endpoint:https://lift.eideas.io/api/ipay/?OP=payUSERNAME=ipay&PASSWORD=ipay123&CUSTOMER_ID=597571441&SERVICE_ID=dsl&PAY_AMOUNT=500&PAYMENT_ID=123456&HASH_CODE=089423FFE1AACD403CA8A6D60E3F83871&PAY_SRC=internet
 
     // /api/ipay/?OP=verify&USERNAME=ipay&PASSWORD=ipay123&CUSTO
     // MER_ID=597571441&SERVICE_ID=dsl&PAY_SRC=internet&HASH_CODE=A1638825250CFAD6665EC5
@@ -160,6 +160,10 @@ class BankOfGeorgia extends Controller
             if ($user) {
                 $fileId = $this->MakeFileId($user->id);
                 $this->createTransactionFastPay($amount, $user->id,  $paymentID, $fileId, "BO" . "-" . $PAY_SRC);
+
+                $amountForNotification = $amount / 100;
+                $this->createUserGenericNotification($user->id, "თქვენ ჩაგერიცხათ $amountForNotification ლარი, საქართველოს ბანკიდან $paymentID", "+", \App\Enums\NotificationType::transaction);
+
                 $transaction = Tbctransaction::where(
                     'order_id',
                     $paymentID

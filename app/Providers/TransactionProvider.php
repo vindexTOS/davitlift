@@ -12,9 +12,12 @@ use App\Models\LastUserAmount;
 
 use Illuminate\Support\Carbon;
 use App\Services\DeviceMessages;
+ 
+ 
 
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use App\Providers\NotificationProvider;
 use Illuminate\Support\Facades\Response;
 use App\Exceptions\BankOfGeorgiaUserCheck;
 use App\Exceptions\InvalidHashCodeException;
@@ -23,7 +26,7 @@ use App\Services\TransactionHandlerForOpMode;
 
 trait TransactionProvider
 {
-
+    use NotificationProvider  ;
     use DeviceMessages;
     use TransactionHandlerForOpMode;
     //   validations for bank of georgia 

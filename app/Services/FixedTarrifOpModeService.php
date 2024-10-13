@@ -10,6 +10,7 @@ use App\Models\Card;
 use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceUser;
+use App\Providers\NotificationProvider;
 use Illuminate\Support\Facades\Log;
 use App\Services\UpdateDeviceEarnings;
 
@@ -20,7 +21,7 @@ trait FixedTarrifOpModeService
 
     use UpdateDeviceEarnings;
     use DeviceMessages;
-
+    use NotificationProvider;
 
     public function handleOpModeZeroSubscriptionCheck($deviceUser,   $device)
     {
@@ -108,19 +109,25 @@ trait FixedTarrifOpModeService
 
 
                 $user->save();
+
+
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
                 if (!is_null($dataPayload)) {
                     if ($device->isFixed == '0') {
                         $user->subscription = Carbon::now()->addMonth()->startOfDay();
-
+                        $notificationDateTime  =  Carbon::parse($user->subscription);
                     } else {
                         $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
-
+                        Carbon::parse($user->subscription);
                     }
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
                 }
+
+                $notificationTarrifTobePayed = $combinedTarffToBepayed  / 100;
+             
+                $this->createUserGenericNotification($user->id, "თქვენ ჩამოგეჭრათ $notificationTarrifTobePayed ლარი და გაგიაქტიურდათ ულიმიტო ტარიფი   $notificationDateTime -მდე", "+", \App\Enums\NotificationType::transaction);
             }
         } else {
             $this->noMoney($device->dev_id);

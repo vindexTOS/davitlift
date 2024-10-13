@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use App\Services\LastUserAmountUpdate;
+use App\Services\NotificationsService;
 use Illuminate\Support\Facades\Storage;
 use App\Services\TransactionHandlerForOpMode;
 
@@ -33,6 +34,7 @@ class MqttController extends Controller
     use DeviceMessages;
     use  LastUserAmountUpdate;
     use TransactionHandlerForOpMode;
+    use NotificationsService;
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
@@ -443,6 +445,7 @@ class MqttController extends Controller
                 //  aq vart ///
 
                 $this->handleOpMode($device->op_mode, $user, $device, $data);
+                $this->createUserGenericNotification($user->id, "","$device->id  + ", \App\Enums\NotificationType::user_specific);
                  return;
             }
             //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
@@ -472,8 +475,7 @@ class MqttController extends Controller
                     $lastAmount->save();
                 }
 
-                Log::info("info",['user info <>><><><><><><><><><<<><><><><><><><'=> $user->id]);
-                $payload = $this->generateHexPayload(3, [
+                 $payload = $this->generateHexPayload(3, [
                     [
                         'type' => 'string',
                         'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
@@ -895,8 +897,7 @@ class MqttController extends Controller
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
-                    Log::info("if", ["info"=> $deviceEarnings->earnings ]);
-
+ 
                 } else {
                  
                  
@@ -904,8 +905,7 @@ class MqttController extends Controller
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
 
-                    Log::info("else", ["info"=> $deviceEarnings->earnings ]);
-                }
+                 }
             } else {
                 $deviceEarnings->earnings  =  $deviceEarnings->earnings + $earningsValue;
 
