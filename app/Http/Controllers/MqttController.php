@@ -258,6 +258,8 @@ class MqttController extends Controller
                 Log::debug("MQTT CONTROLLER shemsvla");
 
                 if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                    Log::info("shemosvla", ['handle amde '=>$user]);
+
                     $this->handleOpMode($device->op_mode, $user, $device, $data);
 
 
