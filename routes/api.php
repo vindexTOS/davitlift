@@ -17,6 +17,7 @@ use App\Http\Middleware\ComapnyAccsessMiddleware;
   use App\Http\Middleware\SuperAdminMiddleware;
 use App\Http\Controllers\UpdatingDeviceController;
 use App\Http\Controllers\API\TransactionController;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
 use App\Models\Tbctransaction;
@@ -312,3 +313,7 @@ Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
+
+//  notifications
+
+Route::get("/notifications/{user_id}", [NotificationsController::class, "index"]);
