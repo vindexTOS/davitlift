@@ -188,11 +188,13 @@ class CardController extends Controller
             ->first();
             $subscriptionDate = Carbon::parse($deviceUser->subscription);
             $now = Carbon::now();
+          
+            $this->handleOpMode($device->op_mode, $user, $device);
+
             if ($subscriptionDate->gt($now)) {
 
                 $canCode = true;
             }
-            $this->handleOpMode($device->op_mode, $user, $device);
 
         } else {
             if ($Balance >= $device->tariff_amount) {
