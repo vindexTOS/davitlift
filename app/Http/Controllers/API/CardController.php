@@ -184,25 +184,25 @@ class CardController extends Controller
             $card = Card::where('user_id', $user->id)
                 ->whereIn('device_id', $deviceIds)
                 ->first();
-                $now = Carbon::now();
+            $now = Carbon::now();
 
-                $deviceUser = DeviceUser::where('device_id', $card->device_id)
+            $deviceUser = DeviceUser::where('device_id', $card->device_id)
                 ->where('user_id', Auth::id())
                 ->first();
-                $subscriptionDate = Carbon::parse($deviceUser->subscription);
+            $subscriptionDate = Carbon::parse($deviceUser->subscription);
 
-                if ($subscriptionDate->gt($now)) {
+            if (!$subscriptionDate->gt($now)) {
 
-                    $this->handleOpMode($device->op_mode, $user, $device);
-                }
-  
+                $this->handleOpMode($device->op_mode, $user, $device);
+            }
+
 
 
             $deviceUser = DeviceUser::where('device_id', $card->device_id)
-            ->where('user_id', Auth::id())
-            ->first();
+                ->where('user_id', Auth::id())
+                ->first();
             $subscriptionDate = Carbon::parse($deviceUser->subscription);
-   
+
             if ($subscriptionDate->gt($now)) {
 
                 $canCode = true;
