@@ -131,7 +131,7 @@ trait FixedTarrifOpModeService
                 $this->createUserGenericNotification($user->id, "თქვენ ჩამოგეჭრათ $notificationTarrifTobePayed ლარი და გაგიაქტიურდათ ულიმიტო ტარიფი   $notificationDateTime -მდე", "+", \App\Enums\NotificationType::transaction);
             }
         } else {
-            // $this->noMoney($device->dev_id);
+            $this->noMoney($device->dev_id);
         }
     }
     private function GetCardTotalAmount($user, $deviceAmount)
