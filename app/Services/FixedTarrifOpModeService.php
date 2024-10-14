@@ -114,6 +114,7 @@ trait FixedTarrifOpModeService
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
+                $notificationDateTime  =  Carbon::parse($user->subscription);
                 if (!is_null($dataPayload)) {
                     if ($device->isFixed == '0') {
                         $user->subscription = Carbon::now()->addMonth()->startOfDay();
