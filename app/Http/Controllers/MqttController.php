@@ -258,12 +258,16 @@ class MqttController extends Controller
                 Log::debug("MQTT CONTROLLER shemsvla");
 
                 if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                    Log::debug("NO MONEYa");
+
                     $this->noMoney($device_id);
                 }
 
                 if (
                     time() < Carbon::parse($userDevice->subscription)->timestamp
                 ) {
+                    Log::debug("Npasuxi bijo");
+
                     $payload = $this->generateHexPayload(2, [
                         [
                             'type' => 'timestamp',
