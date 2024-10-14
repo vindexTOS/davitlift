@@ -65,7 +65,7 @@ trait FixedTarrifOpModeService
     {
         // მეორეჯერ ჩარიცხვის შემთხვევაში არ უნდა გაუქტიურდეს თავიდან, თუ უკვე აქტიური აქვს 
 
-
+   Log::info("shemosvla", ['handle functiashi'=>$user]);
 
         $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
 
