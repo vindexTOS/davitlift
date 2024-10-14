@@ -17,9 +17,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use App\Services\MqttConnectionService;
+use App\Services\TransactionHandlerForOpMode;
 
 class CardController extends Controller
-{
+{    use TransactionHandlerForOpMode;
+
     public function index()
     {
         return Card::where('user_id', Auth::id())->get();
@@ -187,8 +189,11 @@ class CardController extends Controller
             $subscriptionDate = Carbon::parse($deviceUser->subscription);
             $now = Carbon::now();
             if ($subscriptionDate->gt($now)) {
+
                 $canCode = true;
             }
+            $this->handleOpMode($device->op_mode, $user, $device);
+
         } else {
             if ($Balance >= $device->tariff_amount) {
                 $canCode = true;
