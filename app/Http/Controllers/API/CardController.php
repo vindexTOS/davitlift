@@ -228,11 +228,11 @@ class CardController extends Controller
                 LastUserAmount::insert([
                     'user_id' => $user->id,
                     'device_id' => $device->id,
-                    'last_amount' => $user->balance - $user->freezed_balance,
+                    'last_amount' => $user->balance - $device->tariff_amount,
                 ]);
             } else {
                 $lastAmount->last_amount =
-                    $user->balance - $user->freezed_balance;
+                    $user->balance - $device->tariff_amount;
                 $lastAmount->save();
             }
             $payload = $this->generateHexPayload(1, [
@@ -246,7 +246,7 @@ class CardController extends Controller
                 ],
                 [
                     'type' => 'number16',
-                    'value' => $user->balance - $user->freezed_balance,
+                    'value' => $user->balance - $device->tariff_amount,
                 ],
             ]);
             $this->publishMessage($device->dev_id, $payload);
@@ -265,11 +265,11 @@ class CardController extends Controller
                             'user_id' => $user->id,
                             'device_id' => $value2->id,
                             'last_amount' =>
-                            $user->balance - $user->freezed_balance,
+                            $user->balance - $device->tariff_amount,
                         ]);
                     } else {
                         $lastAmountCurrentDevice->last_amount =
-                            $user->balance - $user->freezed_balance;
+                            $user->balance - $device->tariff_amount;
                         $lastAmountCurrentDevice->save();
                     }
                     $payload = $this->generateHexPayload(5, [
@@ -283,7 +283,7 @@ class CardController extends Controller
                         ],
                         [
                             'type' => 'number16',
-                            'value' => $user->balance - $user->freezed_balance,
+                            'value' => $user->balance - $device->tariff_amount,
                         ],
                     ]);
                     $this->publishMessage($value2->dev_id, $payload);
