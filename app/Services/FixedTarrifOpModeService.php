@@ -65,7 +65,7 @@ trait FixedTarrifOpModeService
     {
         // მეორეჯერ ჩარიცხვის შემთხვევაში არ უნდა გაუქტიურდეს თავიდან, თუ უკვე აქტიური აქვს 
 
-   Log::info("shemosvla", ['handle functiashi'=>$user]);
+        Log::info("shemosvla", ['handle functiashi' => $user]);
 
         $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
 
@@ -114,22 +114,18 @@ trait FixedTarrifOpModeService
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
-                   $notificationDateTime  =  Carbon::parse($user->subscription);
+                $notificationDateTime  =  Carbon::parse($user->subscription);
                 if (!is_null($dataPayload)) {
                     if ($device->isFixed == '0') {
                         $user->subscription = Carbon::now()->addMonth()->startOfDay();
-                        $user->save();
-                        $notificationDateTime  =  Carbon::parse($user->subscription);
                     } else {
                         $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
-                        $user->save();
-                        Carbon::parse($user->subscription);
                     }
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
                 }
-
+                $notificationDateTime = Carbon::parse($user->subscription);
                 $notificationTarrifTobePayed = $combinedTarffToBepayed  / 100;
-             
+
                 $this->createUserGenericNotification($user->id, "თქვენ ჩამოგეჭრათ $notificationTarrifTobePayed ლარი და გაგიაქტიურდათ ულიმიტო ტარიფი   $notificationDateTime -მდე", "+", \App\Enums\NotificationType::transaction);
             }
         } else {
