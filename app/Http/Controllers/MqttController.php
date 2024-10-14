@@ -34,7 +34,7 @@ class MqttController extends Controller
     use DeviceMessages;
     use  LastUserAmountUpdate;
     use TransactionHandlerForOpMode;
-
+    
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
@@ -215,7 +215,7 @@ class MqttController extends Controller
         $device_id
     ) {
 
-        $deviceIds = Device::where('users_id', $device->users_id)
+         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
 
@@ -258,7 +258,7 @@ class MqttController extends Controller
                 Log::debug("MQTT CONTROLLER shemsvla");
 
                 if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                    $this->handleOpMode($device->op_mode, $user, $device, $data);
+                    $this->noMoney($device_id);
                 }
 
                 if (
@@ -306,7 +306,7 @@ class MqttController extends Controller
                     $lastAmount->save();
                 }
 
-                Log::info("caUser ID Two 2222", ["info" => $user->id]);
+                Log::info("caUser ID Two 2222", ["info"=> $user->id ]);
 
                 $payload = $this->generateHexPayload(1, [
                     [
@@ -356,7 +356,7 @@ class MqttController extends Controller
                             $lastAmountCurrentDevice->save();
                         }
 
-                        Log::info("info", ["USER ID USER ID USER ID USER ID USER ID " => $user->id]);
+                        Log::info("info", ["USER ID USER ID USER ID USER ID USER ID "=>$user->id]);
                         $payload = $this->generateHexPayload(5, [
                             [
                                 'type' => 'string',
@@ -386,15 +386,15 @@ class MqttController extends Controller
         }
     }
 
-
+ 
     private function accessRequestForRFIDCard($device, $data)
     {
-
+     
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
 
-        $card = Card::where('card_number', $data['payload'])
+         $card = Card::where('card_number', $data['payload'])
             ->whereIn('device_id', $deviceIds)
             ->first();
 
@@ -436,23 +436,24 @@ class MqttController extends Controller
             if ($device->op_mode == 0) {
 
                 $userDevice = DeviceUser::where('user_id', $user->id)
-                    ->where('device_id', $card->device_id)
-                    ->first();
-                //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad
-                // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
-                if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                    //და გავაჩერებთ ყველაფერს რეთურნით
-                    //  aq vart ///
+                ->where('device_id', $card->device_id)
+                ->first();
+         //   dsvzeli kods naxav garbage.php servicebshi   MEORE 2  nomrad
+             // თუ საბსქრიბშენ თარიღი ამოწურლი აქვს უსერს დავუბრუნებთ რომ ფული არ არის დევაის
+             if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
+                //და გავაჩერებთ ყველაფერს რეთურნით
+                //  aq vart ///
 
-                    $this->handleOpMode($device->op_mode, $user, $device, $data);
-                    $this->createUserGenericNotification($user->id, "", "$device->id  + ", \App\Enums\NotificationType::user_specific);
-                    return;
-                }
-                //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
+                $this->handleOpMode($device->op_mode, $user, $device, $data);
+                $this->createUserGenericNotification($user->id, "","$device->id  + ", \App\Enums\NotificationType::user_specific);
+                 return;
+            }
+            //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
+          
+            if(time()  < Carbon::parse($userDevice->subscription)->timestamp){
+                $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
 
-                if (time()  < Carbon::parse($userDevice->subscription)->timestamp) {
-                    $this->ReturnSubscriptionTypeToDevice($userDevice, $data, $device);
-                }
+            }
             } else if (
                 (int) $user->balance - $user->freezed_balance >=
                 $device->tariff_amount
@@ -466,15 +467,15 @@ class MqttController extends Controller
                         'user_id' => $user->id,
                         'device_id' => $device->id,
                         'last_amount' =>
-                        $user->balance - $device->tariff_amount,
+                        $user->balance -$device->tariff_amount,
                     ]);
                 } else {
                     $lastAmount->last_amount =
-                        $user->balance - $device->tariff_amount;
+                        $user->balance -$device->tariff_amount;
                     $lastAmount->save();
                 }
 
-                $payload = $this->generateHexPayload(3, [
+                 $payload = $this->generateHexPayload(3, [
                     [
                         'type' => 'string',
                         'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
@@ -490,11 +491,11 @@ class MqttController extends Controller
                     ],
                     [
                         'type' => 'number16',
-                        'value' => $user->balance
+                        'value' => $user->balance  
                     ],
                 ]);
                 $user->save();
-                Log::info("calll twice ?v ", ["info" => "479"]);
+                Log::info("calll twice ?v ", ["info"=> "479" ]);
 
                 // $this->saveOrUpdateEarnings(
                 //     $device->id,
@@ -728,7 +729,7 @@ class MqttController extends Controller
         //     $lastAmount->last_amount
         // );
         $user->balance = $user->balance - $diff;
-
+ 
         // $this->Logsaver(
         //     'მეორე ლაინი userBalance and diff',
         //     $user->balance,
@@ -746,7 +747,7 @@ class MqttController extends Controller
         $lastAmount->save();
 
         $user->save();
-        Log::info("calll twice ?v ", ["info" => "730"]);
+        Log::info("calll twice ?v ", ["info"=> "730" ]);
 
         $this->saveOrUpdateEarnings($device->id, $diff, $device->company_id);
         // $this->Logsaver('762', $device->id, 'ერნინგები დასეივდა');
@@ -870,7 +871,7 @@ class MqttController extends Controller
         if ($user->cashback == 0) {
             // $this->Logsaver('876', $user->cashback, 'უსერის ქეშბექი');
 
-            $user = User::where('id', $device->users_id)->first();
+        $user = User::where('id', $device->users_id)->first();
         }
         $this->Logsaver('879', $earningsValue, ' ერნიგნები');
 
@@ -896,17 +897,19 @@ class MqttController extends Controller
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->deviceTariff = $device->deviceTariffAmount;
                     $deviceEarnings->save();
+ 
                 } else {
-
-
-                    $deviceEarnings->earnings =  $deviceEarnings->earnings + $earningsValue;
+                 
+                 
+                    $deviceEarnings->earnings=  $deviceEarnings->earnings + $earningsValue;
                     $deviceEarnings->cashback = $user->cashback;
                     $deviceEarnings->save();
-                }
+
+                 }
             } else {
                 $deviceEarnings->earnings  =  $deviceEarnings->earnings + $earningsValue;
 
-                Log::info("second else", ["info" => $deviceEarnings->earnings]);
+                Log::info("second else", ["info"=> $deviceEarnings->earnings ]);
 
                 $deviceEarnings->save();
             }
@@ -1026,8 +1029,8 @@ class MqttController extends Controller
                 'type' => $type,
                 "tariff" => $tariff,
                 'current_balance' => $currentBalance,
-                'created_at' => Carbon::now('Asia/Tbilisi')->addHours(4),
-            ]);
+'created_at' => Carbon::now('Asia/Tbilisi')->addHours(4),
+        ]);
         } catch (PDOException $e) {
             throw new RuntimeException("Elevetor Use Error: " . $e->getMessage());
         }
