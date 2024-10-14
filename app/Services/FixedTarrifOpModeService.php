@@ -114,14 +114,16 @@ trait FixedTarrifOpModeService
                 //  ვააბთეიდთებთ ერნინგებს
 
                 $this->UpdateDevicEarn($device,  $combinedTarffToBepayed);
-                $notificationDateTime  =  Carbon::parse($user->subscription);
+                   $notificationDateTime  =  Carbon::parse($user->subscription);
                 if (!is_null($dataPayload)) {
                     if ($device->isFixed == '0') {
                         $user->subscription = Carbon::now()->addMonth()->startOfDay();
-                        $notificationDateTime  = $user->subscription->addMonth();
+                        $user->save();
+                        $notificationDateTime  =  Carbon::parse($user->subscription);
                     } else {
                         $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
-                        Carbon::parse($user->subscription)->addMonth();
+                        $user->save();
+                        Carbon::parse($user->subscription);
                     }
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
                 }
