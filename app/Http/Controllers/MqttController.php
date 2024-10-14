@@ -259,8 +259,9 @@ class MqttController extends Controller
 
                 if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
                     Log::info("shemosvla", ['handle amde '=>$user]);
+                    $this->noMoney($device_id);
 
-                    $this->handleOpMode($device->op_mode, $user, $device, $data);
+                    // $this->handleOpMode($device->op_mode, $user, $device, $data);
 
 
                  }
