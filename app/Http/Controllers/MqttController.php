@@ -287,9 +287,7 @@ class MqttController extends Controller
                     ]);
 
                     $this->publishMessage($device_id, $payload);
-                } else {
-                    $this->noMoney($device_id);
-                }
+                } 
             } else if (
                 $user->balance - $device->tariff_amount >
                 $device->tariff_amount
