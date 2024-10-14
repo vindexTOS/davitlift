@@ -118,10 +118,10 @@ trait FixedTarrifOpModeService
                 if (!is_null($dataPayload)) {
                     if ($device->isFixed == '0') {
                         $user->subscription = Carbon::now()->addMonth()->startOfDay();
-                        $notificationDateTime  = Carbon::now()->addMonth()->startOfDay();
+                        $notificationDateTime  = $user->subscription->addMonth();
                     } else {
                         $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
-                        Carbon::parse($user->subscription);
+                        Carbon::parse($user->subscription)->addMonth();
                     }
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
                 }
