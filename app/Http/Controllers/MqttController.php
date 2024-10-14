@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use App\Services\LastUserAmountUpdate;
-use App\Services\NotificationsService;
+ 
 use Illuminate\Support\Facades\Storage;
 use App\Services\TransactionHandlerForOpMode;
 
@@ -34,7 +34,7 @@ class MqttController extends Controller
     use DeviceMessages;
     use  LastUserAmountUpdate;
     use TransactionHandlerForOpMode;
-    use NotificationsService;
+    
     // Handle general events
     public function handleGeneralEvent(Request $request)
     {
@@ -255,10 +255,12 @@ class MqttController extends Controller
             $this->publishMessage($device_id, $payload);
         } else {
             if ($device->op_mode == 0) {
-                Log::debug("MQTT CONTROLLER shemsvla");
-
+ 
                 if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                    $this->noMoney($device_id);
+                
+                    $this->handleOpMode($device->op_mode, $user, $device, $data);
+                    $this->createUserGenericNotification($user->id, "თქვენ გაგიაქტიურდათ ულიმიტო ტარიფი ","$device->id;TelefonidanGaqtiureba", \App\Enums\NotificationType::user_specific);
+                     return;
                 }
 
                 if (
