@@ -917,7 +917,7 @@ export default {
                 });
         },
         sendTest() {
-            axios.post(`/api/testing-fix/${this.$route.params.id}`).then((res) => {
+            axios.get(`/api/fixdevice/${this.$route.params.id}`).then((res) => {
                 this.$swal.fire({
                     title: "გაიგზავნა",
                 });
