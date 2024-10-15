@@ -483,7 +483,7 @@
                                 <!--     radio heads for tarrif change           -->
                                 <v-radio :label="$t('Tariff')" :value="1"></v-radio>
                                 <v-radio :label="$t('Fixed')" :value="0"></v-radio>
-                                <v-radio :label="$t('Card Only')" :value="2"></v-radio>
+                                <!-- <v-radio :label="$t('Card Only')" :value="2"></v-radio> -->
                             </v-radio-group>
 
                             <!--     radio heads for tarrif change           -->
