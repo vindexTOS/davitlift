@@ -601,7 +601,7 @@
     <div @click="zoomIn()" :class="!isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'">
         <i class="mdi mdi-fullscreen-exit zoom-in-icon"></i>
     </div>
-    <div v-if="isAdmin" @click="sendTest()" style="
+    <!-- <div v-if="isAdmin" @click="sendTest()" style="
             font-size: 14px;
             cursor: pointer;
             border-radius: 20px;
@@ -612,7 +612,7 @@
             background-color: green;
         ">
         ტესტი
-    </div>
+    </div> -->
 
     <div :class="isZoom ? 'user-table-zoom ' : 'user-table-hidden'">
         <UserTable :deviceId="data.id" @loadDevice="loadItems" :is-fixed="data.op_mode == 0" :server-items="usersInfo">
