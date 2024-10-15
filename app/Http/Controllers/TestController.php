@@ -66,11 +66,22 @@ class TestController extends   Controller
                             ->where('year', $currentYear)
                             ->first();
     
+                            if(empty($deviceEarn)){
+                                DeviceEarn::create([
+                                    'device_id' => $device->id,
+                                    'month' => $currentMonth,
+                                    'year' => $currentYear,
+                                    'earnings' => $fullAmount,
+                                    'cashback' =>     0,
+                                    'deviceTariff' => $device->deviceTariffAmount,
+                                 ]);
+                            }else{
+                                $deviceEarn->earnings +=  $fullAmount;
     
+                                $deviceEarn->save();
+                            }
     
-                        $deviceEarn->earnings +=  $fullAmount;
-    
-                        $deviceEarn->save();
+                
                         }
              
                 }
