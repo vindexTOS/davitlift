@@ -120,15 +120,14 @@ trait FixedTarrifOpModeService
 
                 if (!is_null($dataPayload)) {
                     if ($device->isFixed == '0') {
-                        $deviceUser->subscription = Carbon::now()->addMonth()->startOfDay();
+                        $user->subscription = Carbon::now()->addMonth()->startOfDay();
                     } else {
-                        $deviceUser->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
+                       $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
                     }
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
                 }
                 // $user->refresh();  
-                $deviceUser->save();
-                $notificationDateTime = Carbon::parse($deviceUser->subscription);
+                 $notificationDateTime = Carbon::parse($deviceUser->subscription);
                 $notificationTarrifTobePayed = $combinedTarffToBepayed  / 100;
 
                 $this->createUserGenericNotification($user->id, "თქვენ ჩამოგეჭრათ $notificationTarrifTobePayed ლარი და გაგიაქტიურდათ ულიმიტო ტარიფი   $notificationDateTime -მდე", "+", \App\Enums\NotificationType::transaction);
