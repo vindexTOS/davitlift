@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('devices', function (Blueprint $table) {
-            $table->boolean("isFixed")->default(false);
+            $table->boolean("isFixed")->default(true);
         });
     }
 
