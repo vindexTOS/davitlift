@@ -449,7 +449,7 @@ class MqttController extends Controller
                 //  aq vart ///
 
                 $this->handleOpMode($device->op_mode, $user, $device, $data);
-                $this->createUserGenericNotification($user->id, "","$device->id  + ", \App\Enums\NotificationType::user_specific);
+                // $this->createUserGenericNotification($user->id, "","$device->id  + ", \App\Enums\NotificationType::user_specific);
                  return;
             }
             //    თუ ავქს საბსქრიბშენი უსერს , დევაის გავუგზავნით საბსქრიბშენის თარიღს და გავაგრძელებთ სხვა მოქმედებას 
