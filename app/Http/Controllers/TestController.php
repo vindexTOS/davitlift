@@ -67,15 +67,29 @@ class TestController extends   Controller
                             ->first();
     
                             if(empty($deviceEarn)){
-                                DeviceEarn::create([
-                                    'device_id' => $device->id,
-                                    'month' => $currentMonth,
-                                    'year' => $currentYear,
-                                    'earnings' => $fullAmount,
-                                    'cashback' =>     0,
-                                    'deviceTariff' => $device->deviceTariffAmount,
-                                 ]);
-                            }else{
+                            if ($device->deviceTariffAmount !== null) {
+ 
+               DeviceEarn::create([
+                  'device_id' => $device->id,
+                  'month' => $currentMonth,
+                  'year' => $currentYear,
+                  'earnings' => $fullAmount,
+                  'cashback' =>     0,
+                  'deviceTariff' => $device->deviceTariffAmount,
+               ]);
+            } else {
+               DeviceEarn::create([
+                  'device_id' => $device->id,
+                  'month' => $currentMonth,
+                  'year' => $currentYear,
+                  'earnings' => $fullAmount,
+                  'cashback' =>     0,
+                  'deviceTariff' => 0,
+               ]);
+            }
+                            }
+                            
+                            else{
                                 $deviceEarn->earnings +=  $fullAmount;
     
                                 $deviceEarn->save();
