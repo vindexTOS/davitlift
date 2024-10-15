@@ -99,11 +99,15 @@ trait FixedTarrifOpModeService
                 if ($device->isFixed == '0') {
                     DeviceUser::where('user_id', $user->id)
                         ->update(['subscription' => $nextMonthPayDay]);
+
+                        Log::info("DATE TIME FIRST ", ["info"=>$nextMonthPayDay ]);
                 } else {
 
                     $nextPayDay = $this->isFixedMonthCalculator($device);
                     DeviceUser::where('user_id', $user->id)
                         ->update(['subscription' => $nextPayDay->toDateString()]);
+                        Log::info("NEST PAY DAY ", ["info"=>$nextPayDay->toDateString()]);
+
                 }
 
 
@@ -123,7 +127,7 @@ trait FixedTarrifOpModeService
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
                 }
                 // $user->refresh();  
- $deviceUser->save();
+                $deviceUser->save();
                 $notificationDateTime = Carbon::parse($deviceUser->subscription);
                 $notificationTarrifTobePayed = $combinedTarffToBepayed  / 100;
 
