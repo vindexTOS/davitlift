@@ -20,7 +20,8 @@ trait NotificationProvider
                 "user_id" => $user_id,
                 'message' => $message,
                 'meta-data' => $metaData,
-                'message-type' => $messageType
+                'message-type' => $messageType,
+    
             ]);
             DB::commit();
         } catch (\Throwable $th) {

@@ -20,8 +20,7 @@ return new class extends Migration
             $table->string('meta-data')->default(null);
             $table->string('message-type')->default(\App\Enums\NotificationType::general);
             $table->unsignedBigInteger('device_id')->nullable();
-            $table->date("updated_at");
-            $table->date('created_at');
+            $table->timestamps();
         });
     }
 

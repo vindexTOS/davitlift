@@ -317,3 +317,4 @@ Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 //  notifications
 
 Route::get("/notifications/{user_id}", [NotificationsController::class, "index"]);
+Route::post("/notifications/read/{user_id}", [NotificationsController::class, "checkAllNotificationsAsRead"]);
