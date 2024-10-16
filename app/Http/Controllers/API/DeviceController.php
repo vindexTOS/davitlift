@@ -181,7 +181,7 @@ class DeviceController extends Controller
 
     public function sendDeviceParameters($device) {
         return $this->generateHexPayload(240, [
-            // startup
+            //startup
             [
                 'type' => 'number',
                 'value' => 0
@@ -190,55 +190,57 @@ class DeviceController extends Controller
                 'type' => 'number',
                 'value' => 0
             ],
-            // op_mode
+            //op_mode
+
             [
                 'type' => 'number',
-                'value' => isset($device->op_mode) ? $device->op_mode : 0
+                'value' => $device->op_mode
             ],
-            // relay
+            //relay
             [
                 'type' => 'number',
-                'value' => isset($device->relay_pulse_time) ? $device->relay_pulse_time : 0
+                'value' => $device->relay_pulse_time
             ],
-            // lcdBright
+            //lcdBright
             [
                 'type' => 'number',
-                'value' => isset($device->lcd_brightness) ? $device->lcd_brightness : 0
+                'value' => $device->lcd_brightness
             ],
-            // ledBright
+            //ledBright
             [
                 'type' => 'number',
-                'value' => isset($device->led_brightness) ? $device->led_brightness : 0
+                'value' => $device->led_brightness
             ],
-            // msgAppearTime
+            //msgAppearTime
             [
                 'type' => 'number',
-                'value' => isset($device->msg_appear_time) ? $device->msg_appear_time : 0
+                'value' => $device->msg_appear_time
             ],
-            // card Read delay
+            //card Read delay
             [
                 'type' => 'number',
-                'value' => isset($device->card_read_delay) ? $device->card_read_delay : 0
+                'value' => $device->card_read_delay
             ],
-            // tariff
+            //tariff
             [
                 'type' => 'number16',
-                'value' => isset($device->tariff_amount) ? $device->tariff_amount : 0
+                'value' => $device->tariff_amount
             ],
-            // timezone
+            //timezone
             [
                 'type' => 'number',
                 'value' => 4
             ],
-            // storage Disable
+            //storage Disable
             [
                 'type' => 'number',
-                'value' => isset($device->storage_disable) ? $device->storage_disable : 0
+                'value' => $device->storage_disable
             ],
+
             // dev id
             [
                 'type' => 'string',
-                'value' => str_pad($device->id ?? 0, 5, '0', STR_PAD_LEFT)
+                'value' => str_pad($device->id, 5, '0', STR_PAD_LEFT)
             ],
             [
                 'type' => 'number',
@@ -247,32 +249,34 @@ class DeviceController extends Controller
             // guest 1
             [
                 'type' => 'string',
-                'value' => $device->guest_msg_L1 ?? ''
+                'value' => $device->guest_msg_L1
             ],
-            ...$this->generateZeropast($device->guest_msg_L1 ?? ''),
+            ...$this->generateZeropast($device->guest_msg_L1),
             [
                 'type' => 'string',
-                'value' => $device->guest_msg_L2 ?? ''
+                'value' => $device->guest_msg_L2
             ],
-            ...$this->generateZeropast($device->guest_msg_L2 ?? ''),
+            ...$this->generateZeropast($device->guest_msg_L2),
+
             [
                 'type' => 'string',
-                'value' => $device->guest_msg_L3 ?? ''
+                'value' => $device->guest_msg_L3
             ],
-            ...$this->generateZeropast($device->guest_msg_L3 ?? ''),
+            ...$this->generateZeropast($device->guest_msg_L3),
+
             [
                 'type' => 'string',
-                'value' => $device->validity_msg_L1 ?? ''
+                'value' => $device->validity_msg_L1
             ],
-            ...$this->generateZeropast($device->validity_msg_L1 ?? ''),
+            ...$this->generateZeropast($device->validity_msg_L1),
+
             [
                 'type' => 'string',
-                'value' => $device->validity_msg_L2 ?? ''
+                'value' => $device->validity_msg_L2
             ],
-            ...$this->generateZeropast($device->validity_msg_L2 ?? ''),
+            ...$this->generateZeropast($device->validity_msg_L2),
         ]);
     }
-    
 
     public function show($device)
     {
@@ -399,8 +403,8 @@ return  $device;
             'payload' => $payload
         ];
         $queryParams = http_build_query($data);
-        $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
-        return $response->json(['data' => ['dasd']]);
+        // $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
+        // return $response->json(['data' => ['dasd']]);
 
     }
     public function updateDeviceTariff($id,  Request $request){
