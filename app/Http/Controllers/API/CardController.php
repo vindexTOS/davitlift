@@ -179,6 +179,7 @@ class CardController extends Controller
         $user = User::where('id', Auth::id())->first();
         $canCode = false;
         if ($device->op_mode == 0) {
+            Log::info("if op 0 ", ["info"=> $canCode]);
             $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
@@ -192,6 +193,8 @@ class CardController extends Controller
             $subscriptionDate = Carbon::parse($deviceUser->subscription);
             $now = Carbon::now();
             if ($subscriptionDate->gt($now)) {
+                Log::info("if op now ", ["info"=> $canCode]);
+
                 $canCode = true;
             }
         } else {
@@ -207,6 +210,8 @@ class CardController extends Controller
             }
         }
         if ($canCode) {
+            Log::info("if op true ", ["info"=> $canCode]);
+
             $lastAmount = LastUserAmount::where('user_id', $user->id)
             ->where('device_id', $device->id)
             ->first();
@@ -236,6 +241,8 @@ class CardController extends Controller
                     'value' => $user->balance - $user->freezed_balance,
                 ],
             ]);
+            Log::info("if op before sending", ["info"=> $canCode]);
+
             $this->publishMessage($device->dev_id, $payload);
             $devices_ids = Device::where('users_id', $device->users_id)->get();
             foreach ($devices_ids as $key2 => $value2) {
