@@ -473,10 +473,13 @@ class CardController extends Controller
     }
     public function publishMessage($device_id, $payload)
     {
+        Log::info(" PAYLOAD ", ["info"=> $payload]);
+
         $data = [
             'device_id' => $device_id,
             'payload' => $payload,
         ];
+        Log::info(" PAYLOAD ", ["info"=> $data]);
 
         $queryParams = http_build_query($data);
         $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
