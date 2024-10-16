@@ -158,7 +158,6 @@ function generateHexPayload(command, payload = []) {
 function publishMessage(device_id, payload) {
     return new Promise((resolve, reject) => {
         const topic = `Lift/${device_id}/commands/general`;
-        console.log(topic );
 
         if (!client.connected) {
             console.log("MQTT client is not connected");
@@ -167,11 +166,11 @@ function publishMessage(device_id, payload) {
         let res = client.publish(topic, payload, { qos: 1 }, (err) => {
             // console.log(err)
             if (err) {
-                console.error("Error publishing message:", err);
+                // console.error("Error publishing message:", err);
                 reject(new Error("Connection error"));
             } else {
                 // Log successful publish
-                console.log(`Message published to ${topic}`);
+                // console.log(`Message published to ${topic}`);
                 resolve({
                     status: "success",
                     message: "Message published successfully",
