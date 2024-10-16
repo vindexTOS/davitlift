@@ -351,8 +351,8 @@ return  $device;
 
 
      
-        $this->publishMessage( $device->dev_id, $this->sendDeviceParameters($device));
-        // $mqtt->loop(true, true);
+        // $this->publishMessage( $device->dev_id, $this->sendDeviceParameters($device));
+        $mqtt->loop(true, true);
 
         return $device;
     }
