@@ -341,9 +341,9 @@ return  $device;
 
 
         
-        $this->update($request,$device);
+        // $this->update($request,$device);
         $mqttService = app(MqttConnectionService::class);
-        $mqtt = $mqttService->connect();
+        // $mqtt = $mqttService->connect();
       
          if($device->op_mode == 2){
             $device->op_mode = 0;
@@ -352,7 +352,7 @@ return  $device;
 
      
         // $this->publishMessage( $device->dev_id, $this->sendDeviceParameters($device));
-        $mqtt->loop(true, true);
+        // $mqtt->loop(true, true);
 
         return $device;
     }
