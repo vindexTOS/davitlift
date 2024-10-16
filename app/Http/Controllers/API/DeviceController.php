@@ -403,8 +403,8 @@ return  $device;
             'payload' => $payload
         ];
         $queryParams = http_build_query($data);
-        // $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
-        // return $response->json(['data' => ['dasd']]);
+        $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
+        return $response->json(['data' => ['dasd']]);
 
     }
     public function updateDeviceTariff($id,  Request $request){

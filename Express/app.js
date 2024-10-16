@@ -1,99 +1,74 @@
-const express = require("express");
-const mqtt = require("mqtt");
-const axios = require("axios");
+const express = require('express')
+const mqtt = require('mqtt');
+const axios = require('axios');
 
-const app = express();
-const port = 3000;
+const app = express()
+const port = 3000
 
-app.get("/", (req, res) => {
-    res.send("Hello World!");
-});
-app.get("/mqtt/general", async (req, res) => {
+app.get('/', (req, res) => {
+    res.send('Hello World!')
+})
+app.get('/mqtt/general',(req,res) => {
     const data = req.query;
+    publishMessage(data.device_id, generateHexPayload(data.payload.command,data.payload.payload))
+    res.send('test')
+})
 
-    try {
-        const response = await publishMessage(
-            data.device_id,
-            generateHexPayload(data.payload.command, data.payload.payload)
-        );
-        res.json(response);
-    } catch (error) {
-        res.json({
-            status: "error",
-            message: error.message || "Connection error",
-        });
-    }
-});
-app.listen(port, () => { });
-const generalTopic = "Lift/+/events/general";
-const heartbeatTopic = "Lift/+/events/heartbeat";
+app.listen(port, () => {
+})
+const generalTopic = 'Lift/+/events/general';
+const heartbeatTopic = 'Lift/+/events/heartbeat';
 
-const client = mqtt.connect("mqtt://147.182.164.92", {
-    port: 1883,
+const client = mqtt.connect('mqtt://147.182.164.92', {
+    port: 1883
 });
-app.get("/mqtt/general/force", (req, res) => {
+app.get('/mqtt/general/force',(req,res) => {
     const data = req.query;
-    publishMessage(data.device_id, data.payload);
-    res.send("test");
-});
-
-client.on("connect", () => {
+    publishMessage(data.device_id, data.payload)
+    res.send('test')
+})
+client.on('connect', () => {
     // Once connected, subscribe to the topics
-    client.subscribe([generalTopic, heartbeatTopic], () => { });
+    client.subscribe([generalTopic, heartbeatTopic], () => {
+    });
 });
 
-client.on("error", function (error) {
-    console.error("Connection to HiveMQ broker failed:", error);
+client.on('error', function (error) {
+    console.error('Connection to HiveMQ broker failed:', error);
 });
 
-client.on("message", (topic, message) => {
+client.on('message', (topic, message) => {
     // Convert message to string and parse if necessary
     const msgJson = parseHexPayload(message);
 
-    // Log the received message for debugging
-    // console.log("Received message:", {
-    //     topic: topic,
-    //     message: msgJson
-    // });
-
     if (topic.match(/Lift\/[^\/]+\/events\/general/)) {
-        // Handle general event messages
-        if (msgJson.command === 1) {
-            // Do something with command 1
+        if(msgJson.command === 1) {
+
         }
-        if (msgJson.command === 4) {
-            const payload = Buffer.from(msgJson.payload, "binary");
-            msgJson.amount = payload.readUInt16BE(0);
-            msgJson.card = payload.toString("utf8", 2, 10);
+        if(msgJson.command === 4) {
+            const payload = Buffer.from(msgJson.payload, 'binary');
+            msgJson.amount = payload.readUInt16BE(0)
+            msgJson.card = payload.toString('utf8', 2, 10)
+
         }
-        axios
-            .get("https://lift.eideas.io/api/mqtt/general", {
-                params: {
-                    payload: msgJson,
-                    topic: topic,
-                },
+        axios.get('https://lift.eideas.io/api/mqtt/general', {
+            params:{
+                payload: msgJson,
+                topic: topic
+            }
+        })
+            .then(response => {
             })
-            .then((response) => {
-                console.log("General event sent:", response.data);
-            })
-            .catch((error) => {
-                console.error("Error sending general event:", error);
-            });
+            .catch(error => console.error('Error sending general event', error));
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
-        // Handle heartbeat event messages
-        axios
-            .get("https://lift.eideas.io/api/mqtt/heartbeat", {
-                params: {
-                    payload: msgJson,
-                    topic: topic,
-                },
-            })
-            .then((response) => {
-                // console.log("Heartbeat event sent:", response.data);
-            })
-            .catch((error) => {
-                // console.error("Error sending heartbeat event:", error);
-            });
+        axios.get('https://lift.eideas.io/api/mqtt/heartbeat', {
+            params:{
+                payload: msgJson,
+                topic: topic
+            }
+        })
+            .then(response => {})
+            .catch(error => console.error('Error sending heartbeat event', error));
     }
 });
 function parseHexPayload(byteString) {
@@ -101,7 +76,7 @@ function parseHexPayload(byteString) {
     const data = {
         timestamp: byteString.readUInt32BE(0),
         command: byteString.readUInt8(4),
-        length: byteString.readUInt8(5),
+        length: byteString.readUInt8(5)
     };
 
     // Extract payload using the length (starting from byte 6)
@@ -111,7 +86,7 @@ function parseHexPayload(byteString) {
         timestamp: data.timestamp,
         command: data.command,
         length: data.length,
-        payload: payload,
+        payload: payload
     };
 }
 function generateHexPayload(command, payload = []) {
@@ -124,60 +99,40 @@ function generateHexPayload(command, payload = []) {
     for (const key in payload) {
         const item = payload[key];
         switch (item.type) {
-            case "string":
-                payloadBufferList.push(Buffer.from(item.value, "utf8"));
+            case 'string':
+                payloadBufferList.push(Buffer.from(item.value, 'utf8'));
                 break;
-            case "timestamp":
+            case 'timestamp':
                 const timeBuffer = Buffer.alloc(4);
                 timeBuffer.writeUInt32LE(item.value, 0);
                 payloadBufferList.push(timeBuffer);
                 break;
-            case "number":
+            case 'number':
                 const numBuffer = Buffer.alloc(1);
                 numBuffer.writeUInt8(item.value, 0);
                 payloadBufferList.push(numBuffer);
                 break;
-            case "number16":
+            case 'number16':
                 const num16Buffer = Buffer.alloc(2);
                 num16Buffer.writeUInt16LE(item.value, 0);
                 payloadBufferList.push(num16Buffer);
                 break;
+
         }
     }
 
     const payloadSize = Buffer.alloc(1);
-    const totalPayloadLength = payloadBufferList.reduce(
-        (acc, curr) => acc + curr.length,
-        0
-    );
+    const totalPayloadLength = payloadBufferList.reduce((acc, curr) => acc + curr.length, 0);
     payloadSize.writeUInt8(totalPayloadLength, 0);
     payloadBufferList.unshift(payloadSize);
 
     return Buffer.concat([commandBuffer, ...payloadBufferList]);
 }
 function publishMessage(device_id, payload) {
-    return new Promise((resolve, reject) => {
-        const topic = `Lift/${device_id}/commands/general`;
-
-        if (!client.connected) {
-            console.log("MQTT client is not connected");
-            return reject(new Error("MQTT client is not connected"));
+    const topic = `Lift/${device_id}/commands/general`;
+    client.publish(topic, payload, { qos: 1 }, (err) => {
+        if (err) {
+        } else {
         }
-        let res = client.publish(topic, payload, { qos: 1 }, (err) => {
-            // console.log(err)
-            if (err) {
-                // console.error("Error publishing message:", err);
-                reject(new Error("Connection error"));
-            } else {
-                // Log successful publish
-                // console.log(`Message published to ${topic}`);
-                resolve({
-                    status: "success",
-                    message: "Message published successfully",
-                });
-            }
-        });
-
-        console.log(res)
     });
 }
