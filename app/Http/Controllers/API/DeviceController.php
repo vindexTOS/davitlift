@@ -337,7 +337,7 @@ return  $device;
     }
     public function setAppConf(Request $request, Device $device) {
         // Log incoming request data
-        \Log::info('Request Data:', $request->all());
+         Log::info('Request Data:', $request->all());
     
         if (!$device) {
             return response()->json(["msg" => "Device not found"], 404);
@@ -347,7 +347,7 @@ return  $device;
             // Attempt to update device configuration
             $this->update($request, $device);
         } catch (\Exception $e) {
-            \Log::error('Update Error: ' . $e->getMessage());
+             Log::error('Update Error: ' . $e->getMessage());
             return response()->json(["msg" => "Update failed"], 500);
         }
     
@@ -355,7 +355,7 @@ return  $device;
         $mqtt = $mqttService->connect();
     
         if (!$mqtt) {
-            \Log::error('MQTT Connection failed');
+             Log::error('MQTT Connection failed');
             return response()->json(["msg" => "MQTT connection failed"], 500);
         }
     
@@ -366,10 +366,10 @@ return  $device;
         try {
             $messageData = $this->sendDeviceParameters($device);
             // Log message data before publishing
-            \Log::info('Publishing message:', $messageData);
+             Log::info('Publishing message:', $messageData);
             $this->publishMessage($device->dev_id, $messageData);
         } catch (\Exception $e) {
-            \Log::error('Publish Message Error: ' . $e->getMessage());
+             Log::error('Publish Message Error: ' . $e->getMessage());
             return response()->json(["msg" => "Failed to publish message"], 500);
         }
     
