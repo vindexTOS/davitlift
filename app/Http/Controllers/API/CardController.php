@@ -170,6 +170,8 @@ class CardController extends Controller
             );
         }
     }
+
+
     public function calltolift(Request $request)
     {
         $device = Device::where('id', $request->device_id)->first();
@@ -178,33 +180,18 @@ class CardController extends Controller
         $canCode = false;
         if ($device->op_mode == 0) {
             $deviceIds = Device::where('users_id', $device->users_id)
-                ->pluck('id')
-                ->toArray();
-
+            ->pluck('id')
+            ->toArray();
+            
             $card = Card::where('user_id', $user->id)
-                ->whereIn('device_id', $deviceIds)
-                ->first();
+            ->whereIn('device_id', $deviceIds)
+            ->first();
+            $deviceUser = DeviceUser::where('device_id', $card->device_id)
+            ->where('user_id', Auth::id())
+            ->first();
+            $subscriptionDate = Carbon::parse($deviceUser->subscription);
             $now = Carbon::now();
-
-            $deviceUser = DeviceUser::where('device_id', $card->device_id)
-                ->where('user_id', Auth::id())
-                ->first();
-            $subscriptionDate = Carbon::parse($deviceUser->subscription);
-
-            if (!$subscriptionDate->gt($now)) {
-
-                $this->handleOpMode($device->op_mode, $user, $device);
-            }
-
-
-
-            $deviceUser = DeviceUser::where('device_id', $card->device_id)
-                ->where('user_id', Auth::id())
-                ->first();
-            $subscriptionDate = Carbon::parse($deviceUser->subscription);
-
             if ($subscriptionDate->gt($now)) {
-
                 $canCode = true;
             }
         } else {
@@ -221,18 +208,18 @@ class CardController extends Controller
         }
         if ($canCode) {
             $lastAmount = LastUserAmount::where('user_id', $user->id)
-                ->where('device_id', $device->id)
-                ->first();
-
+            ->where('device_id', $device->id)
+            ->first();
+            
             if (empty($lastAmount->user_id)) {
                 LastUserAmount::insert([
                     'user_id' => $user->id,
                     'device_id' => $device->id,
-                    'last_amount' => $user->balance - $device->tariff_amount,
+                    'last_amount' => $user->balance - $user->freezed_balance,
                 ]);
             } else {
                 $lastAmount->last_amount =
-                    $user->balance - $device->tariff_amount;
+                $user->balance - $user->freezed_balance;
                 $lastAmount->save();
             }
             $payload = $this->generateHexPayload(1, [
@@ -246,7 +233,7 @@ class CardController extends Controller
                 ],
                 [
                     'type' => 'number16',
-                    'value' => $user->balance - $device->tariff_amount,
+                    'value' => $user->balance - $user->freezed_balance,
                 ],
             ]);
             $this->publishMessage($device->dev_id, $payload);
@@ -256,46 +243,172 @@ class CardController extends Controller
                     $lastAmountCurrentDevice = LastUserAmount::where(
                         'user_id',
                         $user->id
-                    )
+                        )
                         ->where('device_id', $value2->id)
                         ->first();
-
-                    if (empty($lastAmountCurrentDevice->user_id)) {
-                        LastUserAmount::insert([
-                            'user_id' => $user->id,
-                            'device_id' => $value2->id,
-                            'last_amount' =>
-                            $user->balance - $device->tariff_amount,
+                        
+                        if (empty($lastAmountCurrentDevice->user_id)) {
+                            LastUserAmount::insert([
+                                'user_id' => $user->id,
+                                'device_id' => $value2->id,
+                                'last_amount' =>
+                                $user->balance - $user->freezed_balance,
+                            ]);
+                        } else {
+                            $lastAmountCurrentDevice->last_amount =
+                            $user->balance - $user->freezed_balance;
+                            $lastAmountCurrentDevice->save();
+                        }
+                        $payload = $this->generateHexPayload(5, [
+                            [
+                                'type' => 'string',
+                                'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+                            ],
+                            [
+                                'type' => 'number',
+                                'value' => 0,
+                            ],
+                            [
+                                'type' => 'number16',
+                                'value' => $user->balance - $user->freezed_balance,
+                            ],
                         ]);
-                    } else {
-                        $lastAmountCurrentDevice->last_amount =
-                            $user->balance - $device->tariff_amount;
-                        $lastAmountCurrentDevice->save();
+                        $this->publishMessage($value2->dev_id, $payload);
                     }
-                    $payload = $this->generateHexPayload(5, [
-                        [
-                            'type' => 'string',
-                            'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
-                        ],
-                        [
-                            'type' => 'number',
-                            'value' => 0,
-                        ],
-                        [
-                            'type' => 'number16',
-                            'value' => $user->balance - $device->tariff_amount,
-                        ],
-                    ]);
-                    $this->publishMessage($value2->dev_id, $payload);
                 }
+            } else {
+                return response()->json(
+                    ['message' => 'გთხოვთ შეავსოთ ბალანსი'],
+                    422
+                );
             }
-        } else {
-            return response()->json(
-                ['message' => 'გთხოვთ შეავსოთ ბალანსი'],
-                422
-            );
         }
-    }
+    // public function calltolift(Request $request)
+    // {
+    //     $device = Device::where('id', $request->device_id)->first();
+    //     $Balance = Auth::user()['balance'];
+    //     $user = User::where('id', Auth::id())->first();
+    //     $canCode = false;
+    //     if ($device->op_mode == 0) {
+    //         $deviceIds = Device::where('users_id', $device->users_id)
+    //             ->pluck('id')
+    //             ->toArray();
+
+    //         $card = Card::where('user_id', $user->id)
+    //             ->whereIn('device_id', $deviceIds)
+    //             ->first();
+    //         $now = Carbon::now();
+
+    //         $deviceUser = DeviceUser::where('device_id', $card->device_id)
+    //             ->where('user_id', Auth::id())
+    //             ->first();
+    //         $subscriptionDate = Carbon::parse($deviceUser->subscription);
+
+    //         if (!$subscriptionDate->gt($now)) {
+
+    //             $this->handleOpMode($device->op_mode, $user, $device);
+    //         }
+
+
+
+    //         $deviceUser = DeviceUser::where('device_id', $card->device_id)
+    //             ->where('user_id', Auth::id())
+    //             ->first();
+    //         $subscriptionDate = Carbon::parse($deviceUser->subscription);
+
+    //         if ($subscriptionDate->gt($now)) {
+
+    //             $canCode = true;
+    //         }
+    //     } else {
+    //         if ($Balance >= $device->tariff_amount) {
+    //             $canCode = true;
+    //             $user->balance = $user->balance - $device->tariff_amount;
+    //             $user->save();
+    //             $this->saveOrUpdateEarnings(
+    //                 $device->id,
+    //                 $device->tariff_amount,
+    //                 $device->company_id
+    //             );
+    //         }
+    //     }
+    //     if ($canCode) {
+    //         $lastAmount = LastUserAmount::where('user_id', $user->id)
+    //             ->where('device_id', $device->id)
+    //             ->first();
+
+    //         if (empty($lastAmount->user_id)) {
+    //             LastUserAmount::insert([
+    //                 'user_id' => $user->id,
+    //                 'device_id' => $device->id,
+    //                 'last_amount' => $user->balance - $device->tariff_amount,
+    //             ]);
+    //         } else {
+    //             $lastAmount->last_amount =
+    //                 $user->balance - $device->tariff_amount;
+    //             $lastAmount->save();
+    //         }
+    //         $payload = $this->generateHexPayload(1, [
+    //             [
+    //                 'type' => 'string',
+    //                 'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+    //             ],
+    //             [
+    //                 'type' => 'number',
+    //                 'value' => 0,
+    //             ],
+    //             [
+    //                 'type' => 'number16',
+    //                 'value' => $user->balance - $device->tariff_amount,
+    //             ],
+    //         ]);
+    //         $this->publishMessage($device->dev_id, $payload);
+    //         $devices_ids = Device::where('users_id', $device->users_id)->get();
+    //         foreach ($devices_ids as $key2 => $value2) {
+    //             if ($value2->op_mode == '1') {
+    //                 $lastAmountCurrentDevice = LastUserAmount::where(
+    //                     'user_id',
+    //                     $user->id
+    //                 )
+    //                     ->where('device_id', $value2->id)
+    //                     ->first();
+
+    //                 if (empty($lastAmountCurrentDevice->user_id)) {
+    //                     LastUserAmount::insert([
+    //                         'user_id' => $user->id,
+    //                         'device_id' => $value2->id,
+    //                         'last_amount' =>
+    //                         $user->balance - $device->tariff_amount,
+    //                     ]);
+    //                 } else {
+    //                     $lastAmountCurrentDevice->last_amount =
+    //                         $user->balance - $device->tariff_amount;
+    //                     $lastAmountCurrentDevice->save();
+    //                 }
+    //                 $payload = $this->generateHexPayload(5, [
+    //                     [
+    //                         'type' => 'string',
+    //                         'value' => str_pad($user->id, 6, '0', STR_PAD_LEFT),
+    //                     ],
+    //                     [
+    //                         'type' => 'number',
+    //                         'value' => 0,
+    //                     ],
+    //                     [
+    //                         'type' => 'number16',
+    //                         'value' => $user->balance - $device->tariff_amount,
+    //                     ],
+    //                 ]);
+    //                 $this->publishMessage($value2->dev_id, $payload);
+    //             }
+    //         }
+    //     } else {
+    //         return response()->json(
+    //             ['message' => 'გთხოვთ შეავსოთ ბალანსი'],
+    //             422
+    //         );
+    //     }
+    // }
     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
     {
         // Generate the date for month_year
