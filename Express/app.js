@@ -156,28 +156,14 @@ function generateHexPayload(command, payload = []) {
     return Buffer.concat([commandBuffer, ...payloadBufferList]);
 }
 function publishMessage(device_id, payload) {
-    return new Promise((resolve, reject) => {
-        const topic = `Lift/${device_id}/commands/general`;
+    const topic = `Lift/${device_id}/commands/general`;
+    console.log(topic)
 
-        if (!client.connected) {
-            console.log("MQTT client is not connected");
-            return reject(new Error("MQTT client is not connected"));
+    client.publish(topic, payload, { qos: 1 }, (err) => {
+        if (err) {
+            console.log(err)
+        } else {
+            console.log(topic)
         }
-        let res = client.publish(topic, payload, { qos: 1 }, (err) => {
-            // console.log(err)
-            if (err) {
-                // console.error("Error publishing message:", err);
-                reject(new Error("Connection error"));
-            } else {
-                // Log successful publish
-                // console.log(`Message published to ${topic}`);
-                resolve({
-                    status: "success",
-                    message: "Message published successfully",
-                });
-            }
-        });
-
-        console.log(res)
     });
 }
