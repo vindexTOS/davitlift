@@ -235,6 +235,9 @@ class CardController extends Controller
                     $user->balance - $device->tariff_amount;
                 $lastAmount->save();
             }
+
+
+             $deviceBalanceCombined =  $user->balance - $device->tariff_amount > 0 ? $user->balance - $device->tariff_amount  : 0;
             $payload = $this->generateHexPayload(1, [
                 [
                     'type' => 'string',
@@ -246,7 +249,7 @@ class CardController extends Controller
                 ],
                 [
                     'type' => 'number16',
-                    'value' => 1000,
+                    'value' =>    $deviceBalanceCombined,
                 ],
             ]);
             $this->publishMessage($device->dev_id, $payload);
@@ -283,7 +286,7 @@ class CardController extends Controller
                         ],
                         [
                             'type' => 'number16',
-                            'value' => 1000,
+                            'value' =>    $deviceBalanceCombined,
                         ],
                     ]);
                     $this->publishMessage($value2->dev_id, $payload);
