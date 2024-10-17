@@ -246,7 +246,7 @@ class CardController extends Controller
                 ],
                 [
                     'type' => 'number16',
-                    'value' => $user->balance - $device->tariff_amount,
+                    'value' => 1000,
                 ],
             ]);
             $this->publishMessage($device->dev_id, $payload);
@@ -283,7 +283,7 @@ class CardController extends Controller
                         ],
                         [
                             'type' => 'number16',
-                            'value' => $user->balance - $device->tariff_amount,
+                            'value' => 1000,
                         ],
                     ]);
                     $this->publishMessage($value2->dev_id, $payload);
