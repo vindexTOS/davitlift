@@ -493,10 +493,7 @@
                             <v-text-field v-model.number="editedItem.tariff_amount" class="text-capitalize"
                                 :label="$t('Charge (in Tetri)')" required></v-text-field>
                         </v-col>
-                        <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field v-model.number="editedItem.fixed_card_amount" class="text-capitalize"
-                                :label="'ბარათის ტარიფი(თეთრებში)'" required></v-text-field>
-                        </v-col>
+                      
 
                         <v-col v-if="dialogBussines" cols="12">
                             <v-text-field v-model="editedItem.admin_email" class="text-capitalize"
@@ -663,7 +660,7 @@ export default {
         desserts: [],
         editedIndex: -1,
         editedItem: {
-            fixed_card_amount: 0,
+          
             company_id: null,
             name: "",
             dev_name: "lifti:",
@@ -1062,11 +1059,14 @@ export default {
         save() {
             let route = "/api/devices/" + this.editedItem.id;
             if (this.dialogBussines || this.dialogAppConf) {
+
                 route = route + "/appconf";
             }
             if (this.dialogExtConf) {
                 route = route + "/extconf";
             }
+            delete this.editedItem.deviceTariffAmount ;
+            delete this.editedItem.fixed_card_amount;
             axios.put(route, this.editedItem).then(() => {
                 this.loadItems();
                 this.close();
@@ -1078,17 +1078,7 @@ export default {
                 });
             });
 
-            axios
-                .put("/api/update-fixed-card-amount", {
-                    device_id: this.editedItem.id,
-                    amount: this.editedItem.fixed_card_amount,
-                })
-                .then((res) => {
-                    console.log(res);
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+      
         },
 
         englishToGeorgian(englishText) {
