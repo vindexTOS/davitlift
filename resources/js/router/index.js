@@ -20,6 +20,12 @@ const routes = [
           import(/* webpackChunkName: "home" */ '../views/ComercialTest.vue'),
       },
       {
+        path: '/notifications',
+        name: 'notificatiosnPage',
+        component: () =>
+          import(/* webpackChunkName: "home" */ '../views/NotificationsAdminPannel.vue'),
+      },
+      {
         path: 'company',
         name: 'company',
         component: () =>
