@@ -171,21 +171,8 @@
                 <!--  -->
 
 
-
-
-                <div v-if="isAdmin">
-                  <div>
-                    <b>
-                      მომსახურების მინიმალური საფასური
-                      {{ item.deviceTariffAmount }} ₾
-                    </b>
-                    <v-btn style="width: 30px; height: 30px; padding:5px"  @click="openDeviceTariffDialog(item.deviceTariffAmount, item.id)" icon>
-                      <v-icon  size="12px"  color="gray">mdi-pencil</v-icon>
-                    </v-btn>
-
-
-                    <!-- Fixed Card Amount Dialog -->
-                    <v-dialog v-model="dialogFixedCard" persistent :style="{ background: 'transparent' }"
+   <!-- Fixed Card Amount Dialog -->
+   <v-dialog v-model="dialogFixedCard" persistent :style="{ background: 'transparent' }"
                       class="transparent-dialog">
                       <v-card style="background-color: rgba(255, 255, 255, 0.8);">
                         <v-card-title> Edit Fixed Card Amount </v-card-title>
@@ -200,6 +187,19 @@
                         </v-card-actions>
                       </v-card>
                     </v-dialog>
+
+                <div v-if="isAdmin">
+                  <div>
+                    <b>
+                      მომსახურების მინიმალური საფასური
+                      {{ item.deviceTariffAmount }} ₾
+                    </b>
+                    <v-btn style="width: 30px; height: 30px; padding:5px"  @click="openDeviceTariffDialog(item.deviceTariffAmount, item.id)" icon>
+                      <v-icon  size="12px"  color="gray">mdi-pencil</v-icon>
+                    </v-btn>
+
+
+                 
 
                     <!--  device tarrif dialog-->
                     <v-dialog v-model="dialogFixedDeviceTarrif">
