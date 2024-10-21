@@ -169,7 +169,7 @@
                                 </b>
 
                                 <hr />
-                                <div>
+                                <div v-if="isCompany" >
                                     <b>
                                         ბარათის ტარიფი(თეთრებში)
                                         {{ item.fixed_card_amount }} ₾
@@ -294,6 +294,7 @@ export default {
             eachLiftTariffAmount: 0,
             cashBackAmount: 0,
             shouldCashBackOnManager: false,
+            isCompany:false,
             series: [
                 {
                     name: "",
@@ -447,7 +448,11 @@ export default {
         chackAdminEmail() {
             const token = localStorage.getItem("vuex");
             let email = JSON.parse(token).auth.user.email;
+            let role = JSON.parse(token).auth.user.role
             this.isAdmin = email === "info@eideas.io";
+            if(role == "company"){
+                this.isCompany = true
+            }
         },
         handleLiftAmountTariffInput(event) {
             this.liftTariffValue = event.target.value;
