@@ -98,15 +98,7 @@ class BankOfGeorgia extends Controller
                         ]
                     ]
                 ];
-                $data['additional-info']['parameters'] = [
-                    'parameter' => [
-                        'attributes' => [
-                            'name' => 'user_name',
-                        ],
-                        'value' => $user->name,
-                    ]
-                ];
-            
+   
                 $data['additional-info']['parameters'][] = [
                     'parameter' => [
                         'attributes' => [
