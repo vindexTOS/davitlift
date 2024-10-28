@@ -77,7 +77,8 @@ class BankOfGeorgia extends Controller
             $user = User::where('phone', $CUSTOMER_ID)->first();
 
 
-
+            $filedId = $this->MakeFileId($user->id);
+            $parts = explode('#', $filedId);
             if ($user) {
 
                 $data = [
@@ -97,7 +98,41 @@ class BankOfGeorgia extends Controller
                         ]
                     ]
                 ];
-
+                $data['additional-info']['parameters'] = [
+                    'parameter' => [
+                        'attributes' => [
+                            'name' => 'user_name',
+                        ],
+                        'value' => $user->name,
+                    ]
+                ];
+            
+                $data['additional-info']['parameters'][] = [
+                    'parameter' => [
+                        'attributes' => [
+                            'name' => 'uesr_id',
+                        ],
+                        'value' =>  isset($parts[0]) ? $parts[0] : "NOUID",
+                    ]
+                ];
+            
+                $data['additional-info']['parameters'][] = [
+                    'parameter' => [
+                        'attributes' => [
+                            'name' => 'company_id',
+                        ],
+                        'value' =>  isset($parts[1]) ? $parts[1] : "NOCOMPID",
+                    ]
+                ];
+            
+                $data['additional-info']['parameters'][] = [
+                    'parameter' => [
+                        'attributes' => [
+                            'name' => 'manager_phone',
+                        ],
+                        'value' =>  isset($parts[2]) ? $parts[2] : "NONUMBER",
+                    ]
+                ];
                 return $this->XmlResponse($data);
             } else {
                 return $this->HandleErrorCodes(6, "Customer does not exist");
