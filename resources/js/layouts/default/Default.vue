@@ -63,9 +63,17 @@
           {{ $t('Firmware update') }}
         </v-list-item>
         <v-list-item
-          :key="'files'"
+          :key="'notifications'"
           v-if="user.lvl >= 4"
-          prepend-icon="mdi-file"
+          prepend-icon="mdi-bell"
+          to="/notifications"
+        >
+          ნოტიფიკაციების მენეჯერი
+        </v-list-item>
+        <v-list-item
+          :key="'test'"
+          v-if="user.lvl >= 4"
+          prepend-icon="mdi-fire"
           to="/PageTest"
         >
           სატესტო

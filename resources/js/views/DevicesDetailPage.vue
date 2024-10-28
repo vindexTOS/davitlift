@@ -483,7 +483,7 @@
                                 <!--     radio heads for tarrif change           -->
                                 <v-radio :label="$t('Tariff')" :value="1"></v-radio>
                                 <v-radio :label="$t('Fixed')" :value="0"></v-radio>
-                                <v-radio :label="$t('Card Only')" :value="2"></v-radio>
+                                <!-- <v-radio :label="$t('Card Only')" :value="2"></v-radio> -->
                             </v-radio-group>
 
                             <!--     radio heads for tarrif change           -->
@@ -493,10 +493,7 @@
                             <v-text-field v-model.number="editedItem.tariff_amount" class="text-capitalize"
                                 :label="$t('Charge (in Tetri)')" required></v-text-field>
                         </v-col>
-                        <v-col v-if="dialogBussines" cols="12">
-                            <v-text-field v-model.number="editedItem.fixed_card_amount" class="text-capitalize"
-                                :label="'ბარათის ტარიფი(თეთრებში)'" required></v-text-field>
-                        </v-col>
+                      
 
                         <v-col v-if="dialogBussines" cols="12">
                             <v-text-field v-model="editedItem.admin_email" class="text-capitalize"
@@ -601,7 +598,7 @@
     <div @click="zoomIn()" :class="!isZoom ? 'user-table-hidden' : 'zoom-in-wrapper'">
         <i class="mdi mdi-fullscreen-exit zoom-in-icon"></i>
     </div>
-    <div v-if="isAdmin" @click="sendTest()" style="
+    <!-- <div v-if="isAdmin" @click="sendTest()" style="
             font-size: 14px;
             cursor: pointer;
             border-radius: 20px;
@@ -612,7 +609,7 @@
             background-color: green;
         ">
         ტესტი
-    </div>
+    </div> -->
 
     <div :class="isZoom ? 'user-table-zoom ' : 'user-table-hidden'">
         <UserTable :deviceId="data.id" @loadDevice="loadItems" :is-fixed="data.op_mode == 0" :server-items="usersInfo">
@@ -663,7 +660,7 @@ export default {
         desserts: [],
         editedIndex: -1,
         editedItem: {
-            fixed_card_amount: 0,
+          
             company_id: null,
             name: "",
             dev_name: "lifti:",
@@ -917,7 +914,7 @@ export default {
                 });
         },
         sendTest() {
-            axios.post(`/api/testing-fix/${this.$route.params.id}`).then((res) => {
+            axios.get(`/api/fixdevice/${this.$route.params.id}`).then((res) => {
                 this.$swal.fire({
                     title: "გაიგზავნა",
                 });
@@ -1062,11 +1059,14 @@ export default {
         save() {
             let route = "/api/devices/" + this.editedItem.id;
             if (this.dialogBussines || this.dialogAppConf) {
+
                 route = route + "/appconf";
             }
             if (this.dialogExtConf) {
                 route = route + "/extconf";
             }
+            delete this.editedItem.deviceTariffAmount ;
+            delete this.editedItem.fixed_card_amount;
             axios.put(route, this.editedItem).then(() => {
                 this.loadItems();
                 this.close();
@@ -1078,17 +1078,7 @@ export default {
                 });
             });
 
-            axios
-                .put("/api/update-fixed-card-amount", {
-                    device_id: this.editedItem.id,
-                    amount: this.editedItem.fixed_card_amount,
-                })
-                .then((res) => {
-                    console.log(res);
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+      
         },
 
         englishToGeorgian(englishText) {

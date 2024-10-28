@@ -152,39 +152,47 @@ trait TransactionProvider
     }
 
 
+    private function XmlResponse($data)
+    {
+        $xmlData = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><pay-response></pay-response>');
+        $this->arrayToXmlWithAttributes($data, $xmlData);
+        $xmlContent = $xmlData->asXML();
+    
+        return response($xmlContent, \Illuminate\Http\Response::HTTP_OK)
+            ->header('Content-Type', 'application/xml');
+    }
+    
     private function arrayToXmlWithAttributes($data, &$xmlData)
     {
         foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                if (isset($value['attributes'])) {
-                    $subnode = $xmlData->addChild($key);
-                    foreach ($value['attributes'] as $attrKey => $attrValue) {
-                        $subnode->addAttribute($attrKey, $attrValue);
-                    }
-                    if (isset($value['value'])) {
-                        $subnode[0] = htmlspecialchars($value['value']);
-                    }
-                } else {
-                    $subnode = $xmlData->addChild($key);
-                    $this->arrayToXmlWithAttributes($value, $subnode);
+            if (is_array($value) && is_numeric(key($value))) {
+                // Handle numeric indexed arrays by forcing <parameter> tag
+                foreach ($value as $subValue) {
+                    $subnode = $xmlData->addChild('parameter'); // Always use 'parameter' as tag name
+                    $this->setAttributesAndValue($subnode, $subValue);
                 }
+            } elseif (is_array($value)) {
+                // Handle nested arrays and attributes
+                $subnode = $xmlData->addChild($key);
+                $this->arrayToXmlWithAttributes($value, $subnode);
             } else {
-                $xmlData->addChild($key, htmlspecialchars($value));
+                // Add simple key-value pair
+                $xmlData->addChild($key, htmlspecialchars($value, ENT_XML1, 'UTF-8'));
             }
         }
     }
-
-
-    private function XmlResponse($data)
+    
+    private function setAttributesAndValue($xmlElement, $data)
     {
-        $xmlData = new \SimpleXMLElement('<?xml version="1.0"?><pay-response></pay-response>');
-        $this->arrayToXmlWithAttributes($data, $xmlData);
-        $xmlContent = $xmlData->asXML();
-
-        return response($xmlContent,  \Illuminate\Http\Response::HTTP_OK)
-            ->header('Content-Type', 'application/xml');
+        if (isset($data['attributes'])) {
+            foreach ($data['attributes'] as $attrKey => $attrValue) {
+                $xmlElement->addAttribute($attrKey, $attrValue);
+            }
+        }
+        if (isset($data['value'])) {
+            $xmlElement[0] = htmlspecialchars($data['value'], ENT_XML1, 'UTF-8');
+        }
     }
-
     private function HandleErrorCodes(int $code, string $message)
     {
         $data = [

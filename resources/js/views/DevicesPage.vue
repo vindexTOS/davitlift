@@ -5,11 +5,7 @@
         <h2>{{ $t('Lifts') }}</h2>
         <v-menu>
           <template v-slot:activator="{ props }">
-            <v-icon
-              size="small"
-              icon="mdi-dots-vertical"
-              v-bind="props"
-            ></v-icon>
+            <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
           </template>
           <v-card width="250" class="pa-0 ma-0">
             <v-btn style="width: 100%;" @click="dialog = true">
@@ -19,34 +15,13 @@
         </v-menu>
       </v-card-title>
       <v-card-text>
-        <v-text-field
-          v-model="search"
-          :label="$t('Search')"
-          single-line
-          hide-details
-        ></v-text-field>
+        <v-text-field v-model="search" :label="$t('Search')" single-line hide-details></v-text-field>
         <v-row>
-          <v-checkbox
-            :label="$t('Active')"
-            style="min-width: fit-content;"
-            v-model="isActive"
-          ></v-checkbox>
+          <v-checkbox :label="$t('Active')" style="min-width: fit-content;" v-model="isActive"></v-checkbox>
 
-          <v-checkbox
-            :label="$t('Inactive')"
-            style="min-width: fit-content;"
-            v-model="notActive"
-          ></v-checkbox>
-          <v-checkbox
-            :label="$t('With problems')"
-            style="min-width: fit-content;"
-            v-model="hasError"
-          ></v-checkbox>
-          <v-checkbox
-            :label="$t('Deleted')"
-            style="min-width: fit-content;"
-            v-model="deleted"
-          ></v-checkbox>
+          <v-checkbox :label="$t('Inactive')" style="min-width: fit-content;" v-model="notActive"></v-checkbox>
+          <v-checkbox :label="$t('With problems')" style="min-width: fit-content;" v-model="hasError"></v-checkbox>
+          <v-checkbox :label="$t('Deleted')" style="min-width: fit-content;" v-model="deleted"></v-checkbox>
         </v-row>
       </v-card-text>
       <v-dialog v-model="dialog" max-width="500px">
@@ -59,96 +34,54 @@
             <v-container>
               <v-row>
                 <v-col cols="12">
-                  <v-autocomplete
-                    v-model="editedItem.company_id"
-                    :item-title="'company_name'"
-                    :item-value="'id'"
-                    label="კომპანია"
-                    :items="items"
-                  ></v-autocomplete>
+                  <v-autocomplete v-model="editedItem.company_id" :item-title="'company_name'" :item-value="'id'"
+                    label="კომპანია" :items="items"></v-autocomplete>
                 </v-col>
 
                 <v-col cols="12">
-                  <v-autocomplete
-                    v-model="editedItem.dev_id"
-                    :label="$t('UUID')"
-                    :items="unregistered_device"
-                  ></v-autocomplete>
+                  <v-autocomplete v-model="editedItem.dev_id" :label="$t('UUID')"
+                    :items="unregistered_device"></v-autocomplete>
                 </v-col>
                 <v-col v-if="dialogBussines" cols="12">
-                  <v-text-field
-                    v-model="editedItem.name"
-                    class="text-capitalize"
-                    :label="$t('Name')"
-                    required
-                  ></v-text-field>
+                  <v-text-field v-model="editedItem.name" class="text-capitalize" :label="$t('Name')"
+                    required></v-text-field>
                 </v-col>
 
                 <v-col cols="12">
-                  <v-text-field
-                    v-model.number="editedItem.pay_day"
-                    class="text-capitalize"
-                    :label="$t('Payment number (from 1 to -28)')"
-                    type="number"
-                    required
-                  ></v-text-field>
+                  <v-text-field v-model.number="editedItem.pay_day" class="text-capitalize"
+                    :label="$t('Payment number (from 1 to -28)')" type="number" required></v-text-field>
                 </v-col>
                 <v-col v-if="dialogBussines" cols="12">
-                  <v-radio-group
-                    :label="$t('Mode of payment')"
-                    v-model="editedItem.op_mode"
-                    :inline="true"
-                  >
+                  <v-radio-group :label="$t('Mode of payment')" v-model="editedItem.op_mode" :inline="true">
                     <v-radio :label="$t('Tariff')" :value="1"></v-radio>
                     <v-radio :label="$t('Fixed')" :value="0"></v-radio>
                   </v-radio-group>
                 </v-col>
                 <v-col v-if="dialogBussines" cols="12">
-                  <v-text-field
-                    v-model.number="editedItem.tariff_amount"
-                    class="text-capitalize"
-                    :label="$t('Charge (in Tetri)')"
-                    required
-                  ></v-text-field>
+                  <v-text-field v-model.number="editedItem.tariff_amount" class="text-capitalize"
+                    :label="$t('Charge (in Tetri)')" required></v-text-field>
                 </v-col>
 
                 <v-col v-if="dialogBussines" cols="12">
-                  <v-text-field
-                    v-model="editedItem.admin_email"
-                    class="text-capitalize"
-                    :label="$t('Chairman mail')"
-                    required
-                  ></v-text-field>
+                  <v-text-field v-model="editedItem.admin_email" class="text-capitalize" :label="$t('Chairman mail')"
+                    required></v-text-field>
                 </v-col>
 
                 <v-col v-if="dialogBussines" cols="12">
-                  <v-text-field
-                    v-model="editedItem.sim_card_number"
-                    class="text-capitalize"
-                    :label="$t('sim_card_number')"
-                    required
-                  ></v-text-field>
+                  <v-text-field v-model="editedItem.sim_card_number" class="text-capitalize"
+                    :label="$t('sim_card_number')" required></v-text-field>
                 </v-col>
 
                 <v-col v-if="dialogBussines" cols="11">
                   <span>
                     {{ $t('Number of cards per user') }}: {{ editedItem.limit }}
                   </span>
-                  <v-slider
-                    v-model="editedItem.limit"
-                    :min="1"
-                    :max="100"
-                    :step="1"
-                  ></v-slider>
+                  <v-slider v-model="editedItem.limit" :min="1" :max="100" :step="1"></v-slider>
                 </v-col>
 
                 <v-col v-if="dialogBussines" cols="12">
-                  <v-textarea
-                    v-model="editedItem.comment"
-                    class="text-capitalize"
-                    :label="$t('Comment')"
-                    required
-                  ></v-textarea>
+                  <v-textarea v-model="editedItem.comment" class="text-capitalize" :label="$t('Comment')"
+                    required></v-textarea>
                 </v-col>
               </v-row>
             </v-container>
@@ -169,15 +102,8 @@
     <v-card>
       <v-container>
         <v-row v-if="serverItemsFilter">
-          <v-col
-            style="min-width: fit-content;"
-            v-for="(item, index) in serverItemsFilter"
-            cols="12"
-            sm="6"
-            md="4"
-            lg="3"
-            :key="item.id"
-          >
+          <v-col style="min-width: fit-content;" v-for="(item, index) in serverItemsFilter" cols="12" sm="6" md="4"
+            lg="3" :key="item.id">
             <v-card>
               <template v-slot:title>
                 <div class="d-flex justify-space-between">
@@ -194,14 +120,9 @@
 
               <template v-slot:subtitle>
                 <div class="d-flex justify-space-between">
-                  <v-chip
-                    v-if="
-                      new Date(item.lastBeat).getTime() > new Date().getTime()
-                    "
-                    class=""
-                    color="green"
-                    text-color="white"
-                  >
+                  <v-chip v-if="
+                    new Date(item.lastBeat).getTime() > new Date().getTime()
+                  " class="" color="green" text-color="white">
                     {{ $t('Active') }}
                   </v-chip>
                   <v-chip v-else class="" color="red" text-color="white">
@@ -217,8 +138,8 @@
                     item.network == 1
                       ? 'Ethernet'
                       : item.network == 2
-                      ? 'Cellular'
-                      : 'Wifi'
+                        ? 'Cellular'
+                        : 'Wifi'
                   }}
                 </b>
                 <hr />
@@ -237,55 +158,87 @@
                   }}
                 </b> -->
                 <hr />
+                <div>
+                  <b>
+                    ბარათის ტარიფი(თეთრებში)
+                    {{ item.fixed_card_amount }} ₾
+                  </b>
+                  <v-btn style="width: 30px; height: 30px; padding:5px" @click="openFixedCardDialog(item.fixed_card_amount, item.id)" icon>
+                    <v-icon size="12px"  color="gray">mdi-pencil</v-icon>
+                  </v-btn>
+                </div>
+                <hr />
+                <!--  -->
+
+
+   <!-- Fixed Card Amount Dialog -->
+   <v-dialog v-model="dialogFixedCard" persistent :style="{ background: 'transparent' }"
+                      class="transparent-dialog">
+                      <v-card style="background-color: rgba(255, 255, 255, 0.8);">
+                        <v-card-title> Edit Fixed Card Amount </v-card-title>
+                        <v-card-text>
+                          <v-text-field v-model="editedFixedCardAmount" label="ბარათის ტარიფი" type="number"
+                            required></v-text-field>
+                        </v-card-text>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn @click="dialogFixedCard = false">{{ $t('Close') }}</v-btn>
+                          <v-btn @click="saveFixedCardAmount()">{{ $t('Save') }}</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+
                 <div v-if="isAdmin">
                   <div>
                     <b>
                       მომსახურების მინიმალური საფასური
                       {{ item.deviceTariffAmount }} ₾
                     </b>
-                    <v-icon
-                      @click="openSingleDeviceTariffAmount(index)"
-                      size="xs"
-                      color="gray"
-                    >
-                      mdi-pencil
-                    </v-icon>
+                    <v-btn style="width: 30px; height: 30px; padding:5px"  @click="openDeviceTariffDialog(item.deviceTariffAmount, item.id)" icon>
+                      <v-icon  size="12px"  color="gray">mdi-pencil</v-icon>
+                    </v-btn>
+
+
+                 
+
+                    <!--  device tarrif dialog-->
+                    <v-dialog v-model="dialogFixedDeviceTarrif">
+                      <v-card>
+                        <v-card-title> Edit Device Tariff Amount </v-card-title>
+                        <v-card-text>
+                          <v-text-field v-model="editedDeviceTariffAmount" label="მომსახურეობის მინიმალური ტარიფი"
+                            type="number" required></v-text-field>
+                        </v-card-text>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn @click="dialogFixedDeviceTarrif = false">{{ $t('Close') }}</v-btn>
+                          <v-btn @click="changeSingleLiftAmount(item.id, index)">{{ $t('Save') }}</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                    <!--  -->
+
+
+
+
                   </div>
                   <!-- ლიფტის ტარიფის შეცვლა -->
 
-                  <div
-                    v-if="singleLiftMapBool[index]"
-                    style="
+                  <div v-if="singleLiftMapBool[index]" style="
                       display: flex;
                       align-items: center;
                       width: 200px;
                       margin-top: 10px;
-                    "
-                  >
-                    <v-text-field
-                      v-model="liftTariffValue"
-                      @input="handleInput"
-                      :value="liftTariffValue"
-                      type="number"
-                      outlined
-                      dense
-                      :style="{
+                    ">
+                    <v-text-field v-model="liftTariffValue" @input="handleInput" :value="liftTariffValue" type="number"
+                      outlined dense :style="{
                         width: '100px',
                         'margin-top': '5px',
-                      }"
-                    ></v-text-field>
-                    <v-icon
-                      @click="changeSingleLiftAmount(item.id, index)"
-                      size="40px"
-                      color="green"
-                    >
+                      }"></v-text-field>
+                    <v-icon @click="changeSingleLiftAmount(item.id, index)" size="40px" color="green">
                       mdi-check-circle
                     </v-icon>
-                    <v-icon
-                      @click="openSingleDeviceTariffAmount(index)"
-                      size="40px"
-                      color="red"
-                    >
+                    <v-icon @click="openSingleDeviceTariffAmount(index)" size="40px" color="red">
                       mdi-close-circle-outline
                     </v-icon>
                   </div>
@@ -300,6 +253,9 @@
             </v-card>
           </v-col>
         </v-row>
+
+
+
       </v-container>
     </v-card>
   </div>
@@ -314,6 +270,7 @@ import router from '@/router'
 export default {
   name: 'devoce',
   components: { VDataTable, SignalIcon },
+
   data: () => ({
     userAmount: 0,
     totalAmount: 0,
@@ -322,9 +279,14 @@ export default {
     isAdmin: false,
     singleLiftMapBool: [],
     eachLiftTariffAmount: 0,
+    editedFixedCardAmount: 0,
+    editedDeviceTariffAmount: 0,
+    deviceID: 0,
     items: [],
     expanded: [],
     fota: {},
+    dialogFixedCard: false,
+    dialogFixedDeviceTarrif: false,
     dialogFota: false,
     dialog: false,
     dialogDelete: false,
@@ -504,20 +466,78 @@ export default {
       newBoolArr[index] = !newBoolArr[index]
       this.singleLiftMapBool = newBoolArr
     },
+    openFixedCardDialog(item, id) {
+      this.deviceID = id
+      this.editedFixedCardAmount = item
+      this.dialogFixedCard = true;
+      console.log(this.dialogFixedCard)
+    },
+    // 
+    openDeviceTariffDialog(item, id) {
+      this.deviceID = id
+
+      this.editedDeviceTariffAmount = item;
+      this.dialogFixedDeviceTarrif = true;
+    },
+    saveFixedCardAmount() {
+ 
+   
+      axios
+        .put("/api/update-fixed-card-amount", {
+          device_id: this.deviceID,
+          amount: this.editedFixedCardAmount,
+        })
+        .then((res) => {
+          console.log(res);
+          this.dialogFixedCard = false;
+          this.$swal.fire({
+            icon: 'success',
+            position: 'center',
+            allowOutsideClick: false,
+          })
+          this.loadItems()
+        })
+        .catch((err) => {
+          console.log(err);
+          this.$swal.fire({
+            icon: 'error',
+            position: 'center',
+            allowOutsideClick: false,
+            message: err
+          })
+          this.dialogFixedCard = false;
+        });
+
+    },
+
+    // 
     changeSingleLiftAmount(id, index) {
       axios
-        .put(`/api/device/tariff/${id}`, {
-          amount: Number(this.liftTariffValue),
+        .put(`/api/device/tariff/${this.deviceID}`, {
+          amount: Number(this.editedDeviceTariffAmount),
         })
         .then((res) => {
           console.log(res)
-
+          this.$swal.fire({
+            icon: 'success',
+            position: 'center',
+            allowOutsideClick: false,
+          }).catch(err => {
+            this.$swal.fire({
+              icon: 'error',
+              position: 'center',
+              allowOutsideClick: false,
+              message: err
+            })
+          })
           this.loadItems()
+          this.dialogFixedDeviceTarrif = false
+          // this.openSingleDeviceTariffAmount(index)
 
-          this.openSingleDeviceTariffAmount(index)
-          this.liftTariffValue = ''
         })
     },
+
+
     loadItems() {
       axios.get('api/devices').then(({ data }) => {
         this.serverItems = data
@@ -628,4 +648,10 @@ export default {
   },
 }
 </script>
-<style scoped></style>
+
+<style scoped>
+.transparent-dialog .v-overlay {
+  background-color: rgba(0, 0, 0, 0);
+  /* Transparent backdrop */
+}
+</style>

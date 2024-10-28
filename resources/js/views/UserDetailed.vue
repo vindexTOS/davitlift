@@ -6,26 +6,14 @@
                     <span class="headline">{{ user.name }}</span>
                     <v-menu>
                         <template v-slot:activator="{ props }">
-                            <v-icon
-                                size="small"
-                                icon="mdi-dots-vertical"
-                                v-bind="props"
-                            ></v-icon>
+                            <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
                         </template>
                         <v-card width="200" class="pa-0 ma-0">
-                            <v-btn
-                                style="width: 100%"
-                                @click="showModal = true"
-                                small
-                            >
+                            <v-btn style="width: 100%" @click="showModal = true" small>
                                 <v-icon size="small">mdi-pencil</v-icon>
                                 {{ $t("Edit") }}
                             </v-btn>
-                            <v-btn
-                                style="width: 100%"
-                                @click="showBalance = true"
-                                small
-                            >
+                            <v-btn style="width: 100%" @click="showBalance = true" small>
                                 <v-icon size="small">mdi-cash</v-icon>
                                 {{ $t("Add Balance") }}
                             </v-btn>
@@ -75,53 +63,31 @@
                 </v-card-title>
                 <div>
                     <!--  დამატებითი კარტები  -->
-                    <v-card
-                        v-for="item in desserts"
-                        class="ma-4 pa-5"
-                        :key="item.name"
-                    >
+                    <v-card v-for="item in desserts" class="ma-4 pa-5" :key="item.name">
                         <div>
                             <div>
                                 <div class="d-flex justify-space-between">
-                                    <span
-                                        >{{ $t("Name") }}: {{ item.name }}</span
-                                    >
+                                    <span>{{ $t("Name") }}: {{ item.name }}</span>
                                     <v-menu>
                                         <template v-slot:activator="{ props }">
-                                            <v-icon
-                                                size="small"
-                                                icon="mdi-dots-vertical"
-                                                v-bind="props"
-                                            ></v-icon>
+                                            <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
                                         </template>
                                         <v-card width="200" class="pa-0 ma-0">
-                                            <v-btn
-                                                @click="
-                                                    generateCode(
-                                                        item.card_number,
-                                                        item.device_id
-                                                    )
-                                                "
-                                                style="width: 100%"
-                                                small
-                                            >
+                                            <v-btn @click="
+                                                generateCode(
+                                                    item.card_number,
+                                                    item.device_id
+                                                )
+                                                " style="width: 100%" small>
                                                 {{ $t("Guest code") }}
                                             </v-btn>
-                                            <v-btn
-                                                style="width: 100%"
-                                                @click="cardEditFun(item)"
-                                                small
-                                            >
+                                            <v-btn style="width: 100%" @click="cardEditFun(item)" small>
                                                 <v-icon size="small">
                                                     mdi-pencil
                                                 </v-icon>
                                                 {{ $t("Edit") }}
                                             </v-btn>
-                                            <v-btn
-                                                style="width: 100%"
-                                                @click="deleteCard(item.id)"
-                                                small
-                                            >
+                                            <v-btn style="width: 100%" @click="deleteCard(item.id)" small>
                                                 <v-icon size="small">
                                                     mdi-delete
                                                 </v-icon>
@@ -151,33 +117,19 @@
                         {{ $t("Total amount deposited") }}:{{ totalMoney
                         }}{{ $t("Lari") }}
                     </h4>
-                    <apexchart
-                        width="400"
-                        type="bar"
-                        :options="chartOptions"
-                        :series="series"
-                    ></apexchart>
+                    <apexchart width="400" type="bar" :options="chartOptions" :series="series"></apexchart>
                 </v-card>
             </v-col>
             <v-col cols="12" md="6">
-                <v-card
-                    v-if="seriesB[0] + seriesB[1]"
-                    style="height: 100%"
-                    class="overflow-auto pa-2"
-                >
+                <v-card v-if="seriesB[0] + seriesB[1]" style="height: 100%" class="overflow-auto pa-2">
                     <h3>{{ $t("Condition of elevators") }}</h3>
                     <h4>
                         {{ $t("Total number of elevators") }}:{{
                             seriesB[0] + seriesB[1]
                         }}
                     </h4>
-                    <apexchart
-                        width="400"
-                        height="350"
-                        type="donut"
-                        :options="chartOptionsB"
-                        :series="seriesB"
-                    ></apexchart>
+                    <apexchart width="400" height="350" type="donut" :options="chartOptionsB" :series="seriesB">
+                    </apexchart>
                 </v-card>
             </v-col>
         </v-row>
@@ -189,13 +141,8 @@
                     <h4>
                         {{ $t("ჯამური ქეშბექი") }}:{{ seriesC[0] + seriesC[1] }}
                     </h4>
-                    <apexchart
-                        width="400"
-                        height="350"
-                        type="donut"
-                        :options="chartOptionsC"
-                        :series="seriesC"
-                    ></apexchart>
+                    <apexchart width="400" height="350" type="donut" :options="chartOptionsC" :series="seriesC">
+                    </apexchart>
                 </v-card>
             </v-col>
         </v-row>
@@ -225,57 +172,39 @@
 
             <v-container>
                 <v-row v-if="devices">
-                    <v-col
-                        style="min-width: fit-content"
-                        v-for="item in devices"
-                        cols="12"
-                        sm="6"
-                        md="4"
-                        lg="3"
-                        :key="item.id"
-                    >
+                    <v-col style="min-width: fit-content" v-for="item in devices" cols="12" sm="6" md="4" lg="3"
+                        :key="item.id">
                         <v-card @click="detailDevice(item.id)">
                             <template v-slot:title>
                                 <div class="d-flex justify-space-between">
                                     <span>
                                         {{ item.name }}
-                                        <SignalIcon
-                                            :signal="
-                                                Math.ceil(item.signal / 20)
-                                            "
-                                        />
+                                        <SignalIcon :signal="Math.ceil(item.signal / 20)
+                                            " />
                                     </span>
                                 </div>
                             </template>
 
                             <template v-slot:subtitle>
                                 <div class="d-flex justify-space-between">
-                                    <v-chip
-                                        v-if="
-                                            new Date(item.lastBeat).getTime() >
-                                            new Date().getTime()
-                                        "
-                                        class=""
-                                        color="green"
-                                        text-color="white"
-                                    >
+                                    <v-chip v-if="
+                                        new Date(item.lastBeat).getTime() >
+                                        new Date().getTime()
+                                    " class="" color="green" text-color="white">
                                         {{ $t("Active") }}
                                     </v-chip>
-                                    <v-chip
-                                        v-else
-                                        class=""
-                                        color="red"
-                                        text-color="white"
-                                    >
+                                    <v-chip v-else class="" color="red" text-color="white">
                                         {{ $t("Inactive") }}
                                     </v-chip>
                                 </div>
-                                <b
-                                    >{{ $t("Count of cards") }}:
-                                    {{ item.limit }}</b
-                                >
+                                <b>{{ $t("Count of cards") }}:
+                                    {{ item.limit }}</b>
+                                    
                                 <hr />
+
                                 <b>{{ item.dev_id }}</b>
+                                <hr />
+                          
                             </template>
 
                             <template v-slot:text></template>
@@ -289,43 +218,16 @@
         <v-card>
             <v-card-title class="headline">{{
                 $t("Edit profile")
-            }}</v-card-title>
+                }}</v-card-title>
             <!--  უსერის დასააფდეითებელი ინფორმაცია  -->
             <v-card-text class="pl-3">
-                <v-text-field
-                    v-model="user.name"
-                    :label="$t('Name')"
-                    required
-                ></v-text-field>
-                <v-text-field
-                    v-model="user.email"
-                    :label="$t('Email')"
-                    required
-                ></v-text-field>
-                <v-text-field
-                    v-model="user.phone"
-                    :rules="phoneRules"
-                    :label="$t('Phone')"
-                    required
-                ></v-text-field>
-                <v-text-field
-                    v-if="isAdmin"
-                    v-model="user.balance"
-                    :label="$t('Balance')"
-                    required
-                ></v-text-field>
-                <v-select
-                    v-model="user.role"
-                    :items="roles"
-                    label="როლი"
-                    required
-                ></v-select>
-                <v-text-field
-                    v-if="isAdmin || role == 'company'"
-                    v-model="user.fixed_card_amount"
-                    label="ბარათის ტარიფი"
-                    required
-                ></v-text-field>
+                <v-text-field v-model="user.name" :label="$t('Name')" required></v-text-field>
+                <v-text-field v-model="user.email" :label="$t('Email')" required></v-text-field>
+                <v-text-field v-model="user.phone" :rules="phoneRules" :label="$t('Phone')" required></v-text-field>
+                <v-text-field v-if="isAdmin" v-model="user.balance" :label="$t('Balance')" required></v-text-field>
+                <v-select v-model="user.role" :items="roles" label="როლი" required></v-select>
+                <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_card_amount"
+                    label="ბარათის ტარიფი" required></v-text-field>
             </v-card-text>
 
             <v-card-actions>
@@ -350,19 +252,11 @@
             </v-card-text>
             <v-card-text class="pl-3">
                 {{ $t("Card name") }}
-                <v-text-field
-                    v-model="card.name"
-                    :label="$t('Card name')"
-                    required
-                ></v-text-field>
+                <v-text-field v-model="card.name" :label="$t('Card name')" required></v-text-field>
             </v-card-text>
             <v-card-text class="pl-3">
                 {{ $t("6 Digit Code") }}
-                <v-text-field
-                    v-model="card.card_number"
-                    :label="$t('6 Digit Code')"
-                    required
-                ></v-text-field>
+                <v-text-field v-model="card.card_number" :label="$t('6 Digit Code')" required></v-text-field>
             </v-card-text>
 
             <v-card-actions>
@@ -382,11 +276,7 @@
 
             <v-card-text class="pl-3">
                 {{ $t("Card name") }}
-                <v-text-field
-                    v-model="cardEdit.name"
-                    :label="$t('Card name')"
-                    required
-                ></v-text-field>
+                <v-text-field v-model="cardEdit.name" :label="$t('Card name')" required></v-text-field>
             </v-card-text>
 
             <v-card-actions>
@@ -414,29 +304,14 @@
 
             <v-card-text>
                 <v-form ref="form" v-model="valid">
-                    <v-text-field
-                        v-model="old_password"
-                        :rules="passwordRules"
-                        :label="$t('Old Password')"
-                        type="password"
-                        required
-                    ></v-text-field>
+                    <v-text-field v-model="old_password" :rules="passwordRules" :label="$t('Old Password')"
+                        type="password" required></v-text-field>
 
-                    <v-text-field
-                        v-model="password"
-                        :rules="passwordRules"
-                        :label="$t('New Password')"
-                        type="password"
-                        required
-                    ></v-text-field>
+                    <v-text-field v-model="password" :rules="passwordRules" :label="$t('New Password')" type="password"
+                        required></v-text-field>
 
-                    <v-text-field
-                        v-model="password_confirmation"
-                        :rules="passwordConfirmationRules"
-                        :label="$t('Confirm New Password')"
-                        type="password"
-                        required
-                    ></v-text-field>
+                    <v-text-field v-model="password_confirmation" :rules="passwordConfirmationRules"
+                        :label="$t('Confirm New Password')" type="password" required></v-text-field>
                 </v-form>
             </v-card-text>
 
@@ -452,41 +327,42 @@
         </v-card>
     </v-dialog>
     <v-dialog v-model="showElevetorHistory" max-width="600">
-    <v-card>
-        <v-card-title class="headline">მგზავრობის ისტორია</v-card-title>
-        <v-list>
-            <v-list-item-group>
-                <template v-if="!elevetorHistory">
-                    <v-list-item>
-                        <v-list-item-content>
-                            <v-list-item-title>{{ $t("No elevator history") }}</v-list-item-title>
-                        </v-list-item-content>
-                    </v-list-item>
-                </template>
-                <template v-else>
-                    <v-list-item v-for="(item, index) in elevetorHistory" :key="index">
-                        <v-list-item-content>
-                            <v-list-item-title>{{ $t("ID") }}: {{ item.id }}</v-list-item-title>
-                            <!-- <v-list-item-subtitle>{{ $t("User ID") }}: {{ item.user_id }}</v-list-item-subtitle> -->
-                            <v-list-item-subtitle>{{ $t("Device ID") }}: {{ item.device_id }}</v-list-item-subtitle>
-                            <!-- <v-list-item-subtitle>{{ $t("Type") }}: {{ item.type }}</v-list-item-subtitle> -->
-                            <v-list-item-subtitle>გატარების თარიღი: {{ item.created_at.slice(0, 22) }}</v-list-item-subtitle>
-                            <v-list-item-subtitle>გადახდილი თანხა: {{ item.tariff }}</v-list-item-subtitle>
-                            <v-list-item-subtitle>უსერის ბალანსი: {{ item. current_balance }}</v-list-item-subtitle>
+        <v-card>
+            <v-card-title class="headline">მგზავრობის ისტორია</v-card-title>
+            <v-list>
+                <v-list-item-group>
+                    <template v-if="!elevetorHistory">
+                        <v-list-item>
+                            <v-list-item-content>
+                                <v-list-item-title>{{ $t("No elevator history") }}</v-list-item-title>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </template>
+                    <template v-else>
+                        <v-list-item v-for="(item, index) in elevetorHistory" :key="index">
+                            <v-list-item-content>
+                                <v-list-item-title>{{ $t("ID") }}: {{ item.id }}</v-list-item-title>
+                                <!-- <v-list-item-subtitle>{{ $t("User ID") }}: {{ item.user_id }}</v-list-item-subtitle> -->
+                                <v-list-item-subtitle>{{ $t("Device ID") }}: {{ item.device_id }}</v-list-item-subtitle>
+                                <!-- <v-list-item-subtitle>{{ $t("Type") }}: {{ item.type }}</v-list-item-subtitle> -->
+                                <v-list-item-subtitle>გატარების თარიღი: {{ item.created_at.slice(0, 22)
+                                    }}</v-list-item-subtitle>
+                                <v-list-item-subtitle>გადახდილი თანხა: {{ item.tariff }}</v-list-item-subtitle>
+                                <v-list-item-subtitle>უსერის ბალანსი: {{ item.current_balance }}</v-list-item-subtitle>
 
-                        </v-list-item-content>
-                    </v-list-item>
-                </template>
-            </v-list-item-group>
-        </v-list>
-    </v-card>
-    <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="blue darken-1" @click="showElevetorHistory = false">
-            {{ $t("Close") }}
-        </v-btn>
-    </v-card-actions>
-</v-dialog>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </template>
+                </v-list-item-group>
+            </v-list>
+        </v-card>
+        <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" @click="showElevetorHistory = false">
+                {{ $t("Close") }}
+            </v-btn>
+        </v-card-actions>
+    </v-dialog>
     <v-dialog max-width="500px" v-model="showBalance">
         <v-card>
             <v-card-title>
@@ -495,12 +371,7 @@
 
             <v-card-text>
                 <v-form ref="form" v-model="valid">
-                    <v-text-field
-                        v-model.number="amount"
-                        :label="$t('Amount')"
-                        type="text"
-                        required
-                    ></v-text-field>
+                    <v-text-field v-model.number="amount" :label="$t('Amount')" type="text" required></v-text-field>
                     <v-alert v-if="amount" color="warning">
                         <v-icon>mdi-alert</v-icon>
                         საკომოსიოდან გამომდინარე აღნიშნული თანხის ჩასარიცხად
@@ -516,14 +387,11 @@
                 </v-btn>
                 <v-btn color="blue darken-1" @click="addBalance">{{
                     $t("Pay")
-                }}</v-btn>
+                    }}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
-    <TransactionUserTable
-        :reload="getTransactions"
-        :server-items="transaction"
-    ></TransactionUserTable>
+    <TransactionUserTable :reload="getTransactions" :server-items="transaction"></TransactionUserTable>
 </template>
 
 <script>
@@ -544,8 +412,8 @@ export default {
             showElevator: false,
             showBalance: false,
             showCode: false,
-            showElevetorHistory:false,
-            elevetorHistory:[],
+            showElevetorHistory: false,
+            elevetorHistory: [],
             user: {},
             isAdmin: false,
             role: "",
@@ -675,13 +543,13 @@ export default {
         },
     },
     methods: {
-        getElevatorUseHistory(){
-            axios.get(`/api/elevatoruse/${this.$route.params.id}`).then(({data})=> {
+        getElevatorUseHistory() {
+            axios.get(`/api/elevatoruse/${this.$route.params.id}`).then(({ data }) => {
                 console.log(data)
-                this.elevetorHistory = data .data
-            }).catch(err =>console.log(err ))
+                this.elevetorHistory = data.data
+            }).catch(err => console.log(err))
         },
-     
+
         chackAdminEmail() {
             const token = localStorage.getItem("vuex");
             let email = JSON.parse(token).auth.user.email;
@@ -689,15 +557,15 @@ export default {
             this.role = JSON.parse(token).auth.user.role;
         },
 
-      
+
         addBalance() {
-             
+
             axios
                 .get(
                     "/api/bank/transaction/create/" +
-                        this.realAmount +
-                        "/" +
-                        this.$route.params.id
+                    this.realAmount +
+                    "/" +
+                    this.$route.params.id
                 )
                 .then(({ data }) => {
                     window.location = data;
@@ -813,7 +681,7 @@ export default {
                             Number(
                                 (
                                     (this.totalMoney * this.Manager.cashback) /
-                                        100 -
+                                    100 -
                                     data["payedCashback"]
                                 ).toFixed(2)
                             ),
@@ -841,7 +709,7 @@ export default {
                         allowOutsideClick: false,
                     });
                     this.dialog = false;
-                } catch (error) {}
+                } catch (error) { }
             }
         },
     },

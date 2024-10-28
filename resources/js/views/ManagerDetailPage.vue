@@ -24,15 +24,12 @@
         {{ eachLiftTariffAmount }}
       </div> -->
 
-            <div
-                v-if="isAdmin"
-                style="
+            <div v-if="isAdmin" style="
                     display: flex;
                     align-items: start;
                     flex-wrap: wrap;
                     flex-direction: column;
-                "
-            >
+                ">
                 <div>
                     <b>ფიქსირებული ტარიფი ლიფტზე:</b>
                     {{ filtredDevices[0]["deviceTariffAmount"] }}
@@ -40,32 +37,18 @@
                         mdi-pencil
                     </v-icon>
                 </div>
-                <div
-                    v-if="allLiftTariff"
-                    style="
+                <div v-if="allLiftTariff" style="
                         display: flex;
                         align-items: center;
                         width: 200px;
                         margin-top: 10px;
-                    "
-                >
-                    <v-text-field
-                        v-model="liftTariffValue"
-                        @input="handleInput"
-                        :value="liftTariffValue"
-                        type="number"
-                        outlined
-                        dense
-                        :style="{
+                    ">
+                    <v-text-field v-model="liftTariffValue" @input="handleInput" :value="liftTariffValue" type="number"
+                        outlined dense :style="{
                             width: '100px',
                             'margin-top': '5px',
-                        }"
-                    ></v-text-field>
-                    <v-icon
-                        @click="changeLiftAmountMany"
-                        size="40px"
-                        color="green"
-                    >
+                        }"></v-text-field>
+                    <v-icon @click="changeLiftAmountMany" size="40px" color="green">
                         mdi-check-circle
                     </v-icon>
                     <v-icon @click="toggleLiftTariff" size="40px" color="red">
@@ -85,12 +68,7 @@
                         {{ $t("Total amount earned") }}: {{ fullAmount }}
                         {{ $t("Lari") }}
                     </h4>
-                    <apexchart
-                        width="400"
-                        type="bar"
-                        :options="chartOptions"
-                        :series="series"
-                    ></apexchart>
+                    <apexchart width="400" type="bar" :options="chartOptions" :series="series"></apexchart>
                 </v-card>
             </v-col>
             <v-col cols="12" md="6">
@@ -101,13 +79,8 @@
                             seriesB[0] + seriesB[1]
                         }}
                     </h4>
-                    <apexchart
-                        width="400"
-                        height="350"
-                        type="donut"
-                        :options="chartOptionsB"
-                        :series="seriesB"
-                    ></apexchart>
+                    <apexchart width="400" height="350" type="donut" :options="chartOptionsB" :series="seriesB">
+                    </apexchart>
                 </v-card>
             </v-col>
         </v-row>
@@ -116,25 +89,15 @@
             <v-col style="min-height: 100%" cols="12" md="6"></v-col>
             <v-col v-if="seriesC" cols="12" md="6">
                 <!-- ქეშბექი გასაცემი კლიენტზე -->
-                <v-card
-                    v-if="seriesC[0] + seriesC[1] > 0"
-                    style="height: 100%"
-                    class="overflow-auto pa-2"
-                >
+                <v-card v-if="seriesC[0] + seriesC[1] > 0" style="height: 100%" class="overflow-auto pa-2">
                     <h3>
                         {{ $t("Cashback") }} ჩასარიცხი
-                        {{ seriesC[0] <= 0 ? 0 : seriesC[0].toFixed(2) }}
-                    </h3>
-                    <h4>
-                        {{ $t("Total Cashback") }}: ჩარიცხული {{ seriesC[1] }}
-                    </h4>
-                    <apexchart
-                        width="400"
-                        height="350"
-                        type="donut"
-                        :options="chartOptionsC"
-                        :series="seriesC"
-                    ></apexchart>
+                        {{ seriesC[0] <= 0 ? 0 : seriesC[0].toFixed(2) }} </h3>
+                            <h4>
+                                {{ $t("Total Cashback") }}: ჩარიცხული {{ seriesC[1] }}
+                            </h4>
+                            <apexchart width="400" height="350" type="donut" :options="chartOptionsC" :series="seriesC">
+                            </apexchart>
                 </v-card>
             </v-col>
         </v-row>
@@ -143,88 +106,47 @@
         <v-card>
             <v-container>
                 <v-row>
-                    <v-checkbox
-                        :label="$t('Active')"
-                        style="min-width: fit-content"
-                        v-model="isActive"
-                    ></v-checkbox>
+                    <v-checkbox :label="$t('Active')" style="min-width: fit-content" v-model="isActive"></v-checkbox>
 
-                    <v-checkbox
-                        :label="$t('Inactive')"
-                        style="min-width: fit-content"
-                        v-model="notActive"
-                    ></v-checkbox>
-                    <v-checkbox
-                        :label="$t('With problems')"
-                        style="min-width: fit-content"
-                        v-model="hasError"
-                    ></v-checkbox>
-                    <v-checkbox
-                        :label="$t('Deleted')"
-                        style="min-width: fit-content"
-                        v-model="deleted"
-                    ></v-checkbox>
+                    <v-checkbox :label="$t('Inactive')" style="min-width: fit-content" v-model="notActive"></v-checkbox>
+                    <v-checkbox :label="$t('With problems')" style="min-width: fit-content"
+                        v-model="hasError"></v-checkbox>
+                    <v-checkbox :label="$t('Deleted')" style="min-width: fit-content" v-model="deleted"></v-checkbox>
                 </v-row>
             </v-container>
             <v-container>
                 <v-row v-if="filtredDevices">
-                    <v-col
-                        style="min-width: fit-content"
-                        v-for="(item, index) in filtredDevices"
-                        cols="12"
-                        sm="6"
-                        md="4"
-                        lg="3"
-                        :key="item.id"
-                    >
+                    <v-col style="min-width: fit-content" v-for="(item, index) in filtredDevices" cols="12" sm="6"
+                        md="4" lg="3" :key="item.id">
                         <!-- @click="detailDevice(item.id)" -->
-                        <v-card @click="detailDevice(item.id)">
+                        <v-card >
                             <template v-slot:title>
                                 <div class="d-flex justify-space-between">
                                     <span>
-                                        <v-icon
-                                            v-if="item.errors.length"
-                                            size="xs"
-                                            color="red"
-                                        >
+                                        <v-icon v-if="item.errors.length" size="xs" color="red">
                                             mdi-alert
                                         </v-icon>
                                         {{ item.name }}
-                                        <SignalIcon
-                                            :signal="
-                                                Math.ceil(item.signal / 20)
-                                            "
-                                        />
+                                        <SignalIcon :signal="Math.ceil(item.signal / 20)
+                                            " />
                                     </span>
                                 </div>
                             </template>
 
                             <template v-slot:subtitle>
                                 <div class="d-flex justify-space-between">
-                                    <v-chip
-                                        v-if="
-                                            new Date(item.lastBeat).getTime() >
-                                            new Date().getTime()
-                                        "
-                                        class=""
-                                        color="green"
-                                        text-color="white"
-                                    >
+                                    <v-chip v-if="
+                                        new Date(item.lastBeat).getTime() >
+                                        new Date().getTime()
+                                    " class="" color="green" text-color="white">
                                         {{ $t("Active") }}
                                     </v-chip>
-                                    <v-chip
-                                        v-else
-                                        class=""
-                                        color="red"
-                                        text-color="white"
-                                    >
+                                    <v-chip v-else class="" color="red" text-color="white">
                                         {{ $t("Inactive") }}
                                     </v-chip>
                                 </div>
-                                <b
-                                    >{{ $t("Count of cards") }}:
-                                    {{ item.limit }}</b
-                                >
+                                <b>{{ $t("Count of cards") }}:
+                                    {{ item.limit }}</b>
                                 <hr />
                                 <b>{{ item.dev_id }}</b>
                                 <hr />
@@ -233,8 +155,8 @@
                                         item.network == 1
                                             ? "Ethernet"
                                             : item.network == 2
-                                            ? "Cellular"
-                                            : "Wifi"
+                                                ? "Cellular"
+                                                : "Wifi"
                                     }}
                                 </b>
                                 <hr />
@@ -247,74 +169,77 @@
                                 </b>
 
                                 <hr />
+                                <div v-if="isCompany" >
+                                    <b>
+                                        ბარათის ტარიფი(თეთრებში)
+                                        {{ item.fixed_card_amount }} ₾
+                                    </b>
+                                    <v-btn style="width: 30px; height: 30px; padding:5px"
+                                        @click="openFixedCardDialog(item.fixed_card_amount, item.id)" icon>
+                                        <v-icon size="12px" color="gray">mdi-pencil</v-icon>
+                                    </v-btn>
+                                </div>
+
+                                <v-dialog v-model="dialogFixedCard" persistent :style="{ background: 'transparent' }"
+                      class="transparent-dialog">
+                      <v-card style="background-color: rgba(255, 255, 255, 0.8);">
+                        <v-card-title> Edit Fixed Card Amount </v-card-title>
+                        <v-card-text>
+                          <v-text-field v-model="editedFixedCardAmount" label="ბარათის ტარიფი" type="number"
+                            required></v-text-field>
+                        </v-card-text>
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn @click="dialogFixedCard = false">{{ $t('Close') }}</v-btn>
+                          <v-btn @click="saveFixedCardAmount()">{{ $t('Save') }}</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+
                                 <div v-if="isAdmin">
                                     <div>
-                                        <b
-                                            >ლიფტის ტარიფი
-                                            {{ item.deviceTariffAmount }} ₾</b
-                                        >
-                                        <v-icon
-                                            @click="
-                                                openSingleDeviceTariffAmount(
-                                                    index
-                                                )
-                                            "
-                                            size="xs"
-                                            color="gray"
-                                        >
+                                        <b>ლიფტის ტარიფი
+                                            {{ item.deviceTariffAmount }} ₾</b>
+                                        <v-icon @click="
+                                            openSingleDeviceTariffAmount(
+                                                index
+                                            )
+                                            " size="xs" color="gray">
                                             mdi-pencil
                                         </v-icon>
                                     </div>
                                     <!-- ლიფტის ტარიფის შეცვლა -->
 
-                                    <div
-                                        v-if="singleLiftMapBool[index]"
-                                        style="
+                                    <div v-if="singleLiftMapBool[index]" style="
                                             display: flex;
                                             align-items: center;
                                             width: 200px;
                                             margin-top: 10px;
-                                        "
-                                    >
-                                        <v-text-field
-                                            v-model="liftTariffValue"
-                                            @input="handleInput"
-                                            :value="liftTariffValue"
-                                            type="number"
-                                            outlined
-                                            dense
-                                            :style="{
+                                        ">
+                                        <v-text-field v-model="liftTariffValue" @input="handleInput"
+                                            :value="liftTariffValue" type="number" outlined dense :style="{
                                                 width: '100px',
                                                 'margin-top': '5px',
-                                            }"
-                                        ></v-text-field>
-                                        <v-icon
-                                            @click="
-                                                changeSingleLiftAmount(
-                                                    item.id,
-                                                    index
-                                                )
-                                            "
-                                            size="40px"
-                                            color="green"
-                                        >
+                                            }"></v-text-field>
+                                        <v-icon @click="
+                                            changeSingleLiftAmount(
+                                                item.id,
+                                                index
+                                            )
+                                            " size="40px" color="green">
                                             mdi-check-circle
                                         </v-icon>
-                                        <v-icon
-                                            @click="
-                                                openSingleDeviceTariffAmount(
-                                                    index
-                                                )
-                                            "
-                                            size="40px"
-                                            color="red"
-                                        >
+                                        <v-icon @click="
+                                            openSingleDeviceTariffAmount(
+                                                index
+                                            )
+                                            " size="40px" color="red">
                                             mdi-close-circle-outline
                                         </v-icon>
                                     </div>
                                 </div>
                                 <hr />
-
+ <v-btn @click="detailDevice(item.id)"   >დეტალურად</v-btn>
                                 <!-- <div v-if="isAdmin" @click="detailDevice(item.id)">
                   <v-btn class="my-styled-btn">ლიფტის ინფომრაცია ვრცლად</v-btn>
                 </div> -->
@@ -327,16 +252,10 @@
             </v-container>
         </v-card>
         <div class="mt-3">
-            <CashbackTable
-                @getCashback="getCashback"
-                :serverItems="cashbackData['transaction']"
-                :availableCashback="
-                    cashbackData['total'] - cashbackData['totalWithdrow'] <= 0
-                        ? 0
-                        : cashbackData['total'] - cashbackData['totalWithdrow']
-                "
-                :maxCashback="seriesC[0].toFixed(2) + 200"
-            ></CashbackTable>
+            <CashbackTable @getCashback="getCashback" :serverItems="cashbackData['transaction']" :availableCashback="cashbackData['total'] - cashbackData['totalWithdrow'] <= 0
+                    ? 0
+                    : cashbackData['total'] - cashbackData['totalWithdrow']
+                " :maxCashback="seriesC[0].toFixed(2) + 200"></CashbackTable>
         </div>
     </div>
 </template>
@@ -347,6 +266,7 @@ import { th } from "vuetify/locale";
 import ManagersTable from "../components/ManagersTable.vue";
 import SignalIcon from "@/components/icon/SignalIcon.vue";
 import CashbackTable from "../components/CashbackTable.vue";
+import Swal from 'sweetalert2'
 
 export default {
     components: {
@@ -359,7 +279,8 @@ export default {
         return {
             data: {},
             singleLiftMapBool: [],
-
+            editedFixedCardAmount: 0, dialogFixedCard: false,
+            deviceID: 0,
             isAdmin: false,
             hasError: true,
             isActive: true,
@@ -373,6 +294,7 @@ export default {
             eachLiftTariffAmount: 0,
             cashBackAmount: 0,
             shouldCashBackOnManager: false,
+            isCompany:false,
             series: [
                 {
                     name: "",
@@ -428,23 +350,23 @@ export default {
         filtredDevices() {
             return this.data.device
                 ? this.data.device.filter((x) => {
-                      const active =
-                          new Date(x.lastBeat).getTime() > new Date().getTime();
-                      if (!x.deleted_at) {
-                          if (this.isActive && active) {
-                              return x;
-                          }
-                          if (this.notActive && !active) {
-                              return x;
-                          }
-                          if (this.hasError && x.errors.length) {
-                              return x;
-                          }
-                      }
-                      if (this.deleted && x.deleted_at) {
-                          return x;
-                      }
-                  })
+                    const active =
+                        new Date(x.lastBeat).getTime() > new Date().getTime();
+                    if (!x.deleted_at) {
+                        if (this.isActive && active) {
+                            return x;
+                        }
+                        if (this.notActive && !active) {
+                            return x;
+                        }
+                        if (this.hasError && x.errors.length) {
+                            return x;
+                        }
+                    }
+                    if (this.deleted && x.deleted_at) {
+                        return x;
+                    }
+                })
                 : [];
         },
         chartOptionsC() {
@@ -482,6 +404,41 @@ export default {
         //   },
     },
     methods: {
+        saveFixedCardAmount() {
+ 
+   
+ axios
+   .put("/api/update-fixed-card-amount", {
+     device_id: this.deviceID,
+     amount: this.editedFixedCardAmount,
+   })
+   .then((res) => {
+     console.log(res);
+     this.dialogFixedCard = false;
+     this.$swal.fire({
+       icon: 'success',
+       position: 'center',
+       allowOutsideClick: false,
+     })
+     this.loadItems()
+   })
+   .catch((err) => {
+     console.log(err);
+     this.$swal.fire({
+       icon: 'error',
+       position: 'center',
+       allowOutsideClick: false,
+       message: err
+     })
+     this.dialogFixedCard = false;
+   });}
+,
+        openFixedCardDialog(item, id) {
+            this.deviceID = id
+            this.editedFixedCardAmount = item
+            this.dialogFixedCard = true;
+            console.log(this.dialogFixedCard)
+        },
         openSingleDeviceTariffAmount(index) {
             let newBoolArr = [...this.singleLiftMapBool];
             newBoolArr[index] = !newBoolArr[index];
@@ -491,7 +448,11 @@ export default {
         chackAdminEmail() {
             const token = localStorage.getItem("vuex");
             let email = JSON.parse(token).auth.user.email;
+            let role = JSON.parse(token).auth.user.role
             this.isAdmin = email === "info@eideas.io";
+            if(role == "company"){
+                this.isCompany = true
+            }
         },
         handleLiftAmountTariffInput(event) {
             this.liftTariffValue = event.target.value;
@@ -579,9 +540,9 @@ export default {
             let amountAlreadyPayed =
                 Object.values(this.cashbackData["transaction"]).length <= 0
                     ? [
-                          { amount: "0", type: 1 },
-                          { amount: "0", type: 1 },
-                      ]
+                        { amount: "0", type: 1 },
+                        { amount: "0", type: 1 },
+                    ]
                     : Object.values(this.cashbackData["transaction"]);
 
             // console.log(data['companyTransaction'])
@@ -735,4 +696,9 @@ export default {
     },
 };
 </script>
-<style scoped></style>
+<style scoped>
+.transparent-dialog .v-overlay {
+  background-color: rgba(0, 0, 0, 0);
+  /* Transparent backdrop */
+}
+</style>

@@ -150,23 +150,28 @@ trait FixedTarrifOpModeService
     private function isFixedMonthCalculator($device)
     {
         $payDay = $device->pay_day; // e.g., 20
-        $today = Carbon::now(); // e.g., 15 Oct
+        $today = Carbon::now(); // e.g., 20 Oct
         $nextPayDay = Carbon::createFromDate($today->year, $today->month, $payDay);
     
         // Log to check values
-        Log::info('Calculating next pay day', [
-            'today' => $today->toDateString(),
-            'pay_day' => $payDay,
-            'nextPayDay' => $nextPayDay->toDateString()
-        ]);
+        // Log::info('Calculating next pay day', [
+        //     'today' => $today->toDateString(),
+        //     'pay_day' => $payDay,
+        //     'nextPayDay' => $nextPayDay->toDateString()
+        // ]);
     
+        // If today is after the pay day, increment the month
         if ($today->greaterThan($nextPayDay)) {
-            // If today is after the pay day, increment the month
+            return $nextPayDay->addMonth();
+        }
+    
+        // If today is the pay day, also increment to next month
+        if ($today->isSameDay($nextPayDay)) {
             return $nextPayDay->addMonth();
         }
     
         // Log what is being returned
-        Log::info('Returning next pay day', ['nextPayDay' => $nextPayDay->toDateString()]);
+        // Log::info('Returning next pay day', ['nextPayDay' => $nextPayDay->toDateString()]);
     
         return $nextPayDay;
     }

@@ -302,19 +302,21 @@ Route::get('user/transaction/history/{device_id}', [
     'UserTransactionsBasedOnDevice',
 ]);
 
-
-//  testing area 
-
-Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
-// Route::get("/ipay/payment/", [BankOfGeorgia::class, "handlePayment"]);
-// Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
-// Route::get("/ipay/testhash", [BankOfGeorgia::class, "TestHash"]);
-
-Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
-Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
-Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
-
 //  notifications
 
 Route::get("/notifications/{user_id}", [NotificationsController::class, "index"]);
 Route::post("/notifications/read/{user_id}", [NotificationsController::class, "checkAllNotificationsAsRead"]);
+// bank of georgia
+Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
+
+
+// Route::get("/ipay/payment/", [BankOfGeorgia::class, "handlePayment"]);
+// Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
+// Route::get("/ipay/testhash", [BankOfGeorgia::class, "TestHash"]);
+//  testing area 
+
+Route::get("/fixdevice/{device_id}", [TestController::class,'FixBalanceForNew' ]);
+Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
+Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
+Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
+

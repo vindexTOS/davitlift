@@ -77,28 +77,27 @@ class BankOfGeorgia extends Controller
             $user = User::where('phone', $CUSTOMER_ID)->first();
 
 
-
+            $filedId = $this->MakeFileId($user->id);
+            $parts = explode('#', $filedId);
             if ($user) {
-
-                $data = [
-                    'status' => [
-                        'attributes' => [
-                            'code' => 0
+                    Log::info("info", ["ifno"=>$user]);
+                    $data = [
+                        'status' => [
+                            'attributes' => ['code' => 0],
+                            'value' => 'OK'
                         ],
-                        'value' => 'OK'
-                    ],
-                    'timestamp' => Carbon::now()->timestamp,
-                    'additional-info' => [
-                        'parameter' => [
-                            'attributes' => [
-                                'name' => 'user_name'
-                            ],
-                            'value' => $user->name
+                        'timestamp' => Carbon::now()->timestamp,
+                        'additional-info' => [
+                            'parameter' => [
+                                ['attributes' => ['name' => 'user_name'], 'value' => 'kata'],
+                                ['attributes' => ['name' => 'user_id'], 'value' => '267'],
+                                ['attributes' => ['name' => 'company_id'], 'value' => '400357449'],
+                                ['attributes' => ['name' => 'manager_phone'], 'value' => '597571441']
+                            ]
                         ]
-                    ]
-                ];
-
-                return $this->XmlResponse($data);
+                    ];
+            
+                    return $this->XmlResponse($data);
             } else {
                 return $this->HandleErrorCodes(6, "Customer does not exist");
             }
@@ -278,9 +277,9 @@ class BankOfGeorgia extends Controller
             $this->CheckHashCode($OP . $USERNAME . $PASSWORD . $CUSTOMER_ID . $SERVICE_ID . $PAY_SRC, $HASH_CODE);
 
             $user = User::where('phone', $CUSTOMER_ID)->first();
-
+             $filedId = $this->MakeFileId($user->id);
+             $parts = explode('#', $filedId);
             if ($user) {
-
                 $data = [
                     'status' => [
                         'attributes' => [
@@ -290,15 +289,46 @@ class BankOfGeorgia extends Controller
                     ],
                     'timestamp' => Carbon::now()->timestamp,
                     'additional-info' => [
-                        'parameter' => [
-                            'attributes' => [
-                                'name' => 'user_name'
-                            ],
-                            'value' => $user->name
-                        ]
+                        'parameters' => []
                     ]
                 ];
-
+            // technical cmpany
+                // Add parameters directly under 'parameters'
+                $data['additional-info']['parameters'] = [
+                    'parameter' => [
+                        'attributes' => [
+                            'name' => 'user_name',
+                        ],
+                        'value' => $user->name,
+                    ]
+                ];
+            
+                // $data['additional-info']['parameters'][] = [
+                //     'parameter' => [
+                //         'attributes' => [
+                //             'name' => 'uesr_id',
+                //         ],
+                //         'value' =>  isset($parts[0]) ? $parts[0] : "NOUID",
+                //     ]
+                // ];
+            
+                // $data['additional-info']['parameters'][] = [
+                //     'parameter' => [
+                //         'attributes' => [
+                //             'name' => 'company_id',
+                //         ],
+                //         'value' =>  isset($parts[1]) ? $parts[1] : "NOCOMPID",
+                //     ]
+                // ];
+            
+                // $data['additional-info']['parameters'][] = [
+                //     'parameter' => [
+                //         'attributes' => [
+                //             'name' => 'manager_phone',
+                //         ],
+                //         'value' =>  isset($parts[2]) ? $parts[2] : "NONUMBER",
+                //     ]
+                // ];
                 return $this->XmlResponse($data);
             } else {
                 return $this->HandleErrorCodes(6, "Customer does not exist");
