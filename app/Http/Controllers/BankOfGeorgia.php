@@ -80,7 +80,7 @@ class BankOfGeorgia extends Controller
             $filedId = $this->MakeFileId($user->id);
             $parts = explode('#', $filedId);
             if ($user) {
-
+                    Log::info("info", ["ifno"=>$user]);
                 $data = [
                     'status' => [
                         'attributes' => [

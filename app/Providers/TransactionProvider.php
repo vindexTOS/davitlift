@@ -152,39 +152,50 @@ trait TransactionProvider
     }
 
 
+    private function XmlResponse($data)
+    {
+        // Create XML with UTF-8 declaration
+        $xmlData = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><pay-response></pay-response>');
+    
+        // Convert array to XML with attributes
+        $this->arrayToXmlWithAttributes($data, $xmlData);
+    
+        // Convert XML object to string
+        $xmlContent = $xmlData->asXML();
+    
+        // Return XML response with proper UTF-8 headers
+        return response($xmlContent, \Illuminate\Http\Response::HTTP_OK)
+            ->header('Content-Type', 'application/xml; charset=utf-8');
+    }
+    
     private function arrayToXmlWithAttributes($data, &$xmlData)
     {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
                 if (isset($value['attributes'])) {
                     $subnode = $xmlData->addChild($key);
+    
+                    // Add attributes to the subnode
                     foreach ($value['attributes'] as $attrKey => $attrValue) {
                         $subnode->addAttribute($attrKey, $attrValue);
                     }
+    
+                    // Add the node value, if present
                     if (isset($value['value'])) {
-                        $subnode[0] = htmlspecialchars($value['value']);
+                        $subnode[0] = htmlspecialchars($value['value'], ENT_XML1, 'UTF-8');
                     }
                 } else {
+                    // Recursive call for nested arrays
                     $subnode = $xmlData->addChild($key);
                     $this->arrayToXmlWithAttributes($value, $subnode);
                 }
             } else {
-                $xmlData->addChild($key, htmlspecialchars($value));
+                // Add child node with proper escaping
+                $xmlData->addChild($key, htmlspecialchars($value, ENT_XML1, 'UTF-8'));
             }
         }
     }
-
-
-    private function XmlResponse($data)
-    {
-        $xmlData = new \SimpleXMLElement('<?xml version="1.0"?><pay-response></pay-response>');
-        $this->arrayToXmlWithAttributes($data, $xmlData);
-        $xmlContent = $xmlData->asXML();
-
-        return response($xmlContent,  \Illuminate\Http\Response::HTTP_OK)
-            ->header('Content-Type', 'application/xml');
-    }
-
+    
     private function HandleErrorCodes(int $code, string $message)
     {
         $data = [
