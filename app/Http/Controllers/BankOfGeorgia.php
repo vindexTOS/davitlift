@@ -293,7 +293,7 @@ class BankOfGeorgia extends Controller
                         'parameters' => []
                     ]
                 ];
-            
+            // technical cmpany
                 // Add parameters directly under 'parameters'
                 $data['additional-info']['parameters'] = [
                     'parameter' => [
