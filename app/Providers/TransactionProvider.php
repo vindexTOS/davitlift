@@ -154,48 +154,45 @@ trait TransactionProvider
 
     private function XmlResponse($data)
     {
-        // Create XML with UTF-8 declaration
         $xmlData = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><pay-response></pay-response>');
-    
-        // Convert array to XML with attributes
         $this->arrayToXmlWithAttributes($data, $xmlData);
-    
-        // Convert XML object to string
         $xmlContent = $xmlData->asXML();
     
-        // Return XML response with proper UTF-8 headers
         return response($xmlContent, \Illuminate\Http\Response::HTTP_OK)
-            ->header('Content-Type', 'application/xml; charset=utf-8');
+            ->header('Content-Type', 'application/xml');
     }
     
     private function arrayToXmlWithAttributes($data, &$xmlData)
     {
         foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                if (isset($value['attributes'])) {
-                    $subnode = $xmlData->addChild($key);
-    
-                    // Add attributes to the subnode
-                    foreach ($value['attributes'] as $attrKey => $attrValue) {
-                        $subnode->addAttribute($attrKey, $attrValue);
-                    }
-    
-                    // Add the node value, if present
-                    if (isset($value['value'])) {
-                        $subnode[0] = htmlspecialchars($value['value'], ENT_XML1, 'UTF-8');
-                    }
-                } else {
-                    // Recursive call for nested arrays
-                    $subnode = $xmlData->addChild($key);
-                    $this->arrayToXmlWithAttributes($value, $subnode);
+            if (is_array($value) && is_numeric(key($value))) {
+                // Handle numeric indexed arrays by forcing <parameter> tag
+                foreach ($value as $subValue) {
+                    $subnode = $xmlData->addChild('parameter'); // Always use 'parameter' as tag name
+                    $this->setAttributesAndValue($subnode, $subValue);
                 }
+            } elseif (is_array($value)) {
+                // Handle nested arrays and attributes
+                $subnode = $xmlData->addChild($key);
+                $this->arrayToXmlWithAttributes($value, $subnode);
             } else {
-                // Add child node with proper escaping
+                // Add simple key-value pair
                 $xmlData->addChild($key, htmlspecialchars($value, ENT_XML1, 'UTF-8'));
             }
         }
     }
     
+    private function setAttributesAndValue($xmlElement, $data)
+    {
+        if (isset($data['attributes'])) {
+            foreach ($data['attributes'] as $attrKey => $attrValue) {
+                $xmlElement->addAttribute($attrKey, $attrValue);
+            }
+        }
+        if (isset($data['value'])) {
+            $xmlElement[0] = htmlspecialchars($data['value'], ENT_XML1, 'UTF-8');
+        }
+    }
     private function HandleErrorCodes(int $code, string $message)
     {
         $data = [

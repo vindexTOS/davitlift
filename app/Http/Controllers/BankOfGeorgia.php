@@ -81,51 +81,23 @@ class BankOfGeorgia extends Controller
             $parts = explode('#', $filedId);
             if ($user) {
                     Log::info("info", ["ifno"=>$user]);
-                $data = [
-                    'status' => [
-                        'attributes' => [
-                            'code' => 0
+                    $data = [
+                        'status' => [
+                            'attributes' => ['code' => 0],
+                            'value' => 'OK'
                         ],
-                        'value' => 'OK'
-                    ],
-                    'timestamp' => Carbon::now()->timestamp,
-                    'additional-info' => [
-                        'parameter' => [
-                            'attributes' => [
-                                'name' => 'user_name'
-                            ],
-                            'value' => $user->name
+                        'timestamp' => Carbon::now()->timestamp,
+                        'additional-info' => [
+                            'parameter' => [
+                                ['attributes' => ['name' => 'user_name'], 'value' => 'kata'],
+                                ['attributes' => ['name' => 'user_id'], 'value' => '267'],
+                                ['attributes' => ['name' => 'company_id'], 'value' => '400357449'],
+                                ['attributes' => ['name' => 'manager_phone'], 'value' => '597571441']
+                            ]
                         ]
-                    ]
-                ];
-   
-                $data['additional-info']['parameters'][] = [
-                    'parameter' => [
-                        'attributes' => [
-                            'name' => 'uesr_id',
-                        ],
-                        'value' =>  isset($parts[0]) ? $parts[0] : "NOUID",
-                    ]
-                ];
+                    ];
             
-                $data['additional-info']['parameters'][] = [
-                    'parameter' => [
-                        'attributes' => [
-                            'name' => 'company_id',
-                        ],
-                        'value' =>  isset($parts[1]) ? $parts[1] : "NOCOMPID",
-                    ]
-                ];
-            
-                $data['additional-info']['parameters'][] = [
-                    'parameter' => [
-                        'attributes' => [
-                            'name' => 'manager_phone',
-                        ],
-                        'value' =>  isset($parts[2]) ? $parts[2] : "NONUMBER",
-                    ]
-                ];
-                return $this->XmlResponse($data);
+                    return $this->XmlResponse($data);
             } else {
                 return $this->HandleErrorCodes(6, "Customer does not exist");
             }
@@ -331,32 +303,32 @@ class BankOfGeorgia extends Controller
                     ]
                 ];
             
-                $data['additional-info']['parameters'][] = [
-                    'parameter' => [
-                        'attributes' => [
-                            'name' => 'uesr_id',
-                        ],
-                        'value' =>  isset($parts[0]) ? $parts[0] : "NOUID",
-                    ]
-                ];
+                // $data['additional-info']['parameters'][] = [
+                //     'parameter' => [
+                //         'attributes' => [
+                //             'name' => 'uesr_id',
+                //         ],
+                //         'value' =>  isset($parts[0]) ? $parts[0] : "NOUID",
+                //     ]
+                // ];
             
-                $data['additional-info']['parameters'][] = [
-                    'parameter' => [
-                        'attributes' => [
-                            'name' => 'company_id',
-                        ],
-                        'value' =>  isset($parts[1]) ? $parts[1] : "NOCOMPID",
-                    ]
-                ];
+                // $data['additional-info']['parameters'][] = [
+                //     'parameter' => [
+                //         'attributes' => [
+                //             'name' => 'company_id',
+                //         ],
+                //         'value' =>  isset($parts[1]) ? $parts[1] : "NOCOMPID",
+                //     ]
+                // ];
             
-                $data['additional-info']['parameters'][] = [
-                    'parameter' => [
-                        'attributes' => [
-                            'name' => 'manager_phone',
-                        ],
-                        'value' =>  isset($parts[2]) ? $parts[2] : "NONUMBER",
-                    ]
-                ];
+                // $data['additional-info']['parameters'][] = [
+                //     'parameter' => [
+                //         'attributes' => [
+                //             'name' => 'manager_phone',
+                //         ],
+                //         'value' =>  isset($parts[2]) ? $parts[2] : "NONUMBER",
+                //     ]
+                // ];
                 return $this->XmlResponse($data);
             } else {
                 return $this->HandleErrorCodes(6, "Customer does not exist");
