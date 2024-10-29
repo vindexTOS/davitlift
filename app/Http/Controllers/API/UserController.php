@@ -19,6 +19,7 @@ use App\Models\CompanyTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\ElevatorUse;
+use App\Models\Phonenumbers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -374,6 +375,30 @@ class UserController extends Controller
             return response()->json(["msg" => $e]);
         }
     }
+
+
+// / phone number user phone number creation
+
+
+
+ public function addPhoneNumber(Request $request){
+   $userId = $request["user_id"];
+   $number = $request['number'];
+
+
+   try {
+   Phonenumbers::create([
+     "user_id"=>$userId,
+     "number"=>$number,
+   ]);
+   return response()->json(["msg"=>"Number has been added"], 201);
+
+   } catch (\Throwable $e) {
+     return response()->json(["msg" => $e]);
+   }
+ }
+
+
 }
         
         // balance

@@ -27,7 +27,7 @@
             </v-card>
           </v-menu>
         </v-card-title>
-
+<!--  -->
         <v-card-text class="px-5">
           <div class="d-flex justify-space-between align-center">
             <v-list-item-title>
@@ -53,19 +53,23 @@
         </v-card-text>
       </v-card>
     </v-col>
+ <!--  -->
     <v-col cols="12" md="6">
+ 
       <v-card min-width="48%" class="pb-16 mt-md-0 mt-10">
         <v-card-title
           v-if="Manager.id"
           class="mt-5 d-sm-flex justify-space-between"
         >
           <div>{{ $t('Elevator cards') }}</div>
+        
           <!-- კარტების დამატება -->
           <v-btn v-if="role !== 'user'" @click="showElevator = true">
             {{ $t('Add card') }}
           </v-btn>
         </v-card-title>
         <div v-if="Manager.id">
+          <!--  -->
           <v-card v-for="item in desserts" class="ma-4 pa-5" :key="item.name">
             <div class="justify-space-between">
               <div>
@@ -95,21 +99,9 @@
                         <v-icon size="small">
                           mdi-pencil
                         </v-icon>
-                        {{ $t('Edit') }}
+                        {{ $t('Edit') }} 
                       </v-btn>
-                      <!--                      <v-btn-->
-                      <!--                          style="width: 100%"-->
-                      <!--                          @click="deleteCard(item.id)"-->
-
-                      <!--                          small-->
-                      <!--                      >-->
-                      <!--                        <v-icon-->
-                      <!--                            size="small"-->
-                      <!--                        >-->
-                      <!--                          mdi-delete-->
-                      <!--                        </v-icon>-->
-                      <!--                        {{ $t('Delete') }}-->
-                      <!--                      </v-btn>-->
+                
                     </v-card>
                   </v-menu>
                 </div>
@@ -118,51 +110,25 @@
                   {{ item.card_number }}
                 </div>
               </div>
-              <!--                            <div>-->
-              <!--                                <v-menu>-->
-              <!--                                    <template v-slot:activator="{ props }">-->
-              <!--                                        <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>-->
-              <!--                                    </template>-->
-              <!--                                    <v-card width="200" class="pa-0 ma-0">-->
-              <!--                                        <v-btn-->
-              <!--                                            @click="generateCode(item.card_number,item.device_id) "-->
-              <!--                                            style="width: 100%"-->
-              <!--                                            small-->
-              <!--                                        >-->
-              <!--                                            {{ $t('Guest code') }}-->
-              <!--                                        </v-btn>-->
-              <!--                                        <v-btn-->
-              <!--                                            style="width: 100%"-->
-              <!--                                            @click="cardEditFun(item)"-->
-              <!--                                            small-->
-              <!--                                        >-->
-              <!--                                            <v-icon-->
-              <!--                                                size="small"-->
-              <!--                                            >-->
-              <!--                                                mdi-pencil-->
-              <!--                                            </v-icon>-->
-              <!--                                            {{ $t('Edit') }}-->
-              <!--                                        </v-btn>-->
-              <!--                                        <v-btn-->
-              <!--                                            style="width: 100%"-->
-              <!--                                            @click="deleteCard(item.id)"-->
-
-              <!--                                            small-->
-              <!--                                        >-->
-              <!--                                            <v-icon-->
-              <!--                                                size="small"-->
-              <!--                                            >-->
-              <!--                                                mdi-delete-->
-              <!--                                            </v-icon>-->
-              <!--                                            {{ $t('Delete') }}-->
-              <!--                                        </v-btn>-->
-              <!--                                    </v-card>-->
-              <!--                                </v-menu>-->
-
-              <!--                            </div>-->
+  
             </div>
           </v-card>
+          <!--  -->
         </div>
+
+ 
+        <v-card-title
+          v-if="Manager.id"
+          class="mt-5 d-sm-flex justify-space-between"
+        >
+          <div>ტელეფონის ნომერი</div>
+        
+          <!-- კარტების დამატება -->
+          <v-btn v-if="role !== 'user'" @click="showPhoneNumberAdd = true">
+           ტელეფონის ნომრის დამატება
+          </v-btn>
+        </v-card-title>
+        <!--  -->
         <v-card-title
           v-if="!Manager.id"
           class="mt-5 d-sm-flex justify-space-between"
@@ -347,6 +313,7 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <!-- kardis damateba -->
   <v-dialog :persistent="true" v-model="showElevator" max-width="600">
     <!-- კარტების დამატება -->
     <v-card>
@@ -385,6 +352,39 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+  <!-- telefonis nomris damatabea phone number add  -->
+  <v-dialog :persistent="true" v-model="showPhoneNumberAdd" max-width="600">
+    <!-- კარტების დამატება -->
+    <v-card>
+      <v-card-title class="headline">ტელეფონის ნომრის დამატება</v-card-title>
+
+      <v-card-text class="pl-3">
+        {{ $t('Add_phone_description') }}
+        <br />
+        {{ $t('Add_card_description_2') }}
+      </v-card-text>
+      <v-card-text class="pl-3">
+        ტელეფონის ნომერი
+        <v-text-field
+          v-model="phonenumber"
+          :label="'ტელეფონის ნომერი'"
+          required
+        ></v-text-field>
+      </v-card-text>
+    
+
+      <v-card-actions>
+        <v-btn color="primary" @click="showPhoneNumberAdd= false">
+          {{ $t('Close') }}
+        </v-btn>
+        <v-btn color="green darken-1" @click="createCard">
+          {{ $t('Save') }}
+        </v-btn>
+        <v-spacer></v-spacer>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+   <!-- telefonis normis damatabea phoone number add  -->
   <v-dialog v-model="showCardEditModal" max-width="600">
     <v-card>
       <v-card-title class="headline">{{ $t('Edit') }}</v-card-title>
@@ -509,9 +509,11 @@ export default {
   data() {
     return {
       showElevator: false,
+      showPhoneNumberAdd:false,
       showBalance: false,
       showCode: false,
       user: this.$store.state.auth.user,
+      phonenumber:"",
       card: {
         name: '',
         card_number: '',
