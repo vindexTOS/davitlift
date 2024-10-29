@@ -89,10 +89,10 @@ class BankOfGeorgia extends Controller
                         'timestamp' => Carbon::now()->timestamp,
                         'additional-info' => [
                             'parameter' => [
-                                ['attributes' => ['name' => 'user_name'], 'value' => 'kata'],
-                                ['attributes' => ['name' => 'user_id'], 'value' => '267'],
-                                ['attributes' => ['name' => 'company_id'], 'value' => '400357449'],
-                                ['attributes' => ['name' => 'manager_phone'], 'value' => '597571441']
+                                ['attributes' => ['name' => 'user_name'], 'value' => $user->name],
+                                ['attributes' => ['name' => 'user_id'], 'value' =>  $parts[0]],
+                                ['attributes' => ['name' => 'company_id'], 'value' =>  $parts[1]],
+                                ['attributes' => ['name' => 'manager_phone'], 'value' => $parts[2]]
                             ]
                         ]
                     ];
