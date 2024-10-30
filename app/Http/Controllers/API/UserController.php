@@ -398,7 +398,17 @@ class UserController extends Controller
    }
  }
 
+public function getPhoneNumbers($user_id){
+ try {
+      $data = Phonenumbers::where("user_id", $user_id)->get();
 
+      return response()->json(["data"=>$data]);
+ } catch (\Throwable $e) {
+    return response()->json(["msg" => $e]);
+
+ }
+
+}
 }
         
         // balance

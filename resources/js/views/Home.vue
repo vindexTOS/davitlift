@@ -6,11 +6,7 @@
           <span class="headline">{{ user.name }}</span>
           <v-menu>
             <template v-slot:activator="{ props }">
-              <v-icon
-                size="small"
-                icon="mdi-dots-vertical"
-                v-bind="props"
-              ></v-icon>
+              <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
             </template>
             <v-card width="200" class="pa-0 ma-0">
               <v-btn style="width: 100%;" @click="showModal = true" small>
@@ -27,7 +23,7 @@
             </v-card>
           </v-menu>
         </v-card-title>
-<!--  -->
+        <!--  -->
         <v-card-text class="px-5">
           <div class="d-flex justify-space-between align-center">
             <v-list-item-title>
@@ -53,16 +49,13 @@
         </v-card-text>
       </v-card>
     </v-col>
- <!--  -->
+    <!--  -->
     <v-col cols="12" md="6">
- 
+
       <v-card min-width="48%" class="pb-16 mt-md-0 mt-10">
-        <v-card-title
-          v-if="Manager.id"
-          class="mt-5 d-sm-flex justify-space-between"
-        >
+        <v-card-title v-if="Manager.id" class="mt-5 d-sm-flex justify-space-between">
           <div>{{ $t('Elevator cards') }}</div>
-        
+
           <!-- კარტების დამატება -->
           <v-btn v-if="role !== 'user'" @click="showElevator = true">
             {{ $t('Add card') }}
@@ -77,31 +70,19 @@
                   <span>{{ $t('Name') }}: {{ item.name }}</span>
                   <v-menu>
                     <template v-slot:activator="{ props }">
-                      <v-icon
-                        size="small"
-                        icon="mdi-dots-vertical"
-                        v-bind="props"
-                      ></v-icon>
+                      <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
                     </template>
                     <v-card width="200" class="pa-0 ma-0">
-                      <v-btn
-                        @click="generateCode(item.card_number, item.device_id)"
-                        style="width: 100%;"
-                        small
-                      >
+                      <v-btn @click="generateCode(item.card_number, item.device_id)" style="width: 100%;" small>
                         {{ $t('Guest code') }}
                       </v-btn>
-                      <v-btn
-                        style="width: 100%;"
-                        @click="cardEditFun(item)"
-                        small
-                      >
+                      <v-btn style="width: 100%;" @click="cardEditFun(item)" small>
                         <v-icon size="small">
                           mdi-pencil
                         </v-icon>
-                        {{ $t('Edit') }} 
+                        {{ $t('Edit') }}
                       </v-btn>
-                
+
                     </v-card>
                   </v-menu>
                 </div>
@@ -110,32 +91,60 @@
                   {{ item.card_number }}
                 </div>
               </div>
-  
+
             </div>
           </v-card>
           <!--  -->
         </div>
 
- 
-        <v-card-title
-          v-if="Manager.id"
-          class="mt-5 d-sm-flex justify-space-between"
-        >
+ <div>
+  <!-- phone number -->
+        <v-card-title v-if="Manager.id" class="mt-5 d-sm-flex justify-space-between">
           <div>ტელეფონის ნომერი</div>
-        
-          <!-- კარტების დამატება -->
+
+         
           <v-btn v-if="role !== 'user'" @click="showPhoneNumberAdd = true">
-           ტელეფონის ნომრის დამატება
+            ტელეფონის ნომრის დამატება
           </v-btn>
         </v-card-title>
         <!--  -->
-        <v-card-title
-          v-if="!Manager.id"
-          class="mt-5 d-sm-flex justify-space-between"
-        >
+        <v-card v-for="item in phonenumberData" class="ma-4 pa-5" :key="item.name">
+            <div class="justify-space-between">
+              <div>
+                <div class="d-flex justify-space-between">
+                  <span> </span>
+                  <v-menu>
+                    <template v-slot:activator="{ props }">
+                      <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
+                    </template>
+                    <v-card width="200" class="pa-0 ma-0">
+                      <v-btn @click="generateCode(item.card_number, item.device_id)" style="width: 100%;" small>
+                        {{ $t('Guest code') }}
+                      </v-btn>
+                      <v-btn style="width: 100%;" @click="cardEditFun(item)" small>
+                        <v-icon size="small">
+                          mdi-pencil
+                        </v-icon>
+                        {{ $t('Edit') }}
+                      </v-btn>
+
+                    </v-card>
+                  </v-menu>
+                </div>
+                <div>
+                  ნომერი :
+                  {{ item.number}}
+                </div>
+              </div>
+
+            </div>
+          </v-card>
+        <v-card-title v-if="!Manager.id" class="mt-5 d-sm-flex justify-space-between">
           თქვენ არ ხართ მიბმული არცერთ ლიფტს, გთხოვთ დაუკავშირდით თქვენს
           თავმჯდომარეს
         </v-card-title>
+      
+      </div>
       </v-card>
     </v-col>
   </v-card>
@@ -147,31 +156,16 @@
           <h4>
             {{ $t('Total amount deposited') }}:{{ totalMoney }}{{ $t('Lari') }}
           </h4>
-          <apexchart
-            width="400"
-            type="bar"
-            :options="chartOptions"
-            :series="series"
-          ></apexchart>
+          <apexchart width="400" type="bar" :options="chartOptions" :series="series"></apexchart>
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
-        <v-card
-          v-if="seriesB[0] + seriesB[1]"
-          style="height: 100%;"
-          class="overflow-auto pa-2"
-        >
+        <v-card v-if="seriesB[0] + seriesB[1]" style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Condition of elevators') }}</h3>
           <h4>
             {{ $t('Total number of elevators') }}:{{ seriesB[0] + seriesB[1] }}
           </h4>
-          <apexchart
-            width="400"
-            height="350"
-            type="donut"
-            :options="chartOptionsB"
-            :series="seriesB"
-          ></apexchart>
+          <apexchart width="400" height="350" type="donut" :options="chartOptionsB" :series="seriesB"></apexchart>
         </v-card>
       </v-col>
     </v-row>
@@ -181,13 +175,7 @@
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('ქეშბექი') }}</h3>
           <h4>{{ $t('ჯამური ქეშბექი') }}:{{ seriesC[0] + seriesC[1] }}</h4>
-          <apexchart
-            width="400"
-            height="350"
-            type="donut"
-            :options="chartOptionsC"
-            :series="seriesC"
-          ></apexchart>
+          <apexchart width="400" height="350" type="donut" :options="chartOptionsC" :series="seriesC"></apexchart>
         </v-card>
       </v-col>
     </v-row>
@@ -217,15 +205,7 @@
 
       <v-container>
         <v-row v-if="devices && devices.length">
-          <v-col
-            style="min-width: fit-content;"
-            v-for="item in devices"
-            cols="12"
-            sm="6"
-            md="4"
-            lg="3"
-            :key="item.id"
-          >
+          <v-col style="min-width: fit-content;" v-for="item in devices" cols="12" sm="6" md="4" lg="3" :key="item.id">
             <v-card @click="detailDevice(item.id)">
               <template v-slot:title>
                 <div class="d-flex justify-space-between">
@@ -238,14 +218,9 @@
 
               <template v-slot:subtitle>
                 <div class="d-flex justify-space-between">
-                  <v-chip
-                    v-if="
-                      new Date(item.lastBeat).getTime() > new Date().getTime()
-                    "
-                    class=""
-                    color="green"
-                    text-color="white"
-                  >
+                  <v-chip v-if="
+                    new Date(item.lastBeat).getTime() > new Date().getTime()
+                  " class="" color="green" text-color="white">
                     {{ $t('Active') }}
                   </v-chip>
                   <v-chip v-else class="" color="red" text-color="white">
@@ -265,13 +240,8 @@
 
               <template v-slot:text></template>
             </v-card>
-            <v-btn
-              @click="callToLift(item.dev_id, item.id)"
-              style="width: 100%;"
-              small
-              :disabled="!canGamodzaxeba"
-              color="primary"
-            >
+            <v-btn @click="callToLift(item.dev_id, item.id)" style="width: 100%;" small :disabled="!canGamodzaxeba"
+              color="primary">
               {{ $t('გამოიძახე ლიფტი') }}
             </v-btn>
           </v-col>
@@ -284,22 +254,9 @@
       <v-card-title class="headline">{{ $t('Edit profile') }}</v-card-title>
 
       <v-card-text class="pl-3">
-        <v-text-field
-          v-model="userUpdate.name"
-          :label="$t('Name')"
-          required
-        ></v-text-field>
-        <v-text-field
-          v-model="userUpdate.email"
-          :label="$t('Email')"
-          required
-        ></v-text-field>
-        <v-text-field
-          v-model="userUpdate.phone"
-          :rules="phoneRules"
-          :label="$t('Phone')"
-          required
-        ></v-text-field>
+        <v-text-field v-model="userUpdate.name" :label="$t('Name')" required></v-text-field>
+        <v-text-field v-model="userUpdate.email" :label="$t('Email')" required></v-text-field>
+        <v-text-field v-model="userUpdate.phone" :rules="phoneRules" :label="$t('Phone')" required></v-text-field>
       </v-card-text>
 
       <v-card-actions>
@@ -326,19 +283,11 @@
       </v-card-text>
       <v-card-text class="pl-3">
         {{ $t('Card name') }}
-        <v-text-field
-          v-model="card.name"
-          :label="$t('Card name')"
-          required
-        ></v-text-field>
+        <v-text-field v-model="card.name" :label="$t('Card name')" required></v-text-field>
       </v-card-text>
       <v-card-text class="pl-3">
         {{ $t('6 Digit Code') }}
-        <v-text-field
-          v-model="card.card_number"
-          :label="$t('6 Digit Code')"
-          required
-        ></v-text-field>
+        <v-text-field v-model="card.card_number" :label="$t('6 Digit Code')" required></v-text-field>
       </v-card-text>
 
       <v-card-actions>
@@ -365,37 +314,29 @@
       </v-card-text>
       <v-card-text class="pl-3">
         ტელეფონის ნომერი
-        <v-text-field
-          v-model="phonenumber"
-          :label="'ტელეფონის ნომერი'"
-          required
-        ></v-text-field>
+        <v-text-field v-model="phonenumber" :label="'ტელეფონის ნომერი'" required></v-text-field>
       </v-card-text>
-    
+
 
       <v-card-actions>
-        <v-btn color="primary" @click="showPhoneNumberAdd= false">
+        <v-btn color="primary" @click="showPhoneNumberAdd = false">
           {{ $t('Close') }}
         </v-btn>
-        <v-btn color="green darken-1" @click="createCard">
+        <v-btn color="green darken-1" @click="createPhone">
           {{ $t('Save') }}
         </v-btn>
         <v-spacer></v-spacer>
       </v-card-actions>
     </v-card>
   </v-dialog>
-   <!-- telefonis normis damatabea phoone number add  -->
+  <!-- telefonis normis damatabea phoone number add  -->
   <v-dialog v-model="showCardEditModal" max-width="600">
     <v-card>
       <v-card-title class="headline">{{ $t('Edit') }}</v-card-title>
 
       <v-card-text class="pl-3">
         {{ $t('Card name') }}
-        <v-text-field
-          v-model="cardEdit.name"
-          :label="$t('Card name')"
-          required
-        ></v-text-field>
+        <v-text-field v-model="cardEdit.name" :label="$t('Card name')" required></v-text-field>
       </v-card-text>
 
       <v-card-actions>
@@ -423,29 +364,14 @@
 
       <v-card-text>
         <v-form ref="form" v-model="valid">
-          <v-text-field
-            v-model="old_password"
-            :rules="passwordRules"
-            :label="$t('Old Password')"
-            type="password"
-            required
-          ></v-text-field>
+          <v-text-field v-model="old_password" :rules="passwordRules" :label="$t('Old Password')" type="password"
+            required></v-text-field>
 
-          <v-text-field
-            v-model="password"
-            :rules="passwordRules"
-            :label="$t('New Password')"
-            type="password"
-            required
-          ></v-text-field>
+          <v-text-field v-model="password" :rules="passwordRules" :label="$t('New Password')" type="password"
+            required></v-text-field>
 
-          <v-text-field
-            v-model="password_confirmation"
-            :rules="passwordConfirmationRules"
-            :label="$t('Confirm New Password')"
-            type="password"
-            required
-          ></v-text-field>
+          <v-text-field v-model="password_confirmation" :rules="passwordConfirmationRules"
+            :label="$t('Confirm New Password')" type="password" required></v-text-field>
         </v-form>
       </v-card-text>
 
@@ -468,12 +394,7 @@
       </v-card-title>
       <v-card-text>
         <v-form ref="form" v-model="valid">
-          <v-text-field
-            v-model.number="amount"
-            :label="$t('Amount')"
-            type="text"
-            required
-          ></v-text-field>
+          <v-text-field v-model.number="amount" :label="$t('Amount')" type="text" required></v-text-field>
           <v-alert v-if="amount" color="warning">
             <v-icon>mdi-alert</v-icon>
             საკომოსიოდან გამომდინარე აღნიშნული თანხის ჩასარიცხად გადასახდელი
@@ -491,10 +412,7 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <TransactionUserTable
-    :reload="getTransactions"
-    :server-items="transaction"
-  ></TransactionUserTable>
+  <TransactionUserTable :reload="getTransactions" :server-items="transaction"></TransactionUserTable>
 </template>
 
 <script>
@@ -509,11 +427,12 @@ export default {
   data() {
     return {
       showElevator: false,
-      showPhoneNumberAdd:false,
+      showPhoneNumberAdd: false,
       showBalance: false,
       showCode: false,
       user: this.$store.state.auth.user,
-      phonenumber:"",
+      phonenumber: "",
+      phonenumberData:[],
       card: {
         name: '',
         card_number: '',
@@ -646,6 +565,7 @@ export default {
       this.getBalance()
     }, 60000)
     this.getCards()
+    this.getPhoneNumbers()
     this.getUserDevice()
     setTimeout(() => {
       this.getTransactions()
@@ -704,7 +624,7 @@ export default {
           // Sort by descending order
           return dateB - dateA
         })
-        console.log(this.transaction)
+        // console.log(this.transaction)
       })
     },
     getCards() {
@@ -720,9 +640,9 @@ export default {
       axios
         .get(
           '/api/bank/transaction/create/' +
-            this.realAmount +
-            '/' +
-            this.user.id,
+          this.realAmount +
+          '/' +
+          this.user.id,
         )
         .then(({ data }) => {
           window.location = data
@@ -763,6 +683,58 @@ export default {
         allowOutsideClick: false,
       })
     },
+    async createPhone() {
+  // Validate phone number
+  if (this.phonenumber.length !== 9) {
+    this.$swal.fire({
+      icon: "error",
+      title: "Invalid Input",
+      text: "Phone number must be exactly 9 digits long.",
+      allowOutsideClick: true,
+    });
+    return;
+  }
+
+  if (!this.phonenumber.startsWith('5')) {
+    this.$swal.fire({
+      icon: "error",
+      title: "Invalid Input",
+      text: "Phone number must start with '5'.",
+      allowOutsideClick: true,
+    });
+    return;
+  }
+
+  // If validation passes, proceed with the API call
+  try {
+    await axios.post("/api/phone", { user_id: this.user.id, number: this.phonenumber });
+    this.getPhoneNumbers();
+    this.showPhoneNumberAdd = false;
+    this.$swal.fire({
+      icon: "success",
+      position: "center",
+      allowOutsideClick: true,
+    });
+  } catch (error) {
+    // Handle any errors from the API call
+    this.$swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "There was a problem saving the phone number.",
+      allowOutsideClick: true,
+    });
+  }
+},
+    async getPhoneNumbers(){
+ await axios.get(`/api/phone/${this.user.id}`).then((res)=>{
+
+// phonenumberData
+this.phonenumberData = res.data.data
+ 
+  //  console.log(res)
+ }).catch(err => console.log(err))
+       
+    },
     updateCard() {
       axios.put('/api/cards/' + this.cardEdit.id, this.cardEdit).then(() => {
         this.getCards()
@@ -775,7 +747,7 @@ export default {
       })
     },
     cardEditFun(item) {
-      console.log(item)
+      // console.log(item)
       this.showCardEditModal = true
       this.cardEdit.name = item.name
       this.cardEdit.id = item.id
@@ -831,7 +803,7 @@ export default {
       axios.get('/api/get/devices/user').then(({ data }) => {
         this.devices = data['device']
         if (this.devices) {
-          console.log(data['manager'])
+          // console.log(data['manager'])
           this.Manager = { ...data['manager'] }
           Object.values(data.earnings).forEach((x) => {
             this.series[0].data[x.month - 1] = x.earnings / 100
@@ -873,7 +845,7 @@ export default {
             allowOutsideClick: false,
           })
           this.dialog = false
-        } catch (error) {}
+        } catch (error) { }
       }
     },
   },
