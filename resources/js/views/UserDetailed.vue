@@ -228,6 +228,8 @@
                 <v-select v-model="user.role" :items="roles" label="როლი" required></v-select>
                 <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_card_amount"
                     label="ბარათის ტარიფი" required></v-text-field>
+                    <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_phone_amount"
+                    label="ნომრის ტარიფი" required></v-text-field>
             </v-card-text>
 
             <v-card-actions>

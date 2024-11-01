@@ -88,7 +88,7 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     ]);
     
     Route::put("/update-fixed-card-amount", [UserController::class, "UpdateUsersFixedCardTarriff"]);
-    
+    Route::put("/update-fixed-phone-amount", [UserController::class, 'UpdateUsersFixedPhoneNumberTarriff']);
 });
 
 //  company and manager middle ware

@@ -360,6 +360,27 @@ class UserController extends Controller
         }
     }
 
+public function UpdateUsersFixedPhoneNumberTarriff(Request $request){
+    $deviceId = $request["device_id"];
+    $amount = $request["amount"];
+    try {
+        $device = Device::find($deviceId);
+        $device->fixed_phone_amount = $amount;
+        $device->save();
+        $deviceUsers = DeviceUser::where('device_id', $deviceId)->get();
+        $users = [];
+        foreach ($deviceUsers as $deviceUser) {
+            $user = $deviceUser->user;
+
+            $user->update(['fixed_phone_amount' => $amount]);
+        }
+        return response()->json(["msg" => "Device Has Been Updated"]);
+    } catch (\Exception $e) {
+        return response()->json(["msg" => $e]);
+    }
+    
+}
+
     public function GetUsersElevatorUse(string $user_id)
     {
 
@@ -409,6 +430,28 @@ public function getPhoneNumbers($user_id){
  }
 
 }
+
+
+// public function setPhoneNumberTarrif(Request $request){
+
+//     try {
+//         $fixedPhoneAmount = $request["fixed_phone_amount"];
+//         $userId = $request["user_id"];
+//         $user = User::find($userId);
+
+//         if(!$user){
+//             return response()->json(['msg'=>"not found"]);
+//         }
+
+//         $user->fixed_phone_amount = $fixedPhoneAmount;
+//         $user->save();
+
+//         return response()->json(["msg"=>"updated"]);
+
+//     } catch (\Throwable $e) {
+//         return response()->json(["msg" => $e]);
+//     }
+// }
 }
         
         // balance
