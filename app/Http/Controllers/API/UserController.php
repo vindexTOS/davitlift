@@ -429,8 +429,21 @@ public function getPhoneNumbers($user_id){
 
  }
 
+
+
+
 }
 
+public function deletePhoneNumber($id){
+    try {
+       $phoneNumber = Phonenumbers::where("id", $id)->first();
+       $phoneNumber->delete();
+
+       return response()->json(["msg"=>"number has been deleted"]);
+    } catch (\Throwable $e) {
+       return response()->json(["msg" => $e]);
+    }
+}
 
 // public function setPhoneNumberTarrif(Request $request){
 
