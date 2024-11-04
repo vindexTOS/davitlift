@@ -306,6 +306,7 @@ Route::get('user/transaction/history/{device_id}', [
 
 Route::post("phone",[UserController::class, "addPhoneNumber"]);
 Route::get("phone/{user_id}", [ UserController::class, "getPhoneNumbers"]);
+Route::delete("phone/{id}",[UserController::class, "deletePhoneNumber"]);
 //  notifications
 
 Route::get("/notifications/{user_id}", [NotificationsController::class, "index"]);

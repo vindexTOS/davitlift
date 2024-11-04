@@ -12,8 +12,13 @@ class Phonenumbers extends Model
         'user_id',
  
          "number",
+         'id'
          
     ];
-
+    protected $primaryKey = 'id';
+    protected $hidden = [];
+    protected $casts = [
+        'id' => 'integer',
+    ];
 
 }

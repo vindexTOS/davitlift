@@ -126,16 +126,13 @@
                       <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
                     </template>
                     <v-card width="200" class="pa-0 ma-0">
-                      <v-btn @click="generateCode(item.card_number, item.device_id)" style="width: 100%;" small>
-                        {{ $t('Guest code') }}
-                      </v-btn>
-                      <v-btn style="width: 100%;" @click="cardEditFun(item)" small>
-                        <v-icon size="small">
-                          mdi-pencil
-                        </v-icon>
-                        {{ $t('Edit') }}
-                      </v-btn>
-
+                      
+                        <v-btn style="width: 100%" @click="deletePhone(item.id)" small>
+                                                <v-icon size="small">
+                                                    mdi-delete
+                                                </v-icon>
+                                                {{ $t("Delete") }}
+                                            </v-btn>
                     </v-card>
                   </v-menu>
                 </div>
@@ -679,7 +676,7 @@ export default {
 
   // If validation passes, proceed with the API call
   try {
-    await axios.post("/api/phone", { user_id: this.$route.params.id, number: this.phonenumber });
+  let res =  await axios.post("/api/phone", { user_id: this.$route.params.id, number: this.phonenumber });
     this.getPhoneNumbers();
     this.showPhoneNumberAdd = false;
     this.$swal.fire({
@@ -687,6 +684,8 @@ export default {
       position: "center",
       allowOutsideClick: true,
     });
+
+    console.log(res)
   } catch (error) {
     // Handle any errors from the API call
     this.$swal.fire({
@@ -702,9 +701,21 @@ async getPhoneNumbers(){
  await axios.get(`/api/phone/${this.$route.params.id}`).then((res)=>{
 
  this.phonenumberData = res.data.data
- 
+ console.log(res.data)
   }).catch(err => console.log(err))
        
+    },
+
+    async deletePhone(id){
+        await axios.delete(`/api/phone/${id}`).then((res)=>{
+            console.log(res)
+             this.getPhoneNumbers()
+            this.$swal.fire({
+                        icon: "success",
+                        position: "center",
+                        allowOutsideClick: false,
+                    });
+ }).catch(err => console.log(err))
     },
         ...mapActions({
             signIn: "auth/login",

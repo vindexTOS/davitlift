@@ -118,15 +118,7 @@
                       <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
                     </template>
                     <v-card width="200" class="pa-0 ma-0">
-                      <v-btn @click="generateCode(item.card_number, item.device_id)" style="width: 100%;" small>
-                        {{ $t('Guest code') }}
-                      </v-btn>
-                      <v-btn style="width: 100%;" @click="cardEditFun(item)" small>
-                        <v-icon size="small">
-                          mdi-pencil
-                        </v-icon>
-                        {{ $t('Edit') }}
-                      </v-btn>
+                   
 
                     </v-card>
                   </v-menu>

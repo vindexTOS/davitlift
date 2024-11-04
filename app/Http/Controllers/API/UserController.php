@@ -434,14 +434,20 @@ public function getPhoneNumbers($user_id){
 
 }
 
-public function deletePhoneNumber($id){
+public function deletePhoneNumber($id)
+{
     try {
-       $phoneNumber = Phonenumbers::where("id", $id)->first();
-       $phoneNumber->delete();
+         $phoneNumber = Phonenumbers::find($id);
 
-       return response()->json(["msg"=>"number has been deleted"]);
+         if (!$phoneNumber) {
+            return response()->json(["msg" => "Phone number not found"], 404);
+        }
+
+         $phoneNumber->delete();
+
+         return response()->json(["msg" => "Number has been deleted"]);
     } catch (\Throwable $e) {
-       return response()->json(["msg" => $e]);
+         return response()->json(["msg" => $e->getMessage()], 500);
     }
 }
 
