@@ -10,9 +10,10 @@ use App\Models\Card;
 use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceUser;
-use App\Providers\NotificationProvider;
+use App\Models\Phonenumbers;
 use Illuminate\Support\Facades\Log;
 use App\Services\UpdateDeviceEarnings;
+use App\Providers\NotificationProvider;
 
 
 
@@ -140,10 +141,11 @@ trait FixedTarrifOpModeService
     {
 
         $deviceCardNumber = Card::where("user_id", $user->id)->count();
-
+        $phoneNumberAmount =Phonenumbers::where("user_id", $user->id)->count();
         $deviceTarrifAmountCombined = $deviceCardNumber * $user->fixed_card_amount;
+        $devicePhoneNumberAmount = $phoneNumberAmount * $user->fixed_phone_amount;
 
-        $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined;
+        $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
 
         return $combinedTarffToBepayed;
     }

@@ -432,7 +432,7 @@ class TransactionController extends Controller
             'extra2' => $string,
             'merchantPaymentId' => $string,
             'extra' => substr($string, 0, 25),
-            'returnurl' =>  'https://lift.eideas.io/',
+            'returnurl' =>  'https://3.71.18.216/',
             'installmentProducts' => [
                 [
                     'Price' => $amount,
@@ -440,7 +440,7 @@ class TransactionController extends Controller
                 ],
             ],
             'callbackUrl' =>
-            "https://lift.eideas.io/api/bank/transaction/callback",
+            "https://3.71.18.216/api/bank/transaction/callback",
         ]);
         return json_decode($response->body(), true);
     }
@@ -623,7 +623,8 @@ class TransactionController extends Controller
             'balance' => 'integer',
             'phone' => 'string|min:5|max:15',
             'role' => 'string',
-            'fixed_card_amount' => 'integer'
+            'fixed_card_amount' => 'integer',
+            "fixed_phone_amount"=> "integer"
 
         ]);
 

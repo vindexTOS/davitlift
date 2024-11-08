@@ -13,6 +13,7 @@ use App\Models\DeviceEarn;
 use App\Models\DeviceUser;
 use App\Models\DeviceError;
 use App\Models\ElevatorUse;
+use App\Models\Phonenumbers;
 use Illuminate\Http\Request;
 use App\Models\LastUserAmount;
 use App\Models\UpdatingDevice;
@@ -219,8 +220,12 @@ class MqttController extends Controller
             ->pluck('id')
             ->toArray();
 
-        $phone = substr($data['payload'], 3); //This will output 'lo, World!'
+        $phone = substr($data['payload'], 3); 
         $user = User::where('phone', $phone)->first();
+        if(empty($user)){
+         $number_user  = Phonenumbers::where("number", $phone)->first();
+         $user = User::where("id",$number_user ->user_id)->first();
+        }
         $userDevice = DeviceUser::where('user_id', $user->id)
             ->whereIn('device_id', $deviceIds)
             ->first();
