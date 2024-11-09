@@ -320,6 +320,9 @@ Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
 // Route::get("/ipay/testhash", [BankOfGeorgia::class, "TestHash"]);
 //  testing area 
 
+
+Route::get("/testDevice/{device_id}/{message}", [TestController::class, "sendTestMessageToDevice"]);
+
 Route::get("/fixdevice/{device_id}", [TestController::class,'FixBalanceForNew' ]);
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
