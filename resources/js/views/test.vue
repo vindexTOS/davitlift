@@ -1,363 +1,647 @@
 <template>
-  <v-card v-if="data.manager" class="mb-4">
-    <v-card-title>
-      <v-btn icon="mdi-arrow-left" size="small" @click="goBack"></v-btn>
-      {{ data.manager.name }}
-    </v-card-title>
-    <v-card-text>
-      <div></div>
-      <div>
-        <b>{{ $t('Phone') }}:</b>
-        {{ data.manager.phone }}
-      </div>
-      <div>
-        <b>{{ $t('Email') }}:</b>
-        {{ data.manager.email }}
-      </div>
-      <div>
-        <b>{{ $t('Cashback') }}:</b>
-
-        {{ data.manager.cashback }}%
-      </div>
-    </v-card-text>
-  </v-card>
-
-  <v-card class="pa-2">
-    <v-row class="justify-space-between">
-      <v-col style="min-height: 100%;" cols="12" md="6">
-        <v-card style="height: 100%;" class="overflow-auto pa-2">
-          <h3>{{ $t('Amounts deposited in months') }}</h3>
-
-          <h4>
-            {{ $t('Total amount earned') }}: {{ totalMoney }}{{ $t('Lari') }}
-          </h4>
-          <apexchart
-            width="400"
-            type="bar"
-            :options="chartOptions"
-            :series="series"
-          ></apexchart>
-        </v-card>
+  <div class="custom-container">
+    <!-- Line and Area Charts -->
+    <!-- <v-row>
+      <v-col cols="12" md="6">
+        <apexchart
+          type="line"
+          :options="lineChartOptions"
+          :series="lineChartSeries"
+        ></apexchart>
       </v-col>
       <v-col cols="12" md="6">
-        <v-card style="height: 100%;" class="overflow-auto pa-2">
-          <h3>{{ $t('Condition of elevators') }}</h3>
-          <h4>
-            {{ $t('Total number of elevators') }}:{{ seriesB[0] + seriesB[1] }}
-          </h4>
-          <apexchart
-            width="400"
-            height="350"
-            type="donut"
-            :options="chartOptionsB"
-            :series="seriesB"
-          ></apexchart>
-        </v-card>
+        <apexchart
+          type="area"
+          :options="areaChartOptions"
+          :series="areaChartSeries"
+        ></apexchart>
       </v-col>
-    </v-row>
-    <v-row class="justify-space-between">
-      <v-col style="min-height: 100%;" cols="12" md="6"></v-col>
-      <v-col v-if="seriesC" cols="12" md="6">
-        <v-card
-          v-if="seriesC[0] + seriesC[1]"
-          style="height: 100%;"
-          class="overflow-auto pa-2"
-        >
-          <h3>{{ $t('Cashback') }}: {{ seriesC[0] }}</h3>
-          <h4>{{ $t('Total Cashback') }}:{{ seriesC[0] + seriesC[1] }}</h4>
-          <button @click="cashBackAmountHandle()">CLICK TEST TEST TEST</button>
-          <apexchart
-            width="400"
-            height="350"
-            type="donut"
-            :options="chartOptionsC"
-            :series="seriesC"
-          ></apexchart>
-        </v-card>
+    </v-row> -->
+
+    <!-- Bar and Column Charts -->
+    <!-- <v-row>
+    
+      <v-col cols="12" md="6">
+        <apexchart
+          type="column"
+          :options="columnChartOptions"
+          :series="columnChartSeries"
+        ></apexchart>
       </v-col>
-    </v-row>
-  </v-card>
-  <div class="mt-3">
-    <v-card>
-      <v-container>
-        <v-row>
-          <v-checkbox
-            :label="$t('Active')"
-            style="min-width: fit-content;"
-            v-model="isActive"
-          ></v-checkbox>
+    </v-row> -->
 
-          <v-checkbox
-            :label="$t('Inactive')"
-            style="min-width: fit-content;"
-            v-model="notActive"
-          ></v-checkbox>
-          <v-checkbox
-            :label="$t('With problems')"
-            style="min-width: fit-content;"
-            v-model="hasError"
-          ></v-checkbox>
-          <v-checkbox
-            :label="$t('Deleted')"
-            style="min-width: fit-content;"
-            v-model="deleted"
-          ></v-checkbox>
-        </v-row>
-      </v-container>
-      <v-container>
-        <v-row v-if="filtredDevices">
-          <v-col
-            style="min-width: fit-content;"
-            v-for="item in filtredDevices"
-            cols="12"
-            sm="6"
-            md="4"
-            lg="3"
-            :key="item.id"
-          >
-            <v-card @click="detailDevice(item.id)">
-              <template v-slot:title>
-                <div class="d-flex justify-space-between">
-                  <span>
-                    <v-icon v-if="item.errors.length" size="xs" color="red">
-                      mdi-alert
-                    </v-icon>
-                    {{ item.name }}
-                    <SignalIcon :signal="Math.ceil(item.signal / 20)" />
-                  </span>
-                </div>
-              </template>
+    <!-- Pie and Donut Charts -->
+    <!-- <v-row>
+      <v-col cols="12" md="6">
+        <apexchart
+          type="donut"
+          :options="donutChartOptions"
+          :series="donutChartSeries"
+        ></apexchart>
+      </v-col>
+    </v-row> -->
 
-              <template v-slot:subtitle>
-                <div class="d-flex justify-space-between">
-                  <v-chip
-                    v-if="
-                      new Date(item.lastBeat).getTime() > new Date().getTime()
-                    "
-                    class=""
-                    color="green"
-                    text-color="white"
-                  >
-                    {{ $t('Active') }}
-                  </v-chip>
-                  <v-chip v-else class="" color="red" text-color="white">
-                    {{ $t('Inactive') }}
-                  </v-chip>
-                </div>
-                <b>{{ $t('Count of cards') }}: {{ item.limit }}</b>
-                <hr />
-                <b>{{ item.dev_id }}</b>
-                <hr />
-                <b>
-                  {{
-                    item.network == 1
-                      ? 'Ethernet'
-                      : item.network == 2
-                      ? 'Cellular'
-                      : 'Wifi'
-                  }}
-                </b>
-                <hr />
-                <b>
-                  {{
-                    item.op_mode == 0 ? 'გადახდის რიცხვი: ' + item.pay_day : ''
-                  }}
-                </b>
-                <hr />
+    <!-- Radar and Polar Area Charts -->
+    <!-- <v-row>
+      <v-col cols="12" md="6">
+        <apexchart
+          type="radar"
+          :options="radarChartOptions"
+          :series="radarChartSeries"
+        ></apexchart>
+      </v-col>
+      <v-col cols="12" md="6">
+        <apexchart
+          type="polarArea"
+          :options="polarAreaChartOptions"
+          :series="polarAreaChartSeries"
+        ></apexchart>
+      </v-col>
+    </v-row> -->
 
-                <b>
-                  {{
-                    item.deviceTariffAmount
-                      ? 'ტარიფი :' + item.deviceTariffAmount + ' ლარი'
-                      : ''
-                  }}
-                </b>
-              </template>
+    <!-- Scatter and Bubble Charts -->
+    <!-- <v-row>
+      <v-col cols="12" md="6">
+        <apexchart
+          type="scatter"
+          :options="scatterChartOptions"
+          :series="scatterChartSeries"
+        ></apexchart>
+      </v-col>
+      <v-col cols="12" md="6">
+        <apexchart
+          type="bubble"
+          :options="bubbleChartOptions"
+          :series="bubbleChartSeries"
+        ></apexchart>
+      </v-col>
+    </v-row> -->
 
-              <template v-slot:text></template>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-card>
-    <div class="mt-3">
-      <CashbackTable
-        @getCashback="getCashback"
-        :serverItems="cashbackData['transaction']"
-        :availableCashback="this.cashBackAmount - cashbackData['total']"
-        :maxCashback="maxCashback"
-      ></CashbackTable>
-    </div>
+    <section>
+      <div class="row-gap">
+        <div class="custom-col">
+          <h1 style="margin-left: 30px;">შლაგბაუმი</h1>
+          <div class="chart-container">
+            <apexchart
+              type="treemap"
+              :options="treemapChartOptions"
+              :series="treemapChartSeries"
+            ></apexchart>
+            <button @click="btnClick()" class="custom-button">
+              გახსენი შლაგბაუმი
+            </button>
+          </div>
+        </div>
+        <div class="custom-col">
+          <h1 style="margin-left: 30px;">დომოფონი</h1>
+          <div class="chart-container">
+            <apexchart
+              type="treemap"
+              :options="treemapChartOptionsTwo"
+              :series="treemapChartSeriesTwo"
+            ></apexchart>
+            <button @click="btnClick()" class="custom-button">
+              გახსენი კარი
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- donay -->
+
+      <!-- lll -->
+      <div class="row-gap-card-system">
+        <h1 style="padding-bottom: 20px;">ლიფტის საბარათე სისტემა</h1>
+
+        <div class="row-gap">
+          <div class="custom-col">
+            <h1 style="margin-left: 30px;">ხარჯები</h1>
+
+            <div class="pie-chart">
+              <!-- Adjust width and height as needed -->
+              <apexchart
+                type="pie"
+                :options="pieChartOptions"
+                :series="pieChartSeries"
+              ></apexchart>
+            </div>
+          </div>
+          <button @click="btnClick()" class="call-lift-btn btn-hidden">
+            გამოიძახე ლიფტი
+          </button>
+          <div class="custom-col">
+            <h1 style="margin-left: 30px;">შემოსავლები</h1>
+
+            <apexchart
+              type="bar"
+              :options="barChartOptions"
+              :series="barChartSeries"
+            ></apexchart>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
+
 <script>
 import VueApexCharts from 'vue3-apexcharts'
-import router from '@/router'
-import { th } from 'vuetify/locale'
-import ManagersTable from '../components/ManagersTable.vue'
-import SignalIcon from '@/components/icon/SignalIcon.vue'
-import CashbackTable from '../components/CashbackTable.vue'
 
 export default {
+  name: 'PageTest',
   components: {
-    SignalIcon,
     apexchart: VueApexCharts,
-    ManagersTable,
-    CashbackTable,
   },
-  data: function () {
+  data() {
     return {
-      data: {},
-      hasError: true,
-      isActive: true,
-      notActive: true,
-      deleted: false,
-      seriesB: [0, 0],
-      seriesC: [0, 0],
-      eachLiftTariffAmount: 0,
-      cashBackAmount: 0,
-      series: [
-        {
-          name: '',
-          data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        },
-      ],
-      totalMoney: 0,
-      cashbackData: {},
-    }
-  },
-  created() {
-    this.loadItems()
-    this.getCashback()
-  },
-  computed: {
-    chartOptionsB() {
-      return {
-        labels: [this.$t('Inactive'), this.$t('Active')],
-      }
-    },
-    chartOptions() {
-      return {
+      // Treemap Chart////////////
+      pieChartOptions: {
         chart: {
-          id: 'vuechart-exampl2e',
+          type: 'pie',
+          width: '100%', // Set the width to 100% to occupy the entire container
+          height: '100%', // Set the height to 100% to occupy the entire container
+        },
+        labels: [
+          'ტექნიკური მომსახურებ',
+          'დასუფთავება',
+          'განათება',
+          'ეზოს კეთილმოწყობა',
+          'სხვა',
+        ], // Add your custom labels
+      },
+      pieChartSeries: [44, 55, 13, 43, 22],
+      // Bar Chart
+      barChartOptions: {
+        chart: {
+          type: 'bar',
         },
         xaxis: {
           categories: [
-            this.$t('იან'),
-            this.$t('თებ'),
-            this.$t('მარტი'),
-            this.$t('აპრ'),
-            this.$t('მაისი'),
-            this.$t('ივნ'),
-            this.$t('ივლ'),
-            this.$t('აგვ'),
-            this.$t('სექ'),
-            this.$t('ოქტ'),
-            this.$t('ნოემბ'),
-            this.$t('დეკ'),
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
           ],
         },
-      }
-    },
-    filtredDevices() {
-      return this.data.device
-        ? this.data.device.filter((x) => {
-            const active = new Date(x.lastBeat).getTime() > new Date().getTime()
-            if (!x.deleted_at) {
-              if (this.isActive && active) {
-                return x
-              }
-              if (this.notActive && !active) {
-                return x
-              }
-              if (this.hasError && x.errors.length) {
-                return x
-              }
+        plotOptions: {
+          bar: {
+            distributed: true,
+            dataLabels: {
+              enabled: true,
+            },
+          },
+        },
+      },
+      barChartSeries: [
+        {
+          name: 'Series 1',
+          data: [1349, 1559, 1604, 1819, 2123, 1923, 2420, 2493, 2470],
+          color: (data) => {
+            // Define colors for different seasons
+            const winterColors = ['#4292c6', '#3282bf', '#2b73b9']
+            const springColors = ['#6aa84f', '#61a043', '#58983b']
+            const summerColors = ['#ff9933', '#ff8c1a', '#ff8000']
+            const fallColors = ['#e67e22', '#e57c1e', '#e4791a']
+
+            const month = data.x // Get the month category
+
+            // Assign colors based on the season
+            if (month === 'Dec' || month === 'Jan' || month === 'Feb') {
+              return winterColors[data.dataPointIndex % winterColors.length]
+            } else if (month === 'Mar' || month === 'Apr' || month === 'May') {
+              return springColors[data.dataPointIndex % springColors.length]
+            } else if (month === 'Jun' || month === 'Jul' || month === 'Aug') {
+              return summerColors[data.dataPointIndex % summerColors.length]
+            } else {
+              return fallColors[data.dataPointIndex % fallColors.length]
             }
-            if (this.deleted && x.deleted_at) {
-              return x
-            }
-          })
-        : []
-    },
-    chartOptionsC() {
-      return {
-        labels: [this.$t('ჩასარიცხი'), this.$t('ჩარიცხული')],
-      }
-    },
+          },
+        },
+      ],
+      treemapChartOptions: {
+        chart: {
+          type: 'treemap',
+        },
+        tooltip: {
+          style: {
+            fontSize: '16px', // Font size for tooltip
+          },
+        },
+        plotOptions: {
+          treemap: {
+            dataLabels: {
+              enabled: true,
+              style: {
+                fontFamily: 'Arial, sans-serif', // Font family for treemap text
+                fontSize: '44px', // Font size for treemap text
+                color: 'black', // Text color for treemap text
+              },
+            },
+          },
+        },
+      },
+      treemapChartSeries: [
+        {
+          data: [
+            {
+              x: 'თავისუფალი პარკირება: 8',
+              y: 500,
+              fillColor: '#96d1f8', // Custom color for the first circle
+            },
+            // {
+            //   x: 'გახსენი შლაგბაუმი',
+            //   y: 300,
+            //   fillColor: '#6bac8e', // Custom color for the second circle
+            // },
+            {
+              x: 'შლაგბაუმი დაკეტილია',
+              y: 500,
+              fillColor: '#ff1b1e', // Custom color for the third circle
+            },
+            {
+              x: 'შევსებული პატკირება:  20',
+              y: 400,
+              fillColor: '#FAD5A5', // Custom color for the fourth circle
+            },
+          ],
+        },
+      ],
+      // Treemap Chart/////////////////////////////////////////////////////////////////////////////////////
+      treemapChartOptionsTwo: {
+        chart: {
+          type: 'treemap',
+        },
+      },
+      treemapChartSeriesTwo: [
+        {
+          data: [
+            {
+              x: 'კარი დაკეტილია',
+              y: 800,
+              fillColor: '#e33b26', // Custom color for the first circle
+            },
+            // {
+            //   x: 'გააღე კარი',
+            //   y: 500,
+            //   fillColor: '#31c312',
+            // },
+          ],
+        },
+      ],
+      //   Line Chart///////////////////////////////////////////////////////////////////////////////////////
+      lineChartOptions: {
+        chart: {
+          type: 'line',
+        },
+        xaxis: {
+          categories: [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+          ],
+        },
+      },
+      lineChartSeries: [
+        {
+          name: 'Series 1',
+          data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+        },
+      ],
+      // Area Chart
+      areaChartOptions: {
+        chart: {
+          type: 'area',
+        },
+        xaxis: {
+          categories: [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+          ],
+        },
+      },
+      areaChartSeries: [
+        {
+          name: 'Series 1',
+          data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+        },
+      ],
 
-    maxCashback() {
-      if (this.data.manager) {
-        // console.log(this.totalMoney)
+      // Column Chart
+      columnChartOptions: {
+        chart: {
+          type: 'column',
+        },
+        xaxis: {
+          categories: [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+          ],
+        },
+      },
+      columnChartSeries: [
+        {
+          name: 'Series 1',
+          data: [30, 40, 35, 50, 49, 60, 70, 91, 125],
+        },
+      ],
+      // Pie Chart
 
-        let remaining =
-          this.totalMoney - (this.totalMoney * this.data.manager.cashback) / 100
-        if (remaining < this.eachLiftTariffAmount) {
-          this.cashBackAmount = this.totalMoney - this.eachLiftTariffAmount
-        } else {
-          this.cashBackAmount = remaining
-        }
-      }
-    },
-
-    seriesC() {
-      // console.log(this.cashbackData)
-      if (this.cashBackAmount > -1) {
-        return [Number(this.cashBackAmount), Number(this.cashbackData.total)]
-      }
-      return [0, 0]
-    },
+      // Donut Chart
+      donutChartOptions: {
+        chart: {
+          type: 'donut',
+        },
+      },
+      donutChartSeries: [44, 55, 13, 43, 22],
+      // Radar Chart
+      radarChartOptions: {
+        chart: {
+          type: 'radar',
+        },
+      },
+      radarChartSeries: [
+        {
+          name: 'Series 1',
+          data: [80, 50, 30, 40, 100],
+        },
+      ],
+      // Polar Area Chart
+      polarAreaChartOptions: {
+        chart: {
+          type: 'polarArea',
+        },
+      },
+      polarAreaChartSeries: [30, 40, 45, 50, 49],
+      // Scatter Chart
+      scatterChartOptions: {
+        chart: {
+          type: 'scatter',
+        },
+      },
+      scatterChartSeries: [
+        {
+          name: 'Series 1',
+          data: [
+            [10, 20],
+            [15, 25],
+            [20, 30],
+            [25, 35],
+            [30, 40],
+          ],
+        },
+      ],
+      // Bubble Chart
+      bubbleChartOptions: {
+        chart: {
+          type: 'bubble',
+        },
+      },
+      bubbleChartSeries: [
+        {
+          name: 'Series 1',
+          data: [
+            {
+              x: 10,
+              y: 20,
+              z: 30,
+            },
+            {
+              x: 15,
+              y: 25,
+              z: 35,
+            },
+            {
+              x: 20,
+              y: 30,
+              z: 40,
+            },
+            {
+              x: 25,
+              y: 35,
+              z: 45,
+            },
+            {
+              x: 30,
+              y: 40,
+              z: 50,
+            },
+          ],
+        },
+      ],
+      // Heatmap Chart
+      heatmapChartOptions: {
+        chart: {
+          type: 'heatmap',
+        },
+      },
+      heatmapChartSeries: [
+        {
+          name: 'Series 1',
+          data: [
+            {
+              x: 'Monday',
+              y: 0,
+              value: 4,
+            },
+            {
+              x: 'Tuesday',
+              y: 1,
+              value: 2,
+            },
+            {
+              x: 'Wednesday',
+              y: 2,
+              value: 6,
+            },
+            {
+              x: 'Thursday',
+              y: 3,
+              value: 8,
+            },
+            {
+              x: 'Friday',
+              y: 4,
+              value: 10,
+            },
+            {
+              x: 'Saturday',
+              y: 5,
+              value: 12,
+            },
+            {
+              x: 'Sunday',
+              y: 6,
+              value: 14,
+            },
+          ],
+        },
+      ],
+    }
   },
   methods: {
-    cashBackAmountHandle() {
-      // დარჩენილი პროცენტი
-      let remaining =
-        this.totalMoney - (this.totalMoney * this.data.manager.cashback) / 100
-      if (remaining < this.eachLiftTariffAmount) {
-        this.cashBackAmount = this.totalMoney - this.eachLiftTariffAmount
-      } else {
-        this.cashBackAmount = remaining
-      }
-      // console.log(this.cashBackAmount)
-    },
-    getDeviceAmount() {
-      this.eachLiftTariffAmount = this.filtredDevices
-        .map((val) => val.deviceTariffAmount)
-        .reduce((a, b) => a + b)
-    },
-    getCashback() {
-      axios
-        .get(
-          `/api/get/pay/cashback/${this.$route.params.companyId}/${this.$route.params.id}`,
-        )
-        .then(({ data }) => {
-          this.cashbackData = data
-          // console.log(data, ' CASH BACK DATA')
-          this.getDeviceAmount()
-        })
-    },
-    loadItems() {
-      axios
-        .get('/api/companies/manager/' + this.$route.params.id)
-        .then(({ data }) => {
-          this.data = data
-          Object.values(this.data.earnings).forEach((x) => {
-            this.series[0].data[x.month - 1] = x.earnings / 100
-            this.totalMoney += x.earnings / 100
-          })
-          this.seriesB = [
-            this.data.deviceActivity.inactive,
-            this.data.deviceActivity.active,
-          ]
-        })
-    },
-    detailDevice(id) {
-      router.push({ name: `devicesDetail`, params: { id: id } })
-    },
-    goBack() {
-      router.go(-1)
+    btnClick() {
+      this.$swal.fire({
+        icon: 'success',
+        position: 'center',
+        allowOutsideClick: false,
+      })
     },
   },
 }
 </script>
-<style scoped></style>
+
+<style scoped>
+h1 {
+  font-size: 1.2rem;
+  color: rgb(150, 150, 150);
+}
+.custom-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+.pie-chart-container {
+  width: 100%;
+  height: 600px; /* Set the desired height */
+}
+.custom-col {
+  width: 450px;
+  height: 330px;
+  background-color: rgb(249, 249, 249);
+  border-radius: 10px; /* Adjust the radius as needed */
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* Adjust the shadow as needed */
+  padding: 2px; /* Adjust the padding as needed */
+}
+section {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 20px;
+  gap: 20px;
+}
+.row-gap-card-system {
+  display: flex;
+  align-items: center;
+
+  flex-wrap: wrap;
+  justify-content: center;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 10px; /* Adjust the radius as needed */
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* Adjust the shadow as needed */
+  padding: 2px; /* Adjust the padding as needed */
+}
+.card-system-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+.custom-col-card {
+  width: 450px;
+
+  padding: 2px; /* Adjust the padding as needed */
+}
+
+.row-gap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.pie-chart {
+  width: 450px; /* Default width */
+}
+@media (min-width: 600px) {
+  .btn-hidden {
+    display: none;
+  }
+  .custom-button {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4caf50; /* Green color */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+}
+@media (max-width: 600px) {
+  .pie-chart {
+    width: 380px; /* Adjusted width for phone screens */
+  }
+  .custom-col {
+    width: 380px;
+    height: 330px;
+    margin-right: 20px;
+    background-color: rgb(249, 249, 249);
+    border-radius: 10px; /* Adjust the radius as needed */
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); /* Adjust the shadow as needed */
+    padding: 2px; /* Adjust the padding as needed */
+  }
+  .row-gap-card-system {
+    margin-right: 50px;
+    background-color: none;
+    background: none;
+    box-shadow: none;
+  }
+  .custom-button {
+    width: 100%;
+    background-color: #4caf50; /* Green color */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+}
+/* btn */
+.chart-container {
+  position: relative;
+}
+
+.call-lift-btn {
+  width: 95%;
+  background-color: #4caf50; /* Green color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.custom-button:hover {
+  background-color: #45a049; /* Darker green color on hover */
+}
+</style>
