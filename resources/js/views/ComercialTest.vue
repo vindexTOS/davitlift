@@ -39,6 +39,12 @@ export default {
         const response = await axios.get(
           `api/testDevice/${this.deviceId}/${this.message}`
         )
+
+        this.$swal.fire({
+                icon: 'success',
+                position: 'center',
+                allowOutsideClick: false,
+              })
         console.log('Message sent successfully:', response.data)
       } catch (error) {
         console.error('Error sending message:', error)
