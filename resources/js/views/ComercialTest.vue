@@ -36,7 +36,7 @@ export default {
   methods: {
     async sendTestMessage() {
       try {
-        const response = await axios.get(
+        const response = await axios.post(
           `api/testDevice/${this.deviceId}/${this.message}`
         )
 
