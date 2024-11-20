@@ -21,6 +21,7 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
 use App\Models\Tbctransaction;
+use App\Models\User;
 
 //  ADMIN ONLY
 
@@ -90,6 +91,7 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     Route::put("/update-fixed-card-amount", [UserController::class, "UpdateUsersFixedCardTarriff"]);
     Route::put("/update-fixed-phone-amount", [UserController::class, 'UpdateUsersFixedPhoneNumberTarriff']);
 });
+
 
 //  company and manager middle ware
 
@@ -325,4 +327,5 @@ Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUs
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 
- 
+// 
+Route::get("/allUsers/{companyId}", [UserController::class, "getCompanyUsers"]);
