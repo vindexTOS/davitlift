@@ -105,6 +105,51 @@
                         </div>
                     </v-card>
                 </div>
+                <div>
+  <!-- phone number -->
+        <v-card-title v-if="Manager.id" class="mt-5 d-sm-flex justify-space-between">
+          <div>ტელეფონის ნომერი</div>
+
+         
+          <v-btn v-if="role !== 'user'" @click="showPhoneNumberAdd = true">
+            ტელეფონის ნომრის დამატება
+          </v-btn>
+        </v-card-title>
+        <!--  -->
+        <v-card v-for="item in phonenumberData" class="ma-4 pa-5" :key="item.name">
+            <div class="justify-space-between">
+              <div>
+                <div class="d-flex justify-space-between">
+                  <span> </span>
+                  <v-menu>
+                    <template v-slot:activator="{ props }">
+                      <v-icon size="small" icon="mdi-dots-vertical" v-bind="props"></v-icon>
+                    </template>
+                    <v-card width="200" class="pa-0 ma-0">
+                      
+                        <v-btn style="width: 100%" @click="deletePhone(item.id)" small>
+                                                <v-icon size="small">
+                                                    mdi-delete
+                                                </v-icon>
+                                                {{ $t("Delete") }}
+                                            </v-btn>
+                    </v-card>
+                  </v-menu>
+                </div>
+                <div>
+                  ნომერი :
+                  {{ item.number}}
+                </div>
+              </div>
+
+            </div>
+          </v-card>
+        <v-card-title v-if="!Manager.id" class="mt-5 d-sm-flex justify-space-between">
+          თქვენ არ ხართ მიბმული არცერთ ლიფტს, გთხოვთ დაუკავშირდით თქვენს
+          თავმჯდომარეს
+        </v-card-title>
+      
+      </div>
             </v-card>
         </v-col>
     </v-card>
@@ -228,6 +273,8 @@
                 <v-select v-model="user.role" :items="roles" label="როლი" required></v-select>
                 <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_card_amount"
                     label="ბარათის ტარიფი" required></v-text-field>
+                    <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_phone_amount"
+                    label="ნომრის ტარიფი" required></v-text-field>
             </v-card-text>
 
             <v-card-actions>
@@ -391,6 +438,36 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+    <!--  -->
+
+    <v-dialog :persistent="true" v-model="showPhoneNumberAdd" max-width="600">
+    <!-- კარტების დამატება -->
+    <v-card>
+      <v-card-title class="headline">ტელეფონის ნომრის დამატება</v-card-title>
+
+      <v-card-text class="pl-3">
+        {{ $t('Add_phone_description') }}
+        <br />
+        {{ $t('Add_card_description_2') }}
+      </v-card-text>
+      <v-card-text class="pl-3">
+        ტელეფონის ნომერი
+        <v-text-field v-model="phonenumber" :label="'ტელეფონის ნომერი'" required></v-text-field>
+      </v-card-text>
+
+
+      <v-card-actions>
+        <v-btn color="primary" @click="showPhoneNumberAdd = false">
+          {{ $t('Close') }}
+        </v-btn>
+        <v-btn color="green darken-1" @click="createPhone">
+          {{ $t('Save') }}
+        </v-btn>
+        <v-spacer></v-spacer>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+    <!--  -->
     <TransactionUserTable :reload="getTransactions" :server-items="transaction"></TransactionUserTable>
 </template>
 
@@ -413,6 +490,9 @@ export default {
             showBalance: false,
             showCode: false,
             showElevetorHistory: false,
+            showPhoneNumberAdd: false,
+            phonenumber: "",
+            phonenumberData:[],
             elevetorHistory: [],
             user: {},
             isAdmin: false,
@@ -490,6 +570,7 @@ export default {
         this.getElevatorUseHistory()
         this.getTransactions();
         this.chackAdminEmail();
+        this.getPhoneNumbers();
     },
     watch: {
         amount(val) {
@@ -571,6 +652,71 @@ export default {
                     window.location = data;
                 });
         },
+        async createPhone() {
+  // Validate phone number
+  if (this.phonenumber.length !== 9) {
+    this.$swal.fire({
+      icon: "error",
+      title: "Invalid Input",
+      text: "Phone number must be exactly 9 digits long.",
+      allowOutsideClick: true,
+    });
+    return;
+  }
+
+  if (!this.phonenumber.startsWith('5')) {
+    this.$swal.fire({
+      icon: "error",
+      title: "Invalid Input",
+      text: "Phone number must start with '5'.",
+      allowOutsideClick: true,
+    });
+    return;
+  }
+
+  // If validation passes, proceed with the API call
+  try {
+  let res =  await axios.post("/api/phone", { user_id: this.$route.params.id, number: this.phonenumber });
+    this.getPhoneNumbers();
+    this.showPhoneNumberAdd = false;
+    this.$swal.fire({
+      icon: "success",
+      position: "center",
+      allowOutsideClick: true,
+    });
+
+    console.log(res)
+  } catch (error) {
+    // Handle any errors from the API call
+    this.$swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "There was a problem saving the phone number.",
+      allowOutsideClick: true,
+    });
+  }
+},
+
+async getPhoneNumbers(){
+ await axios.get(`/api/phone/${this.$route.params.id}`).then((res)=>{
+
+ this.phonenumberData = res.data.data
+ console.log(res.data)
+  }).catch(err => console.log(err))
+       
+    },
+
+    async deletePhone(id){
+        await axios.delete(`/api/phone/${id}`).then((res)=>{
+            console.log(res)
+             this.getPhoneNumbers()
+            this.$swal.fire({
+                        icon: "success",
+                        position: "center",
+                        allowOutsideClick: false,
+                    });
+ }).catch(err => console.log(err))
+    },
         ...mapActions({
             signIn: "auth/login",
         }),

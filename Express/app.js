@@ -130,9 +130,13 @@ function generateHexPayload(command, payload = []) {
 }
 function publishMessage(device_id, payload) {
     const topic = `Lift/${device_id}/commands/general`;
+    console.log(topic)
+
     client.publish(topic, payload, { qos: 1 }, (err) => {
         if (err) {
+            console.log(err)
         } else {
+            console.log(topic)
         }
     });
 }

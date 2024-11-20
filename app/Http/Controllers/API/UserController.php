@@ -19,6 +19,7 @@ use App\Models\CompanyTransaction;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\ElevatorUse;
+use App\Models\Phonenumbers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -359,6 +360,27 @@ class UserController extends Controller
         }
     }
 
+public function UpdateUsersFixedPhoneNumberTarriff(Request $request){
+    $deviceId = $request["device_id"];
+    $amount = $request["amount"];
+    try {
+        $device = Device::find($deviceId);
+        $device->fixed_phone_amount = $amount;
+        $device->save();
+        $deviceUsers = DeviceUser::where('device_id', $deviceId)->get();
+        $users = [];
+        foreach ($deviceUsers as $deviceUser) {
+            $user = $deviceUser->user;
+
+            $user->update(['fixed_phone_amount' => $amount]);
+        }
+        return response()->json(["msg" => "Device Has Been Updated"]);
+    } catch (\Exception $e) {
+        return response()->json(["msg" => $e]);
+    }
+    
+}
+
     public function GetUsersElevatorUse(string $user_id)
     {
 
@@ -374,6 +396,81 @@ class UserController extends Controller
             return response()->json(["msg" => $e]);
         }
     }
+
+
+// / phone number user phone number creation
+
+
+
+ public function addPhoneNumber(Request $request){
+   $userId = $request["user_id"];
+   $number = $request['number'];
+
+
+   try {
+   Phonenumbers::create([
+     "user_id"=>$userId,
+     "number"=>$number,
+   ]);
+   return response()->json(["msg"=>"Number has been added"], 201);
+
+   } catch (\Throwable $e) {
+     return response()->json(["msg" => $e]);
+   }
+ }
+
+public function getPhoneNumbers($user_id){
+ try {
+      $data = Phonenumbers::where("user_id", $user_id)->get();
+
+      return response()->json(["data"=>$data]);
+ } catch (\Throwable $e) {
+    return response()->json(["msg" => $e]);
+
+ }
+
+
+
+
+}
+
+public function deletePhoneNumber($id)
+{
+    try {
+         $phoneNumber = Phonenumbers::find($id);
+
+         if (!$phoneNumber) {
+            return response()->json(["msg" => "Phone number not found"], 404);
+        }
+
+         $phoneNumber->delete();
+
+         return response()->json(["msg" => "Number has been deleted"]);
+    } catch (\Throwable $e) {
+         return response()->json(["msg" => $e->getMessage()], 500);
+    }
+}
+
+// public function setPhoneNumberTarrif(Request $request){
+
+//     try {
+//         $fixedPhoneAmount = $request["fixed_phone_amount"];
+//         $userId = $request["user_id"];
+//         $user = User::find($userId);
+
+//         if(!$user){
+//             return response()->json(['msg'=>"not found"]);
+//         }
+
+//         $user->fixed_phone_amount = $fixedPhoneAmount;
+//         $user->save();
+
+//         return response()->json(["msg"=>"updated"]);
+
+//     } catch (\Throwable $e) {
+//         return response()->json(["msg" => $e]);
+//     }
+// }
 }
         
         // balance

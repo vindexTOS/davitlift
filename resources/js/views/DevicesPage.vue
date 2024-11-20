@@ -168,6 +168,15 @@
                   </v-btn>
                 </div>
                 <hr />
+                <div>
+                  <b>
+                   ტელეფონის ნომრის ტარიფი(თეთრებში)
+                    {{ item.fixed_phone_amount }} ₾
+                  </b>
+                  <v-btn style="width: 30px; height: 30px; padding:5px" @click="openDevicePhoneTarrifDialog(item.fixed_phone_amount, item.id)" icon>
+                    <v-icon size="12px"  color="gray">mdi-pencil</v-icon>
+                  </v-btn>
+                </div>
                 <!--  -->
 
 
@@ -187,7 +196,24 @@
                         </v-card-actions>
                       </v-card>
                     </v-dialog>
-
+<!-- Fixed Phone Amoutn Dialog  -->
+<v-dialog v-model="dialogFixedPhoneNumber" persistent :style="{ background: 'transparent' }"
+                      class="transparent-dialog">
+                      <v-card style="background-color: rgba(255, 255, 255, 0.8);">
+                        <v-card-title> Edit Fixed Phone Amount </v-card-title>
+                        <v-card-text>
+                          <v-text-field v-model="editedPhoneNumberTarrif" label="ტელეფონის ტარიფი ტარიფი" type="number"
+                            required></v-text-field>
+                        </v-card-text>
+                    
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn @click="dialogFixedPhoneNumber = false">{{ $t('Close') }}</v-btn>
+                          <v-btn @click="savePhoneNumberAmount()">{{ $t('Save') }}</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                    <!--  -->
                 <div v-if="isAdmin">
                   <div>
                     <b>
@@ -281,12 +307,14 @@ export default {
     eachLiftTariffAmount: 0,
     editedFixedCardAmount: 0,
     editedDeviceTariffAmount: 0,
-    deviceID: 0,
+    editedPhoneNumberTarrif:0
+,    deviceID: 0,
     items: [],
     expanded: [],
     fota: {},
     dialogFixedCard: false,
     dialogFixedDeviceTarrif: false,
+    dialogFixedPhoneNumber:false,
     dialogFota: false,
     dialog: false,
     dialogDelete: false,
@@ -466,7 +494,7 @@ export default {
       newBoolArr[index] = !newBoolArr[index]
       this.singleLiftMapBool = newBoolArr
     },
-    openFixedCardDialog(item, id) {
+     openFixedCardDialog(item, id) {
       this.deviceID = id
       this.editedFixedCardAmount = item
       this.dialogFixedCard = true;
@@ -479,6 +507,13 @@ export default {
       this.editedDeviceTariffAmount = item;
       this.dialogFixedDeviceTarrif = true;
     },
+    openDevicePhoneTarrifDialog(item,id){
+      this.deviceID = id
+      this.editedPhoneNumberTarrif = item;
+      this.dialogFixedPhoneNumber = true 
+    },
+
+  
     saveFixedCardAmount() {
  
    
@@ -509,7 +544,35 @@ export default {
         });
 
     },
+savePhoneNumberAmount(){
+// /update-fixed-phone-amount
+axios
+        .put("/api/update-fixed-phone-amount", {
+          device_id: this.deviceID,
+          amount: this.editedPhoneNumberTarrif,
+        })
+        .then((res) => {
+          console.log(res);
+          this.dialogFixedPhoneNumber= false;
+          this.$swal.fire({
+            icon: 'success',
+            position: 'center',
+            allowOutsideClick: false,
+          })
+          this.loadItems()
+        })
+        .catch((err) => {
+          console.log(err);
+          this.$swal.fire({
+            icon: 'error',
+            position: 'center',
+            allowOutsideClick: false,
+            message: err
+          })
+          this.dialogFixedPhoneNumber = false;
+        });
 
+},
     // 
     changeSingleLiftAmount(id, index) {
       axios

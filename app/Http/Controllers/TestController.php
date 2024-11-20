@@ -2,26 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use App\Models\DeviceUser;
-use Illuminate\Console\Command;
-use App\Models\Device;
-use App\Models\User;
-use App\Models\DeviceEarn;
-use App\Models\Card;
-use App\Services\FixedTarrifOpModeService;
 use Carbon\Carbon;
+
+use App\Models\Card;
+use App\Models\User;
+use App\Models\Device;
+use App\Models\DeviceEarn;
+use App\Models\DeviceUser;
+use Illuminate\Http\Request;
+use Illuminate\Console\Command;
+use App\Services\DeviceMessages;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\SubscriptionService;
+use App\Services\FixedTarrifOpModeService;
 
 class TestController extends   Controller
 {
 
     use FixedTarrifOpModeService;
 
-
+    use DeviceMessages;
 
 
 
@@ -139,7 +140,27 @@ class TestController extends   Controller
     }
     // 
 
+   public function sendTestMessageToDevice($device_id, $message,$command){
+    
+    $payload = $this->generateHexPayload($command, [
+     
+       
+        [
+            'type' => 'string',
+            'value' => $message,
+        ],
+        [
+            'type' => 'number',
+            'value' => 0,
+        ],
+    ]);
 
+    $this->publishMessage($device_id, $payload);
+ 
+    return response()->json(
+        ["msg"=> ["1"=> $device_id, "2"=> $message, "3"=> $command]],
+        200);
+   }
 
 
     //   

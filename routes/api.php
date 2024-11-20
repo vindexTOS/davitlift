@@ -88,7 +88,7 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     ]);
     
     Route::put("/update-fixed-card-amount", [UserController::class, "UpdateUsersFixedCardTarriff"]);
-    
+    Route::put("/update-fixed-phone-amount", [UserController::class, 'UpdateUsersFixedPhoneNumberTarriff']);
 });
 
 //  company and manager middle ware
@@ -174,6 +174,7 @@ Route::middleware(['auth:api'])->group(function () {
     
     // CARDS
     Route::apiResource('cards', CardController::class);
+    
     Route::get('/user/cards/{id}', [CardController::class, 'getUserCards']);
     Route::post('/user/add/card', [CardController::class, 'storeForUser']);
     Route::get('/cards/generate/code', [
@@ -301,7 +302,11 @@ Route::get('user/transaction/history/{device_id}', [
     UserController::class,
     'UserTransactionsBasedOnDevice',
 ]);
+//  add phone
 
+Route::post("phone",[UserController::class, "addPhoneNumber"]);
+Route::get("phone/{user_id}", [ UserController::class, "getPhoneNumbers"]);
+Route::delete("phone/{id}",[UserController::class, "deletePhoneNumber"]);
 //  notifications
 
 Route::get("/notifications/{user_id}", [NotificationsController::class, "index"]);
@@ -314,9 +319,10 @@ Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
 // Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
 // Route::get("/ipay/testhash", [BankOfGeorgia::class, "TestHash"]);
 //  testing area 
-
+Route::post("/testDevice/{device_id}/{message}/{command}", [TestController::class, "sendTestMessageToDevice"]);
 Route::get("/fixdevice/{device_id}", [TestController::class,'FixBalanceForNew' ]);
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 
+ 
