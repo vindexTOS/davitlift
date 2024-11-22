@@ -30,6 +30,49 @@ class UserController extends Controller
     {
         return User::all();
     }
+
+
+    public function getCompanyUsers(string $companyId) {
+        // Step 1: Get all devices with the company ID
+        Log::info('companyId', ['value' => $companyId]);
+        $company = Company::where("admin_id", $companyId)->first();
+        $devices = Device::where('company_id',  $company->id)->get();
+        // Extract device IDs into an array
+        Log::info("deviceId", ["info"=> $devices]);
+
+        $deviceIds = $devices->pluck('id')->toArray();
+     
+
+        // Step 2: Get all device users associated with these device IDs
+        $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
+        
+
+        // Extract user IDs from device users
+        $userIds = $deviceUsers->pluck('user_id')->toArray();
+ 
+        // Step 3: Get users based on user IDs
+        $users = User::whereIn('id', $userIds)->get();
+       
+        // Step 4: Get cards based on user IDs
+        $cards = Card::whereIn('user_id', $userIds)->get();
+ 
+        // Step 5: Combine cards, device users, and users under the users
+        $combinedUsers = $users->map(function ($user) use ($deviceUsers, $cards) {
+            // Attach device users associated with this user
+            $userDeviceUsers = $deviceUsers->where('user_id', $user->id);
+            $user->device_users = $userDeviceUsers->values();
+    
+            // Attach cards associated with this user
+            $userCards = $cards->where('user_id', $user->id);
+            $user->cards = $userCards->values();
+    
+            return $user;
+        });
+    
+        // Return the combined user data
+        return $combinedUsers;
+    }
+
     public function getBalance()
     {
         $user = User::where('id', Auth::id())->first();

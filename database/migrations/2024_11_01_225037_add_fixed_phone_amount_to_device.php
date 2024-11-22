@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    // php artisan migrate --path=database/migrations/2024_11_01_225037_add_fixed_phone_amount_to_device.php
+    // 
     /**
      * Run the migrations.
      */

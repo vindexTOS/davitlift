@@ -13,6 +13,12 @@
         v-model="message"
         class="input-field"
       />
+      <input
+        type="text"
+        placeholder="Command ex:0x6"
+        v-model="command"
+        class="input-field"
+      />
       <button class="submit-button" @click="sendTestMessage">Submit</button>
     </div>
   </div>
@@ -31,13 +37,14 @@ export default {
     return {
       deviceId: '', // Binds to Device Name input
       message: '', // Binds to Message input
+      command:''
     }
   },
   methods: {
     async sendTestMessage() {
       try {
-        const response = await axios.get(
-          `api/testDevice/${this.deviceId}/${this.message}`
+        const response = await axios.post(
+          `api/testDevice/${this.deviceId}/${this.message}/${this.command}`
         )
 
         this.$swal.fire({

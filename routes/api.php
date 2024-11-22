@@ -21,6 +21,7 @@ use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\UnregisteredDeviceController;
 use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
 use App\Models\Tbctransaction;
+use App\Models\User;
 
 //  ADMIN ONLY
 
@@ -90,6 +91,7 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     Route::put("/update-fixed-card-amount", [UserController::class, "UpdateUsersFixedCardTarriff"]);
     Route::put("/update-fixed-phone-amount", [UserController::class, 'UpdateUsersFixedPhoneNumberTarriff']);
 });
+
 
 //  company and manager middle ware
 
@@ -319,13 +321,11 @@ Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
 // Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
 // Route::get("/ipay/testhash", [BankOfGeorgia::class, "TestHash"]);
 //  testing area 
-
-
-Route::get("/testDevice/{device_id}/{message}", [TestController::class, "sendTestMessageToDevice"]);
-
+Route::post("/testDevice/{device_id}/{message}/{command}", [TestController::class, "sendTestMessageToDevice"]);
 Route::get("/fixdevice/{device_id}", [TestController::class,'FixBalanceForNew' ]);
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 
- 
+// 
+Route::get("/allUsers/{companyId}", [UserController::class, "getCompanyUsers"]);
