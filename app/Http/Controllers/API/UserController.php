@@ -32,45 +32,71 @@ class UserController extends Controller
     }
 
 
-    public function getCompanyUsers(string $companyId) {
-        // Step 1: Get all devices with the company ID
-        Log::info('companyId', ['value' => $companyId]);
-        $company = Company::where("admin_id", $companyId)->first();
-        $devices = Device::where('company_id',  $company->id)->get();
-        // Extract device IDs into an array
-        Log::info("deviceId", ["info"=> $devices]);
+    public function getCompanyUsers(Request $request, string $companyId)
+    {
+        // Step 1: Get query parameters for search and pagination
+        $searchQuery = $request->input('search'); // Get the search parameter
+        $perPage = $request->input('per_page', 10); // Number of items per page (default to 10)
+        $page = $request->input('page', 1); // Current page (default to 1)
 
-        $deviceIds = $devices->pluck('id')->toArray();
-     
+        try {
+            // Step 2: Get the company and its devices
+            $company = Company::where("admin_id", $companyId)->first();
+            if (!$company) {
+                return response()->json(['error' => 'Company not found'], 404);
+            }
 
-        // Step 2: Get all device users associated with these device IDs
-        $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
-        
+            $devices = Device::where('company_id', $company->id)->get();
+            Log::info("deviceId", ["info" => $devices]);
 
-        // Extract user IDs from device users
-        $userIds = $deviceUsers->pluck('user_id')->toArray();
- 
-        // Step 3: Get users based on user IDs
-        $users = User::whereIn('id', $userIds)->get();
-       
-        // Step 4: Get cards based on user IDs
-        $cards = Card::whereIn('user_id', $userIds)->get();
- 
-        // Step 5: Combine cards, device users, and users under the users
-        $combinedUsers = $users->map(function ($user) use ($deviceUsers, $cards) {
-            // Attach device users associated with this user
-            $userDeviceUsers = $deviceUsers->where('user_id', $user->id);
-            $user->device_users = $userDeviceUsers->values();
-    
-            // Attach cards associated with this user
-            $userCards = $cards->where('user_id', $user->id);
-            $user->cards = $userCards->values();
-    
-            return $user;
-        });
-    
-        // Return the combined user data
-        return $combinedUsers;
+            // Extract device IDs into an array
+            $deviceIds = $devices->pluck('id')->toArray();
+
+            // Step 3: Get all device users associated with these device IDs
+            $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
+
+            // Extract user IDs from device users
+            $userIds = $deviceUsers->pluck('user_id')->toArray();
+
+            // Step 4: Get users based on user IDs with pagination and search functionality
+            $usersQuery = User::whereIn('id', $userIds);
+
+            // Apply search filters if search query is provided
+            if ($searchQuery) {
+                $usersQuery->where(function ($query) use ($searchQuery) {
+                    $query->where('email', 'like', "%$searchQuery%")
+                        ->orWhere('name', 'like', "%$searchQuery%")
+                        ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
+                });
+            }
+
+            // Apply pagination
+            $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
+
+            // Step 5: Get cards based on user IDs
+            $cards = Card::whereIn('user_id', $userIds)->get();
+
+            // Step 6: Combine cards, device users, and users under the users
+            $combinedUsers = $users->getCollection()->map(function ($user) use ($deviceUsers, $cards) {
+                // Attach device users associated with this user
+                $userDeviceUsers = $deviceUsers->where('user_id', $user->id);
+                $user->device_users = $userDeviceUsers->values();
+
+                // Attach cards associated with this user
+                $userCards = $cards->where('user_id', $user->id);
+                $user->cards = $userCards->values();
+
+                return $user;
+            });
+
+            // Replace the original collection with the combined collection
+            $users->setCollection($combinedUsers);
+
+            // Return the paginated and combined user data
+            return response()->json($users);
+        } catch (\Throwable $th) {
+            return response()->json(['err' => $th->getMessage()], 500);
+        }
     }
 
     public function getBalance()
@@ -119,17 +145,17 @@ class UserController extends Controller
             'device_id' => $device_id,
         ];
 
-      
+
         // $create['subscription'] = Carbon::now()->format('Y-m-d H:i:s');
-     
+
         $create['subscription'] = '2020-01-01 00:00:00';
         $subscriptionDate = $isAdd ? Carbon::parse($isAdd->subscription) : null; // Get existing subscription date
-    
+
         // Combined logic for subscription date
-        if ( Carbon::parse(  $subscriptionDate) < Carbon::now()->startOfDay()) {
+        if (Carbon::parse($subscriptionDate) < Carbon::now()->startOfDay()) {
             // Keep the current subscription
             $create['subscription'] = $subscriptionDate->format('Y-m-d H:i:s');
-        } 
+        }
         DeviceUser::create($create);
         return response()->json(
             ['message' => 'ასეთი მომხამრებელი უკვე დამატებულია'],
@@ -403,26 +429,26 @@ class UserController extends Controller
         }
     }
 
-public function UpdateUsersFixedPhoneNumberTarriff(Request $request){
-    $deviceId = $request["device_id"];
-    $amount = $request["amount"];
-    try {
-        $device = Device::find($deviceId);
-        $device->fixed_phone_amount = $amount;
-        $device->save();
-        $deviceUsers = DeviceUser::where('device_id', $deviceId)->get();
-        $users = [];
-        foreach ($deviceUsers as $deviceUser) {
-            $user = $deviceUser->user;
+    public function UpdateUsersFixedPhoneNumberTarriff(Request $request)
+    {
+        $deviceId = $request["device_id"];
+        $amount = $request["amount"];
+        try {
+            $device = Device::find($deviceId);
+            $device->fixed_phone_amount = $amount;
+            $device->save();
+            $deviceUsers = DeviceUser::where('device_id', $deviceId)->get();
+            $users = [];
+            foreach ($deviceUsers as $deviceUser) {
+                $user = $deviceUser->user;
 
-            $user->update(['fixed_phone_amount' => $amount]);
+                $user->update(['fixed_phone_amount' => $amount]);
+            }
+            return response()->json(["msg" => "Device Has Been Updated"]);
+        } catch (\Exception $e) {
+            return response()->json(["msg" => $e]);
         }
-        return response()->json(["msg" => "Device Has Been Updated"]);
-    } catch (\Exception $e) {
-        return response()->json(["msg" => $e]);
     }
-    
-}
 
     public function GetUsersElevatorUse(string $user_id)
     {
@@ -441,79 +467,75 @@ public function UpdateUsersFixedPhoneNumberTarriff(Request $request){
     }
 
 
-// / phone number user phone number creation
+    // / phone number user phone number creation
 
 
 
- public function addPhoneNumber(Request $request){
-   $userId = $request["user_id"];
-   $number = $request['number'];
+    public function addPhoneNumber(Request $request)
+    {
+        $userId = $request["user_id"];
+        $number = $request['number'];
 
 
-   try {
-   Phonenumbers::create([
-     "user_id"=>$userId,
-     "number"=>$number,
-   ]);
-   return response()->json(["msg"=>"Number has been added"], 201);
-
-   } catch (\Throwable $e) {
-     return response()->json(["msg" => $e]);
-   }
- }
-
-public function getPhoneNumbers($user_id){
- try {
-      $data = Phonenumbers::where("user_id", $user_id)->get();
-
-      return response()->json(["data"=>$data]);
- } catch (\Throwable $e) {
-    return response()->json(["msg" => $e]);
-
- }
-
-
-
-
-}
-
-public function deletePhoneNumber($id)
-{
-    try {
-         $phoneNumber = Phonenumbers::find($id);
-
-         if (!$phoneNumber) {
-            return response()->json(["msg" => "Phone number not found"], 404);
+        try {
+            Phonenumbers::create([
+                "user_id" => $userId,
+                "number" => $number,
+            ]);
+            return response()->json(["msg" => "Number has been added"], 201);
+        } catch (\Throwable $e) {
+            return response()->json(["msg" => $e]);
         }
-
-         $phoneNumber->delete();
-
-         return response()->json(["msg" => "Number has been deleted"]);
-    } catch (\Throwable $e) {
-         return response()->json(["msg" => $e->getMessage()], 500);
     }
-}
 
-// public function setPhoneNumberTarrif(Request $request){
+    public function getPhoneNumbers($user_id)
+    {
+        try {
+            $data = Phonenumbers::where("user_id", $user_id)->get();
 
-//     try {
-//         $fixedPhoneAmount = $request["fixed_phone_amount"];
-//         $userId = $request["user_id"];
-//         $user = User::find($userId);
+            return response()->json(["data" => $data]);
+        } catch (\Throwable $e) {
+            return response()->json(["msg" => $e]);
+        }
+    }
 
-//         if(!$user){
-//             return response()->json(['msg'=>"not found"]);
-//         }
+    public function deletePhoneNumber($id)
+    {
+        try {
+            $phoneNumber = Phonenumbers::find($id);
 
-//         $user->fixed_phone_amount = $fixedPhoneAmount;
-//         $user->save();
+            if (!$phoneNumber) {
+                return response()->json(["msg" => "Phone number not found"], 404);
+            }
 
-//         return response()->json(["msg"=>"updated"]);
+            $phoneNumber->delete();
 
-//     } catch (\Throwable $e) {
-//         return response()->json(["msg" => $e]);
-//     }
-// }
+            return response()->json(["msg" => "Number has been deleted"]);
+        } catch (\Throwable $e) {
+            return response()->json(["msg" => $e->getMessage()], 500);
+        }
+    }
+
+    // public function setPhoneNumberTarrif(Request $request){
+
+    //     try {
+    //         $fixedPhoneAmount = $request["fixed_phone_amount"];
+    //         $userId = $request["user_id"];
+    //         $user = User::find($userId);
+
+    //         if(!$user){
+    //             return response()->json(['msg'=>"not found"]);
+    //         }
+
+    //         $user->fixed_phone_amount = $fixedPhoneAmount;
+    //         $user->save();
+
+    //         return response()->json(["msg"=>"updated"]);
+
+    //     } catch (\Throwable $e) {
+    //         return response()->json(["msg" => $e]);
+    //     }
+    // }
 }
         
         // balance
