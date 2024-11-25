@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
-class UserController extends Controller
+class   UserController extends Controller
 {
     public function index()
     {
@@ -38,29 +38,29 @@ class UserController extends Controller
         $searchQuery = $request->input('search'); // Get the search parameter
         $perPage = $request->input('per_page', 10); // Number of items per page (default to 10)
         $page = $request->input('page', 1); // Current page (default to 1)
-
+    
         try {
             // Step 2: Get the company and its devices
             $company = Company::where("admin_id", $companyId)->first();
             if (!$company) {
                 return response()->json(['error' => 'Company not found'], 404);
             }
-
+    
             $devices = Device::where('company_id', $company->id)->get();
             Log::info("deviceId", ["info" => $devices]);
-
+    
             // Extract device IDs into an array
             $deviceIds = $devices->pluck('id')->toArray();
-
+    
             // Step 3: Get all device users associated with these device IDs
             $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
-
+    
             // Extract user IDs from device users
             $userIds = $deviceUsers->pluck('user_id')->toArray();
-
+    
             // Step 4: Get users based on user IDs with pagination and search functionality
             $usersQuery = User::whereIn('id', $userIds);
-
+    
             // Apply search filters if search query is provided
             if ($searchQuery) {
                 $usersQuery->where(function ($query) use ($searchQuery) {
@@ -69,36 +69,51 @@ class UserController extends Controller
                         ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
                 });
             }
-
+    
             // Apply pagination
             $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
-
-            // Step 5: Get cards based on user IDs
-            $cards = Card::whereIn('user_id', $userIds)->get();
-
-            // Step 6: Combine cards, device users, and users under the users
-            $combinedUsers = $users->getCollection()->map(function ($user) use ($deviceUsers, $cards) {
-                // Attach device users associated with this user
-                $userDeviceUsers = $deviceUsers->where('user_id', $user->id);
-                $user->device_users = $userDeviceUsers->values();
-
-                // Attach cards associated with this user
-                $userCards = $cards->where('user_id', $user->id);
-                $user->cards = $userCards->values();
-
-                return $user;
+    
+            // Step 5: Transform the user data to remove unnecessary fields
+            $filteredUsers = $users->getCollection()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'balance' => $user->balance,
+                ];
             });
-
-            // Replace the original collection with the combined collection
-            $users->setCollection($combinedUsers);
-
-            // Return the paginated and combined user data
+    
+            // Replace the original collection with the transformed collection
+            $users->setCollection($filteredUsers);
+    
+            // Return the paginated user data
             return response()->json($users);
         } catch (\Throwable $th) {
             return response()->json(['err' => $th->getMessage()], 500);
         }
     }
-
+    
+    public function getSingleUserCards($userId)
+    {
+        try {
+            // Step 1: Find the user
+            $user = User::find($userId);
+    
+            // Check if the user exists
+            if (!$user) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+    
+            // Step 2: Get all cards associated with the user
+            $cards = Card::where('user_id', $userId)->get();
+    
+            // Step 3: Return the list of cards
+            return response()->json($cards, 200);
+        } catch (\Throwable $th) {
+            return response()->json(['err' => $th->getMessage()], 500);
+        }
+    }
     public function getBalance()
     {
         $user = User::where('id', Auth::id())->first();
