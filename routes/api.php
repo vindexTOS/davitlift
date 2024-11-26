@@ -330,4 +330,4 @@ Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 // 
 Route::get("/allUsers/{companyId}", [UserController::class, "getCompanyUsers"]);
 Route::get("/get-single-user-cards/{userId}", [UserController::class ,"getSingleUserCards"]);
- 
+ Route::post("/createCard", [CardController::class, "createCard"]);

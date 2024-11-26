@@ -33,7 +33,8 @@ class CardController extends Controller
     }
     public function store(Request $request)
     {
-        $data = DB::table('activation_codes')
+       
+            $data = DB::table('activation_codes')
             ->where('code', $request->card_number)
             ->first();
         if (empty($data)) {
@@ -77,6 +78,66 @@ class CardController extends Controller
             }
         }
         return response()->json(['message' => 'create_successfully'], 201);
+       
+      
+    }
+
+    public function createCard(Request $request)
+    {
+        try {
+            $data = $request->all();
+            
+            // Find the first device ID associated with the user
+            $userDevices = DeviceUser::where('user_id', $data['userId'])->pluck('device_id')->toArray();
+            
+            if (empty($userDevices)) {
+                return response()->json(['message' => 'user_has_no_devices'], 404);
+            }
+    
+            // Get the first device ID
+            $deviceId = $userDevices[0];
+            
+            // Find the corresponding device
+            $device = Device::where('id', $deviceId)->first();
+            if (empty($device)) {
+                return response()->json(['message' => 'device_not_found'], 404);
+            }
+    
+            // Get all cards of the user for the specific device
+            $userCards = Card::where('device_id', $deviceId)
+                ->where('user_id', $data['userId'])
+                ->pluck('user_id')
+                ->toArray();
+    
+            // Find the relationship between the authenticated user and the device
+            $relate = DeviceUser::where('user_id',  $data['userId'])
+                ->where('device_id', $deviceId)
+                ->first();
+    
+            // Check if user can create a card
+            if ($device->limit > count($userCards) && !empty($relate)) {
+                Card::create([
+                    'name' => $data['name'],
+                    'card_number' => $data['card_number'],
+                    'user_id' => $data['userId'],
+                    'device_id' => $deviceId,
+                ]);
+            } else {
+                if (empty($relate)) {
+                    return response()->json(
+                        ['message' => 'contact_to_your_company_for_adding_you_to_there_list'],
+                        422
+                    );
+                }
+                if ($device->limit <= count($userCards)) {
+                    return response()->json(['message' => 'too_many_cards'], 422);
+                }
+            }
+    
+            return response()->json(['message' => 'create_successfully'], 201);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => $th->getMessage()], 500);
+        }
     }
 
     public function storeForUser(Request $request)
