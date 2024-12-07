@@ -326,12 +326,15 @@ export default {
           this.fullAmount += x.earnings / 100
 
           const earningsIndex = new Date(x.fullTime).getMonth()
+          console.log(  x.fullTime  )
+        
           if (this.series[0].data[earningsIndex] === undefined) {
             this.series[0].data[earningsIndex] = 0
           }
           this.series[0].data[earningsIndex] += x.earnings / 100
         })
 
+     
         this.totalDeviceAmount = data.device.length
         this.calculateProecnt(data)
       })

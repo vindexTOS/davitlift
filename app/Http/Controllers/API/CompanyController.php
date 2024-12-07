@@ -29,13 +29,14 @@ class CompanyController extends Controller
         ];
         $companies = Company::with('admin')->get();
         $data['payedServiceFeeByMonths'] = CompanyTransaction::select(
-            DB::raw('SUM(amount) as total_amount'),
-            DB::raw("DATE_FORMAT(created_at, '%m') as month")
-        )
-            ->where('type', 2)
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get();
+        DB::raw('SUM(amount) as total_amount'),
+        DB::raw("DATE_FORMAT(created_at, '%m') as month"),
+        DB::raw("MIN(DATE_FORMAT(created_at, '%Y-%m-%d')) as transaction_date")
+    )
+    ->where('type', 2)
+    ->groupBy('month')
+    ->orderBy('month', 'asc')
+    ->get();
         foreach ($companies as $key => $company) {
             $statistic = $this->getStatisticFromOneCompany($company);
             $data['deviceStats']['active'] +=

@@ -87,7 +87,7 @@ class CardController extends Controller
         try {
             $data = $request->all();
             
-            // Find the first device ID associated with the user
+            // // Find the first device ID associated with the user
             $userDevices = DeviceUser::where('user_id', $data['userId'])->pluck('device_id')->toArray();
             
             if (empty($userDevices)) {
@@ -116,9 +116,10 @@ class CardController extends Controller
     
             // Check if user can create a card
             if ($device->limit > count($userCards) && !empty($relate)) {
+                $cardNumber = $this->transformRFID($data['card_number']);
                 Card::create([
                     'name' => $data['name'],
-                    'card_number' => $data['card_number'],
+                    'card_number' => $cardNumber,
                     'user_id' => $data['userId'],
                     'device_id' => $deviceId,
                 ]);
@@ -133,13 +134,24 @@ class CardController extends Controller
                     return response()->json(['message' => 'too_many_cards'], 422);
                 }
             }
-    
-            return response()->json(['message' => 'create_successfully'], 201);
+     
+   
+            return response()->json(['message' =>   "card has been added"], 201);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage()], 500);
         }
     }
-
+   private function transformRFID($rfid) {
+        // Reverse the string
+        $splitArr = str_split(strrev($rfid),2) ;
+        $result= "";
+        
+        foreach( $splitArr as $s){
+           $result  .= strrev($s);
+        }
+        return $result;
+    }
+    
     public function storeForUser(Request $request)
     {
         $data = DB::table('activation_codes')

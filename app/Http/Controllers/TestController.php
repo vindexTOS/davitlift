@@ -3,27 +3,23 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use Carbon\Carbon;
-
-use App\Models\Card;
-use App\Models\User;
-use App\Models\Device;
-use App\Models\DeviceEarn;
+ 
+ 
+ 
 use App\Models\Card;
 use App\Models\User;
 use App\Models\Device;
 use App\Models\DeviceEarn;
 use App\Models\DeviceUser;
 use Illuminate\Http\Request;
-use Illuminate\Http\Request;
+ 
 use Illuminate\Console\Command;
-use App\Services\DeviceMessages;
+ 
 use App\Services\DeviceMessages;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\SubscriptionService;
-use App\Services\FixedTarrifOpModeService;
-use App\Services\FixedTarrifOpModeService;
+ use App\Services\FixedTarrifOpModeService;
 
 class TestController extends   Controller
 {

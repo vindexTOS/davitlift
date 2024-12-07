@@ -38,16 +38,20 @@ class   UserController extends Controller
         $searchQuery = $request->input('search'); // Get the search parameter
         $perPage = $request->input('per_page', 10); // Number of items per page (default to 10)
         $page = $request->input('page', 1); // Current page (default to 1)
-    
+        
         try {
             // Step 2: Get the company and its devices
             $company = Company::where("admin_id", $companyId)->first();
             if (!$company) {
                 return response()->json(['error' => 'Company not found'], 404);
             }
-    
+
+           
+            // Log::info(["info", ["info"=> $company->company_name]]);
+
+ 
             $devices = Device::where('company_id', $company->id)->get();
-            Log::info("deviceId", ["info" => $devices]);
+ 
     
             // Extract device IDs into an array
             $deviceIds = $devices->pluck('id')->toArray();
@@ -59,8 +63,11 @@ class   UserController extends Controller
             $userIds = $deviceUsers->pluck('user_id')->toArray();
     
             // Step 4: Get users based on user IDs with pagination and search functionality
-            $usersQuery = User::whereIn('id', $userIds);
-    
+            $usersQuery = User::query();
+
+            if($company->company_name !== 'eideas'){
+                $usersQuery = User::whereIn('id', $userIds);
+            } 
             // Apply search filters if search query is provided
             if ($searchQuery) {
                 $usersQuery->where(function ($query) use ($searchQuery) {
@@ -99,7 +106,7 @@ class   UserController extends Controller
         try {
             // Step 1: Find the user
             $user = User::find($userId);
-    
+            
             // Check if the user exists
             if (!$user) {
                 return response()->json(['error' => 'User not found'], 404);
