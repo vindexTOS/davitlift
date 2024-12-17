@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Company extends Model
 {
     use HasFactory;
-    protected $fillable = ['company_name', 'admin_id', 'comment', 'sk_code','cashback'];
+    protected $fillable = ['id','company_name', 'admin_id', 'comment', 'sk_code','cashback'];
     public function users()
     {
         return $this->belongsToMany('App\Models\User');

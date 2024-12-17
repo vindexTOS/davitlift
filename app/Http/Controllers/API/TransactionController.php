@@ -624,7 +624,8 @@ class TransactionController extends Controller
             'phone' => 'string|min:5|max:15',
             'role' => 'string',
             'fixed_card_amount' => 'integer',
-            "fixed_phone_amount"=> "integer"
+            "fixed_phone_amount"=> "integer",
+            "fixed_individual_amount"=>"integer"
 
         ]);
 

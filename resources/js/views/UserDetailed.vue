@@ -275,6 +275,8 @@
                     label="ბარათის ტარიფი" required></v-text-field>
                     <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_phone_amount"
                     label="ნომრის ტარიფი" required></v-text-field>
+                    <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_individual_amount"
+                    label="ინდივიდუალური ტარიფი"   required></v-text-field>
             </v-card-text>
 
             <v-card-actions>

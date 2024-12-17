@@ -89,6 +89,7 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     ]);
     
     Route::put("/update-fixed-card-amount", [UserController::class, "UpdateUsersFixedCardTarriff"]);
+    Route::put("/update-fixed-individual-amount", [UserController::class, "UpdateUsersFixedIndividualTarriff"]);
     Route::put("/update-fixed-phone-amount", [UserController::class, 'UpdateUsersFixedPhoneNumberTarriff']);
 });
 
@@ -316,6 +317,11 @@ Route::post("/notifications/read/{user_id}", [NotificationsController::class, "c
 // bank of georgia
 Route::get("/ipay", [BankOfGeorgia::class, 'handleIpay']);
 
+// adding from mobile application 
+Route::get("/allUsers/{companyId}", [UserController::class, "getCompanyUsers"]);
+Route::get("/get-single-user-cards/{userId}", [UserController::class ,"getSingleUserCards"]);
+Route::post("/createCard", [CardController::class, "createCard"]);
+
 
 // Route::get("/ipay/payment/", [BankOfGeorgia::class, "handlePayment"]);
 // Route::get("/ipay/ping/", [BankOfGeorgia::class, "CheckPing"]);
@@ -327,7 +333,10 @@ Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUs
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 
-// 
-Route::get("/allUsers/{companyId}", [UserController::class, "getCompanyUsers"]);
-Route::get("/get-single-user-cards/{userId}", [UserController::class ,"getSingleUserCards"]);
-Route::post("/createCard", [CardController::class, "createCard"]);
+
+
+
+
+
+
+

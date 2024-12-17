@@ -23,17 +23,45 @@ use App\Services\MqttConnectionService;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CreateDeviceRequest;
 
+use function PHPUnit\Framework\isEmpty;
+
 class DeviceController extends Controller
 {
 
     
     public function index()
     {
+        $userId = Auth::user()->id;
+     
+        // Fetch all companies where the current user is the admin
+        $companyUser = Company::where("admin_id", $userId)->first();
+     
+        // Check if the user is super admin
         if (Auth::user()->email == config('app.super_admin_email')) {
-            return Device::with('user')->withTrashed()->with('earnings')->with('errors')->get();
+            // If user is super admin, fetch all devices with related data
+            return Device::with('user')
+                ->withTrashed()
+                ->with('earnings')
+                ->with('errors')
+                ->get();
         }
-        $companies_id = Company::where('admin_id', '=', Auth::id())->pluck('id')->toArray();
-        return Device::with('user')->withTrashed()->with('earnings')->whereIn('company_id', $companies_id)->orWhere('users_id', Auth::id())->get();
+    
+        // Check if the user is assigned to any company
+        if (!empty($companyUser)) {
+            $companyId = $companyUser->id;
+            Log::info("userid",["user_id"=> $companyId]);
+            // Fetch all devices belonging to the company or the current user
+            return Device::with('user')
+                ->withTrashed()
+                ->with('earnings')
+                ->with('errors')
+                ->where('company_id', $companyId)
+                
+                ->get();
+        }
+    
+        // Default empty result if no company is found
+        return response()->json(['message' => 'No devices found'], 404);
     }
     public function userDeviceUser($id) {
         $deviceIds = DeviceUser::where('user_id', $id)->pluck('device_id')->toArray();

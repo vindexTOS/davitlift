@@ -38,7 +38,7 @@ class   UserController extends Controller
         $searchQuery = $request->input('search'); // Get the search parameter
         $perPage = $request->input('per_page', 10); // Number of items per page (default to 10)
         $page = $request->input('page', 1); // Current page (default to 1)
-        
+
         try {
             // Step 2: Get the company and its devices
             $company = Company::where("admin_id", $companyId)->first();
@@ -46,28 +46,28 @@ class   UserController extends Controller
                 return response()->json(['error' => 'Company not found'], 404);
             }
 
-           
+
             // Log::info(["info", ["info"=> $company->company_name]]);
 
- 
+
             $devices = Device::where('company_id', $company->id)->get();
- 
-    
+
+
             // Extract device IDs into an array
             $deviceIds = $devices->pluck('id')->toArray();
-    
+
             // Step 3: Get all device users associated with these device IDs
             $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
-    
+
             // Extract user IDs from device users
             $userIds = $deviceUsers->pluck('user_id')->toArray();
-    
+
             // Step 4: Get users based on user IDs with pagination and search functionality
             $usersQuery = User::query();
 
-            if($company->company_name !== 'eideas'){
+            if ($company->company_name !== 'eideas') {
                 $usersQuery = User::whereIn('id', $userIds);
-            } 
+            }
             // Apply search filters if search query is provided
             if ($searchQuery) {
                 $usersQuery->where(function ($query) use ($searchQuery) {
@@ -76,10 +76,10 @@ class   UserController extends Controller
                         ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
                 });
             }
-    
+
             // Apply pagination
             $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
-    
+
             // Step 5: Transform the user data to remove unnecessary fields
             $filteredUsers = $users->getCollection()->map(function ($user) {
                 return [
@@ -90,31 +90,31 @@ class   UserController extends Controller
                     'balance' => $user->balance,
                 ];
             });
-    
+
             // Replace the original collection with the transformed collection
             $users->setCollection($filteredUsers);
-    
+
             // Return the paginated user data
             return response()->json($users);
         } catch (\Throwable $th) {
             return response()->json(['err' => $th->getMessage()], 500);
         }
     }
-    
+
     public function getSingleUserCards($userId)
     {
         try {
             // Step 1: Find the user
             $user = User::find($userId);
-            
+
             // Check if the user exists
             if (!$user) {
                 return response()->json(['error' => 'User not found'], 404);
             }
-    
+
             // Step 2: Get all cards associated with the user
             $cards = Card::where('user_id', $userId)->get();
-    
+
             // Step 3: Return the list of cards
             return response()->json($cards, 200);
         } catch (\Throwable $th) {
@@ -448,6 +448,32 @@ class   UserController extends Controller
             return response()->json(["msg" => "Device Has Been Updated"]);
         } catch (\Exception $e) {
             return response()->json(["msg" => $e]);
+        }
+    }
+
+    public function UpdateUsersFixedIndividualTarriff(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric',
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $amount = $request->input('amount');
+        $userId = $request->input('user_id');
+
+        try {
+            User::where('id', $userId)->update([
+                'fixed_individual_amount' => $amount,
+            ]);
+
+            return response()->json([
+                'msg' => 'User fixed individual tariff updated successfully.',
+            ], 200);
+        } catch (\Exception $e) {
+             return response()->json([
+                'msg' => 'An error occurred while updating the user tariff.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 

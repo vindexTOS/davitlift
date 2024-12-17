@@ -33,7 +33,8 @@ class User extends Authenticatable implements JWTSubject
         'hide_statistic',
         'role',
         'fixed_card_amount',
-        "fixed_phone_amount"
+        "fixed_phone_amount",
+        "fixed_individual_amount"
     ];
 
     /**
