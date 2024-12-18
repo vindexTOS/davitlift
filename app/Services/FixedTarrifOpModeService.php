@@ -143,14 +143,14 @@ trait FixedTarrifOpModeService
         $phoneNumberAmount = Phonenumbers::where("user_id", $user->id)->count();
         $deviceTarrifAmountCombined = $deviceCardNumber * $user->fixed_card_amount;
         $devicePhoneNumberAmount = $phoneNumberAmount * $user->fixed_phone_amount;
-      
-        $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
-        // $combinedTarffToBepayed = 0;
-        // if ($user->fixed_individual_amount > 0) {
-        //     $combinedTarffToBepayed = $user->fixed_individual_amount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
-        // } else {
-        //     $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
-        // }
+        $combinedTarffToBepayed = 0;
+        // $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
+
+        if ($user->fixed_individual_amount > 0) {
+            $combinedTarffToBepayed = $user->fixed_individual_amount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
+        } else {
+            $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
+        }
         return $combinedTarffToBepayed;
     }
     private function isFixedMonthCalculator($device)
