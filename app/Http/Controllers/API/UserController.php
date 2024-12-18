@@ -42,9 +42,9 @@ class   UserController extends Controller
         try {
             // Step 2: Get the company and its devices
             $company = Company::where("admin_id", $companyId)->first();
-            if (!$company) {
-                return response()->json(['error' => 'Company not found'], 404);
-            }
+            if ( $company) {
+              
+         
 
 
             // Log::info(["info", ["info"=> $company->company_name]]);
@@ -96,6 +96,53 @@ class   UserController extends Controller
 
             // Return the paginated user data
             return response()->json($users);
+        
+        }else {
+            $devices=   Device::where('users_id', $companyId)->get();
+
+                   // Extract device IDs into an array
+            $deviceIds = $devices->pluck('id')->toArray();
+
+            // Step 3: Get all device users associated with these device IDs
+            $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
+
+            // Extract user IDs from device users
+            $userIds = $deviceUsers->pluck('user_id')->toArray();
+
+            // Step 4: Get users based on user IDs with pagination and search functionality
+            $usersQuery = User::query();
+
+          
+            $usersQuery = User::whereIn('id', $userIds);
+            // Apply search filters if search query is provided
+            if ($searchQuery) {
+                $usersQuery->where(function ($query) use ($searchQuery) {
+                    $query->where('email', 'like', "%$searchQuery%")
+                        ->orWhere('name', 'like', "%$searchQuery%")
+                        ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
+                });
+            }
+
+            // Apply pagination
+            $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
+
+            // Step 5: Transform the user data to remove unnecessary fields
+            $filteredUsers = $users->getCollection()->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'balance' => $user->balance,
+                ];
+            });
+
+            // Replace the original collection with the transformed collection
+            $users->setCollection($filteredUsers);
+
+            // Return the paginated user data
+            return response()->json($users);
+            } 
         } catch (\Throwable $th) {
             return response()->json(['err' => $th->getMessage()], 500);
         }

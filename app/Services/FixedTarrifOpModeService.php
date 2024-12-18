@@ -101,14 +101,13 @@ trait FixedTarrifOpModeService
                     DeviceUser::where('user_id', $user->id)
                         ->update(['subscription' => $nextMonthPayDay]);
 
-                        Log::info("DATE TIME FIRST ", ["info"=>$nextMonthPayDay ]);
+                    Log::info("DATE TIME FIRST ", ["info" => $nextMonthPayDay]);
                 } else {
 
                     $nextPayDay = $this->isFixedMonthCalculator($device);
                     DeviceUser::where('user_id', $user->id)
                         ->update(['subscription' => $nextPayDay->toDateString()]);
-                        Log::info("NEST PAY DAY ", ["info"=>$nextPayDay->toDateString()]);
-
+                    Log::info("NEST PAY DAY ", ["info" => $nextPayDay->toDateString()]);
                 }
 
 
@@ -123,12 +122,12 @@ trait FixedTarrifOpModeService
                     if ($device->isFixed == '0') {
                         $user->subscription = Carbon::now()->addMonth()->startOfDay();
                     } else {
-                       $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
+                        $user->subscription = $nextPayDay = $this->isFixedMonthCalculator($device);
                     }
                     $this->ReturnSubscriptionTypeToDevice($user, $dataPayload, $device);
                 }
                 // $user->refresh();  
-                 $notificationDateTime = Carbon::parse($deviceUser->subscription);
+                $notificationDateTime = Carbon::parse($deviceUser->subscription);
                 $notificationTarrifTobePayed = $combinedTarffToBepayed  / 100;
 
                 $this->createUserGenericNotification($user->id, "თქვენ ჩამოგეჭრათ $notificationTarrifTobePayed ლარი და გაგიაქტიურდათ ულიმიტო ტარიფი   $notificationDateTime -მდე", "+", \App\Enums\NotificationType::transaction);
@@ -141,17 +140,17 @@ trait FixedTarrifOpModeService
     {
 
         $deviceCardNumber = Card::where("user_id", $user->id)->count();
-        $phoneNumberAmount =Phonenumbers::where("user_id", $user->id)->count();
+        $phoneNumberAmount = Phonenumbers::where("user_id", $user->id)->count();
         $deviceTarrifAmountCombined = $deviceCardNumber * $user->fixed_card_amount;
         $devicePhoneNumberAmount = $phoneNumberAmount * $user->fixed_phone_amount;
-        $combinedTarffToBepayed = 0;
-        if($user->fixed_individual_amount > 0){
-            $combinedTarffToBepayed = $user->fixed_individual_amount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
-
-        }else{
-            $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
-
-        }
+      
+        $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
+        // $combinedTarffToBepayed = 0;
+        // if ($user->fixed_individual_amount > 0) {
+        //     $combinedTarffToBepayed = $user->fixed_individual_amount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
+        // } else {
+        //     $combinedTarffToBepayed = $deviceAmount + $deviceTarrifAmountCombined + $devicePhoneNumberAmount;
+        // }
         return $combinedTarffToBepayed;
     }
     private function isFixedMonthCalculator($device)
@@ -159,27 +158,27 @@ trait FixedTarrifOpModeService
         $payDay = $device->pay_day; // e.g., 20
         $today = Carbon::now(); // e.g., 20 Oct
         $nextPayDay = Carbon::createFromDate($today->year, $today->month, $payDay);
-    
+
         // Log to check values
         // Log::info('Calculating next pay day', [
         //     'today' => $today->toDateString(),
         //     'pay_day' => $payDay,
         //     'nextPayDay' => $nextPayDay->toDateString()
         // ]);
-    
+
         // If today is after the pay day, increment the month
         if ($today->greaterThan($nextPayDay)) {
             return $nextPayDay->addMonth();
         }
-    
+
         // If today is the pay day, also increment to next month
         if ($today->isSameDay($nextPayDay)) {
             return $nextPayDay->addMonth();
         }
-    
+
         // Log what is being returned
         // Log::info('Returning next pay day', ['nextPayDay' => $nextPayDay->toDateString()]);
-    
+
         return $nextPayDay;
     }
 }
