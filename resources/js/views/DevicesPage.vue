@@ -464,7 +464,7 @@ export default {
   },
   created() {
     this.chackAdminEmail()
-
+// shi
     if (this.isAdmin) {
       axios.get('api/companies').then(({ data }) => {
         this.items = data['companies']
