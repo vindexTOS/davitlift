@@ -24,6 +24,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+use function PHPUnit\Framework\isEmpty;
+
 class   UserController extends Controller
 {
     public function index()
@@ -42,107 +44,106 @@ class   UserController extends Controller
         try {
             // Step 2: Get the company and its devices
             $company = Company::where("admin_id", $companyId)->first();
-            if ( $company) {
-              
-         
+            if ($company) {
 
 
-            // Log::info(["info", ["info"=> $company->company_name]]);
 
 
-            $devices = Device::where('company_id', $company->id)->get();
+                // Log::info(["info", ["info"=> $company->company_name]]);
 
 
-            // Extract device IDs into an array
-            $deviceIds = $devices->pluck('id')->toArray();
+                $devices = Device::where('company_id', $company->id)->get();
 
-            // Step 3: Get all device users associated with these device IDs
-            $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
 
-            // Extract user IDs from device users
-            $userIds = $deviceUsers->pluck('user_id')->toArray();
+                // Extract device IDs into an array
+                $deviceIds = $devices->pluck('id')->toArray();
 
-            // Step 4: Get users based on user IDs with pagination and search functionality
-            $usersQuery = User::query();
+                // Step 3: Get all device users associated with these device IDs
+                $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
 
-            if ($company->company_name !== 'eideas') {
+                // Extract user IDs from device users
+                $userIds = $deviceUsers->pluck('user_id')->toArray();
+
+                // Step 4: Get users based on user IDs with pagination and search functionality
+                $usersQuery = User::query();
+
+                if ($company->company_name !== 'eideas') {
+                    $usersQuery = User::whereIn('id', $userIds);
+                }
+                // Apply search filters if search query is provided
+                if ($searchQuery) {
+                    $usersQuery->where(function ($query) use ($searchQuery) {
+                        $query->where('email', 'like', "%$searchQuery%")
+                            ->orWhere('name', 'like', "%$searchQuery%")
+                            ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
+                    });
+                }
+
+                // Apply pagination
+                $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
+
+                // Step 5: Transform the user data to remove unnecessary fields
+                $filteredUsers = $users->getCollection()->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'balance' => $user->balance,
+                    ];
+                });
+
+                // Replace the original collection with the transformed collection
+                $users->setCollection($filteredUsers);
+
+                // Return the paginated user data
+                return response()->json($users);
+            } else {
+                $devices =   Device::where('users_id', $companyId)->get();
+
+                // Extract device IDs into an array
+                $deviceIds = $devices->pluck('id')->toArray();
+
+                // Step 3: Get all device users associated with these device IDs
+                $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
+
+                // Extract user IDs from device users
+                $userIds = $deviceUsers->pluck('user_id')->toArray();
+
+                // Step 4: Get users based on user IDs with pagination and search functionality
+                $usersQuery = User::query();
+
+
                 $usersQuery = User::whereIn('id', $userIds);
-            }
-            // Apply search filters if search query is provided
-            if ($searchQuery) {
-                $usersQuery->where(function ($query) use ($searchQuery) {
-                    $query->where('email', 'like', "%$searchQuery%")
-                        ->orWhere('name', 'like', "%$searchQuery%")
-                        ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
+                // Apply search filters if search query is provided
+                if ($searchQuery) {
+                    $usersQuery->where(function ($query) use ($searchQuery) {
+                        $query->where('email', 'like', "%$searchQuery%")
+                            ->orWhere('name', 'like', "%$searchQuery%")
+                            ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
+                    });
+                }
+
+                // Apply pagination
+                $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
+
+                // Step 5: Transform the user data to remove unnecessary fields
+                $filteredUsers = $users->getCollection()->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'balance' => $user->balance,
+                    ];
                 });
+
+                // Replace the original collection with the transformed collection
+                $users->setCollection($filteredUsers);
+
+                // Return the paginated user data
+                return response()->json($users);
             }
-
-            // Apply pagination
-            $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
-
-            // Step 5: Transform the user data to remove unnecessary fields
-            $filteredUsers = $users->getCollection()->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'balance' => $user->balance,
-                ];
-            });
-
-            // Replace the original collection with the transformed collection
-            $users->setCollection($filteredUsers);
-
-            // Return the paginated user data
-            return response()->json($users);
-        
-        }else {
-            $devices=   Device::where('users_id', $companyId)->get();
-
-                   // Extract device IDs into an array
-            $deviceIds = $devices->pluck('id')->toArray();
-
-            // Step 3: Get all device users associated with these device IDs
-            $deviceUsers = DeviceUser::whereIn('device_id', $deviceIds)->get();
-
-            // Extract user IDs from device users
-            $userIds = $deviceUsers->pluck('user_id')->toArray();
-
-            // Step 4: Get users based on user IDs with pagination and search functionality
-            $usersQuery = User::query();
-
-          
-            $usersQuery = User::whereIn('id', $userIds);
-            // Apply search filters if search query is provided
-            if ($searchQuery) {
-                $usersQuery->where(function ($query) use ($searchQuery) {
-                    $query->where('email', 'like', "%$searchQuery%")
-                        ->orWhere('name', 'like', "%$searchQuery%")
-                        ->orWhere('id', $searchQuery)->orWhere('phone', 'like', "%$searchQuery%");
-                });
-            }
-
-            // Apply pagination
-            $users = $usersQuery->paginate($perPage, ['*'], 'page', $page);
-
-            // Step 5: Transform the user data to remove unnecessary fields
-            $filteredUsers = $users->getCollection()->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'balance' => $user->balance,
-                ];
-            });
-
-            // Replace the original collection with the transformed collection
-            $users->setCollection($filteredUsers);
-
-            // Return the paginated user data
-            return response()->json($users);
-            } 
         } catch (\Throwable $th) {
             return response()->json(['err' => $th->getMessage()], 500);
         }
@@ -517,7 +518,7 @@ class   UserController extends Controller
                 'msg' => 'User fixed individual tariff updated successfully.',
             ], 200);
         } catch (\Exception $e) {
-             return response()->json([
+            return response()->json([
                 'msg' => 'An error occurred while updating the user tariff.',
                 'error' => $e->getMessage(),
             ], 500);
@@ -611,6 +612,69 @@ class   UserController extends Controller
         }
     }
 
+
+    public function registerMultipleUsers(Request $request)
+    {
+        try {
+            $users = $request['users'];
+            $deviceId = $request['device_id'];
+            foreach ($users as $user) {
+                $this->uploadMultipleUsersChecker($user);
+                if (!isset($user["email"])  ) {
+
+
+                  $u =  User::create([
+                        'name' => $user['name'],
+                        'id_number' => $user["id_number"],
+                        "phone" => $user["phone_number"],
+                        "password" => Hash::make($user["phone_number"])
+
+                    ]);
+
+                    DeviceUser::create([
+                        "device_Id"=>$deviceId,
+                        "user_id"=> $u->id,
+                    ]);
+                } else {
+                   $u = User::create([
+                        'name' => $user['name'],
+                        'id_number' => $user["id_number"],
+                        "email" => $user['email'],
+                        "phone" => $user["phone_number"],
+                        "password" => Hash::make($user["phone_number"])
+
+                    ]);
+                    DeviceUser::create([
+                        "device_Id"=>$deviceId,
+                        "user_id"=> $u->id,
+                    ]);
+                }
+            }
+            return response()->json(["msg" => "მომხმარებლები წარმატებით აიტვირთა"], 200);
+        } catch (\Exception $e) {
+            return response()->json(["msg" => $e->getMessage()], 400);
+        } catch (\Throwable $e) {
+            return response()->json(["msg" => $e->getMessage()], 500);
+        }
+    }
+
+    private function uploadMultipleUsersChecker($data)
+    {
+        $idNumber = $data['id_number'];
+        $phoneNumber = $data['phone_number'];
+
+        // Check if the ID number is exactly 11 digits long and contains only digits
+        if (!preg_match('/^\d{11}$/', $idNumber)) {
+            throw new \Exception('აიდი ნომერი უნდა იყოს 11 ციფრით: ' . $idNumber);
+        }
+
+        // Check if the phone number is exactly 9 digits long and contains only digits
+        if (!preg_match('/^\d{9}$/', $phoneNumber)) {
+            throw new \Exception('ტელეფონის ნომერი უნდა იყოს ცხრა ციფრიანი: ' . $phoneNumber);
+        }
+    }
+}
+
     // public function setPhoneNumberTarrif(Request $request){
 
     //     try {
@@ -631,7 +695,7 @@ class   UserController extends Controller
     //         return response()->json(["msg" => $e]);
     //     }
     // }
-}
+ 
         
         // balance
         // :
