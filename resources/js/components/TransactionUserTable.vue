@@ -1,13 +1,7 @@
 <template>
   <div>
-    <v-data-table
-      :headers="headers"
-      :items-length="totalItems"
-      :items="serverItems"
-      :search="search"
-      class="elevation-1"
-      item-value="name"
-    >
+    <v-data-table :headers="headers" :items-length="totalItems" :items="serverItems" :search="search"
+      class="elevation-1" item-value="name">
       <template v-slot:top>
         <v-toolbar>
           <v-toolbar-title class="text-capitalize">
@@ -21,11 +15,11 @@
       </template>
       <template v-slot:item.amountTax="{ item }">
         {{
-         
-            getAmount(item.raw.type ,item.raw.amount)
+
+          getAmount(item.raw.type, item.raw.amount)
         }}
- 
-      
+
+
         ლარი
       </template>
       <template v-slot:item.type="{ item }">
@@ -103,7 +97,7 @@ export default {
   },
 
   methods: {
-    deleteItem() {},
+    deleteItem() { },
     formatMyDate(date) {
       const d = new Date(date)
       const month = (d.getMonth() + 1).toString().padStart(2, '0') // Months are zero-based
@@ -118,36 +112,36 @@ export default {
 
       return (amount - tax).toFixed(2)
     },
-    getAmount(type, amount){
+    getAmount(type, amount) {
 
-      if(amount.length >= 4){
-   
-        return amount.split(".").join("") / 100
+      if (amount.toString().length >= 4) {
 
+        return amount.toString().split(".").join("") / 100
+
+      } else if (type.includes("BO")) {
+        return amount / 100
       }
-        if(type.includes("BO")){
-          return amount / 100
-        }
-       else if(type == 'TBC' ||  type == "LB" ){
-        return amount 
-       }else if(type == "TBC ონლაინ გადახდა" ){
+
+      else if (type == 'TBC' || type == "LB") {
+        return amount
+      } else if (type == "TBC ონლაინ გადახდა") {
         console.log("hay benson")
         return this.getUntaxedAmount(amount)
-       }else{
+      } else {
         return amount
-       }
+      }
     }
-,
+    ,
     getItemType(type) {
       let res = ''
-      if(type == "LB"){
+      if (type == "LB") {
         res = "Liberty ჩასარიცხი აპარატი"
-      }else if( type == "TBC"){
+      } else if (type == "TBC") {
         res = 'TBC ჩასარიცხი აპარატი1'
-      } else if (type == "BO-internet"){
+      } else if (type == "BO-internet") {
         res = "საქართველოს ბანკის ონლაინ გადახდა"
       }
-      else{ 
+      else {
         res = type
       }
       return res
