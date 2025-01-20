@@ -119,8 +119,14 @@ export default {
       return (amount - tax).toFixed(2)
     },
     getAmount(type, amount){
+
+      if(amount.length >= 4){
+   
+        return amount.split(".").join("") / 100
+
+      }
         if(type.includes("BO")){
-          return amount /100
+          return amount / 100
         }
        else if(type == 'TBC' ||  type == "LB" ){
         return amount 
