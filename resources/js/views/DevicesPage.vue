@@ -249,7 +249,6 @@
 
 
 
-
                   </div>
                   <!-- ლიფტის ტარიფის შეცვლა -->
 
@@ -272,7 +271,10 @@
                     </v-icon>
                   </div>
                 </div>
-
+                <div  @click="openAddUsersExel(item.id)">
+                  <v-btn class="my-styled-btn">მომხმარებლების დამატება</v-btn>
+                </div>
+                 
                 <div  @click="detailDevice(item.id)">
                   <v-btn class="my-styled-btn">ლიფტის ინფომრაცია ვრცლად</v-btn>
                 </div>
@@ -287,14 +289,67 @@
 
       </v-container>
     </v-card>
+     <!--მომხამრებელბის დამატება ექსელი -->
+     <div v-if="dialogAddingUserExcel" class="custom-modal-overlay">
+    <div class="custom-modal">
+      <v-card>
+        <v-card-title>მომხმარებლებლის ატვირთვა</v-card-title>
+        <v-card-text>
+          <div class="file-input-container">
+            <!-- Drop Zone -->
+            <div
+              class="drop-zone"
+              @drop.prevent="handleDrop"
+              @dragover.prevent
+            >
+              <p v-if="!excelFile">ჩააგდე ფაილი აქ</p>
+              <p v-else>ატვირთული ფაილი: {{ excelFile.name }}</p>
+            </div>
+
+            <!-- Button to open file dialog -->
+            <div class="file-input-wrapper">
+              <label for="fileInput" class="file-input-label">
+                აირჩიე ფაილი
+              </label>
+              <input
+                id="fileInput"
+                type="file"
+                accept=".xlsx, .xls"
+                @change="handleFileInput"
+              />
+            </div>
+
+            <!-- Remove Button -->
+            <v-btn
+              v-if="excelFile"
+              @click="removeUploadedFile"
+              class="my-styled-btn"
+              color="red"
+            >
+              ფაილის წაშლა
+            </v-btn>
+          </div>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="closeExelDialog">დახურვა</v-btn>
+          <v-btn :disabled="!excelFile" @click="uploadExel">ატვირთვა</v-btn>
+        </v-card-actions>
+      </v-card>
+    </div>
+  </div>
+
+ <!--მომხამრებელბის დამატება ექსელი -->
   </div>
 </template>
 <script>
 import { VDataTable } from 'vuetify/labs/components'
 import { th } from 'vuetify/locale'
 import SignalIcon from '../components/icon/SignalIcon.vue'
-import Swal from 'sweetalert2'
+ import Swal from 'sweetalert2'
 import router from '@/router'
+import * as XLSX from "xlsx";
 
 export default {
   name: 'devoce',
@@ -306,6 +361,9 @@ export default {
     dialogBussines: true,
     allLiftTariff: false,
     isAdmin: false,
+   
+      excelFile: null,  
+      parsedData: [],  
     singleLiftMapBool: [],
     eachLiftTariffAmount: 0,
     editedFixedCardAmount: 0,
@@ -317,7 +375,8 @@ export default {
     fota: {},
     dialogFixedCard: false,
     dialogFixedDeviceTarrif: false,
-    dialogFixedPhoneNumber: false,
+    dialogFixedPhoneNumber: false, dialogAddingUserExcel: false,
+
     dialogFota: false,
     dialog: false,
     dialogDelete: false,
@@ -463,6 +522,8 @@ export default {
     },
   },
   created() {
+    this.chackAdminEmail()
+// shigit st
     if (this.isAdmin) {
       axios.get('api/companies').then(({ data }) => {
         this.items = data['companies']
@@ -623,6 +684,81 @@ export default {
     detailDevice(id) {
       router.push({ name: `devicesDetail`, params: { id: id } })
     },
+    openAddUsersExel(id){
+      this.deviceID = id
+      this.dialogAddingUserExcel = true 
+    },
+  // Trigger file input click
+  handleDrop(event) {
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        this.excelFile = file;
+        console.log("File dropped:", this.excelFile.name);
+      } else {
+        alert("გთხოვთ ატვირთოთ სწორი Excel ფაილი.");
+      }
+    },
+
+    // Handle file selection from the input
+    handleFileInput(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.excelFile = file;
+        console.log("File selected:", this.excelFile.name);
+      }
+    },
+
+    // Remove the uploaded file
+    removeUploadedFile() {
+      this.excelFile = null;
+      console.log("Uploaded file removed.");
+    },
+
+    // Close the dialog
+    closeExelDialog() {
+      this.dialogAddingUserExcel = false;
+      this.excelFile = null;
+    },
+
+    // Upload and process Excel file
+    uploadExel() {
+      if (!this.excelFile) {
+        alert("ფაილი არ არის არჩეული.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: "binary" });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const parsedData = XLSX.utils.sheet_to_json(firstSheet);
+        // console.log("Parsed Excel Data:", parsedData);
+
+        axios.post("api/create-multiple-users", {
+          users:parsedData,
+          device_id:this.deviceID
+        }).then((res)=>{
+
+          this.$swal.fire({
+            icon: 'success',
+            position: 'center',
+            text:"მომხმარებლებლი წარმატებით აიტივრთა",
+            allowOutsideClick: false,
+          })
+        }).catch((err)=>{
+         
+          this.$swal.fire({
+            icon: 'error',
+            position: 'center',
+        text:err.response.data.msg,
+            allowOutsideClick: false,
+          })
+        })
+      };
+      reader.readAsBinaryString(this.excelFile);
+    },
+  
     editItem(item) {
       this.editedIndex = this.serverItems.indexOf(item)
       this.editedItem = Object.assign({ admin_email: item.user.email }, item)
@@ -730,4 +866,144 @@ export default {
   background-color: rgba(0, 0, 0, 0);
   /* Transparent backdrop */
 }
+
+.drop-zone-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.drop-zone {
+  width: 100%;
+  max-width: 400px;
+  height: 150px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.drop-zone:hover {
+  border-color: #007bff;
+}
+
+.drop-zone p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.drop-zone input {
+  display: none;
+}
+
+.drop-zone v-btn {
+  margin-top: 10px;
+}
+.button-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.my-styled-btn {
+  margin: 10px;
+  font-size: 14px;
+}
+
+.drop-zone {
+  width: 100%;
+  max-width: 400px;
+  height: 150px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.drop-zone:hover {
+  border-color: #007bff;
+}
+
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Gray background with opacity */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's on top of other elements */
+}
+
+.custom-modal {
+  background: white;
+  width: 600px;
+  max-width: 90%; /* Ensure it looks good on smaller screens */
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Subtle shadow for depth */
+  animation: fadeIn 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.file-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.drop-zone {
+  width: 100%;
+  max-width: 400px;
+  height: 150px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.drop-zone:hover {
+  border-color: #007bff;
+}
+
+.file-input-wrapper {
+  margin-top: 16px;
+}
+
+.my-styled-btn {
+  margin-top: 10px;
+}
+
+.v-card-title {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
 </style>

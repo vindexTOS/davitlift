@@ -91,6 +91,9 @@ Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     Route::put("/update-fixed-card-amount", [UserController::class, "UpdateUsersFixedCardTarriff"]);
     Route::put("/update-fixed-individual-amount", [UserController::class, "UpdateUsersFixedIndividualTarriff"]);
     Route::put("/update-fixed-phone-amount", [UserController::class, 'UpdateUsersFixedPhoneNumberTarriff']);
+
+    Route::post("/create-multiple-users" , [UserController::class, "registerMultipleUsers"]);
+
 });
 
 
@@ -291,6 +294,8 @@ Route::post('logout', function () {
 });
 
 Route::post('login', [AuthController::class, 'login']);
+Route::post('login-with-id', [AuthController::class, 'loginWithId']);
+
 Route::post('register', [AuthController::class, 'register']);
 Route::get('/download/{file}', [FileController::class, 'download']);
 Route::get('mqtt/general', [MqttController::class, 'handleGeneralEvent']);

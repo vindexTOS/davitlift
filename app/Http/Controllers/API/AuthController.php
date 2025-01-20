@@ -14,6 +14,7 @@ use Laravel\Sanctum\Sanctum;
 use App\Http\Requests\UserRequest;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+
 class AuthController extends Controller
 {
     public function register(UserRequest $request)
@@ -24,7 +25,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
             'phone' => 'required|string|min:5|max:15|unique:users',
         ]);
-       return User::create([
+        return User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
@@ -52,18 +53,38 @@ class AuthController extends Controller
         // All good, return the token
         return response()->json(compact('token'));
     }
-    public function user() {
+    public function loginWithId(Request $request)
+    {
+        $credentials = $request->validate([
+            'id_number' => 'required|numeric',
+            'password' => 'required'
+        ]);
+
+        try {
+            // Attempt to create the token
+            if (!$token = JWTAuth::attempt(['id_number' => $credentials['id_number'], 'password' => $credentials['password']])) {
+                return response()->json(['error' => 'invalid_credentials'], 401);
+            }
+        } catch (JWTException $e) {
+            // Something went wrong while attempting to encode the token
+            return response()->json(['error' => 'could_not_create_token'], 500);
+        }
+
+        // All good, return the token
+        return response()->json(compact('token'));
+    }
+    public function user()
+    {
         $user = Auth::user();
-        if($user->email == config('app.super_admin_email')) {
+        if ($user->email == config('app.super_admin_email')) {
             $user['lvl'] = 4;
             return $user;
         }
-        if(!empty($user->company = Company::where('admin_id',Auth::id())->first())) {
+        if (!empty($user->company = Company::where('admin_id', Auth::id())->first())) {
             $user->lvl = 3;
             return $user;
-
         }
-        if(!empty($user->device =  Device::where('users_id',Auth::id())->first())) {
+        if (!empty($user->device =  Device::where('users_id', Auth::id())->first())) {
             $user->lvl = 2;
             return $user;
         }
