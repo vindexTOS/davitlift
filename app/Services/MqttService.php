@@ -640,15 +640,15 @@ class MqttService
                                                     
                                                     public function publishMessage($device_id, $payload): void
                                                     {
-                                                        Log::debug("info", ["shemosvlaservishi"=>$payload]);
-                                                        $this->mqtt->publish(
-                                                            'Lift/' . $device_id . '/commands/general',
-                                                            $payload,
-                                                            // MqttClient::QOS_AT_LEAST_ONCE
-                                                            // //     ეხლა უშვებს მინიმუმ ერთხელ
-                                                            // //  მეორეს შემთხვევაში გაუშვებს მაქსიმუმ ერთხელ
-                                                            MqttClient::QOS_AT_MOST_ONCE
-                                                        );
+                                                        // Log::debug("info", ["shemosvlaservishi"=>$payload]);
+                                                        // $this->mqtt->publish(
+                                                        //     'Lift/' . $device_id . '/commands/general',
+                                                        //     $payload,
+                                                        //     // MqttClient::QOS_AT_LEAST_ONCE
+                                                        //     // //     ეხლა უშვებს მინიმუმ ერთხელ
+                                                        //     // //  მეორეს შემთხვევაში გაუშვებს მაქსიმუმ ერთხელ
+                                                        //     MqttClient::QOS_AT_MOST_ONCE
+                                                        // );
                                                     }
                                                     
                                                     public function saveOrUpdateEarnings($deviceId, $earningsValue, $companyId)
