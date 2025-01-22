@@ -296,6 +296,7 @@ class MqttService
                                                 
                                                 private function accessRequestForRFIDCard($device, $data)
                                                 {
+                                                    Log::debug("TWICE SHEMOSVLA", ["info"=>["dont ru service"]]);
                                                     $deviceIds = Device::where('users_id', $device->users_id)
                                                     ->pluck('id')
                                                     ->toArray();

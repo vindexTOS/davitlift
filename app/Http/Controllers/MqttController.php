@@ -398,7 +398,7 @@ class MqttController extends Controller
  
     private function accessRequestForRFIDCard($device, $data)
     {
-     
+       Log::debug("TWICE SHEMOSVLA", ["info"=>["dont ru controller"]]);
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
