@@ -1016,7 +1016,7 @@ class MqttController extends Controller
     }
 
     public function publishMessage($device_id, $payload)
-    {
+    { Log::debug("SEND OUT MESSAGE", ["info"=> $payload]);
         $data = [
             'device_id' => $device_id,
             'payload' => $payload,
