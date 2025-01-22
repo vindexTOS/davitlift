@@ -325,7 +325,7 @@ class MqttService
                                                             ],
                                                             [
                                                                 'type' => 'string',
-                                                                'value' => $code,
+                                                                'value' => "248390",
                                                             ],
                                                             [
                                                                 'type' => 'number',
