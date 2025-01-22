@@ -964,20 +964,7 @@ class MqttController extends Controller
             'card' => $card,
             'expires_at' => $expiresAt,
         ]);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
+       
         Log::info($code);
         Log::info($code);
         Log::info($code);
@@ -1038,10 +1025,10 @@ class MqttController extends Controller
             'payload' => $payload,
         ];
         $queryParams = http_build_query($data);
-        // $response = Http::get(
-        //     'http://localhost:3000/mqtt/general?' . $queryParams
-        // );
-        // return $response->json(['data' => ['dasd']]);
+        $response = Http::get(
+            'http://localhost:3000/mqtt/general?' . $queryParams
+        );
+        return $response->json(['data' => ['dasd']]);
     }
 
     //  tracking elevetors 

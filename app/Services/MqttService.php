@@ -640,14 +640,7 @@ class MqttService
                                                     
                                                     public function publishMessage($device_id, $payload): void
                                                     {
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
+                                                   
                                                         $this->mqtt->publish(
                                                             'Lift/' . $device_id . '/commands/general',
                                                             $payload,
@@ -695,23 +688,7 @@ class MqttService
                                                             'expires_at' => $expiresAt,
                                                         ]);
 
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
-                                                        Log::info($code);
+                                                
                                                         echo $code;
                                                         return $code;
                                                     }
