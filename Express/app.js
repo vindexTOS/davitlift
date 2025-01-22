@@ -10,8 +10,8 @@ app.get('/', (req, res) => {
 })
 app.get('/mqtt/general',(req,res) => {
     const data = req.query;
-    console.log(data)
-    publishMessage(data.device_id, generateHexPayload(data.payload.command,data.payload.payload))
+    console.log(data.payload)
+    // publishMessage(data.device_id, generateHexPayload(data.payload.command,data.payload.payload))
     res.send('test')
 })
 
