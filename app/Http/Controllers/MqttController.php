@@ -33,8 +33,7 @@ class MqttController extends Controller
 {
 
    
-    use  LastUserAmountUpdate;
-    use TransactionHandlerForOpMode;
+     use TransactionHandlerForOpMode;
     
     // Handle general events
     public function handleGeneralEvent(Request $request)
