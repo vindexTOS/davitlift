@@ -306,33 +306,33 @@ class MqttService
                                                     ->first();
                                                     if (empty($card)) {
                                                         $code = $this->getActivationCode($device->id, $data['payload']);
-                                                        $payload = $this->generateHexPayload(6, [
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => 'Tqveni',
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => 'kodia',
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                            [
-                                                                'type' => 'string',
-                                                                'value' => $code,
-                                                            ],
-                                                            [
-                                                                'type' => 'number',
-                                                                'value' => 0,
-                                                            ],
-                                                        ]);
-                                                        $this->publishMessage($device->dev_id, $payload);
+                                                        // $payload = $this->generateHexPayload(6, [
+                                                        //     [
+                                                        //         'type' => 'string',
+                                                        //         'value' => 'Tqveni',
+                                                        //     ],
+                                                        //     [
+                                                        //         'type' => 'number',
+                                                        //         'value' => 0,
+                                                        //     ],
+                                                        //     [
+                                                        //         'type' => 'string',
+                                                        //         'value' => 'kodia',
+                                                        //     ],
+                                                        //     [
+                                                        //         'type' => 'number',
+                                                        //         'value' => 0,
+                                                        //     ],
+                                                        //     [
+                                                        //         'type' => 'string',
+                                                        //         'value' => $code,
+                                                        //     ],
+                                                        //     [
+                                                        //         'type' => 'number',
+                                                        //         'value' => 0,
+                                                        //     ],
+                                                        // ]);
+                                                        // $this->publishMessage($device->dev_id, $payload);
                                                     } else {
                                                         // უსერის ნახავა
                                                         $user = User::where('id', $card->user_id)->first();
