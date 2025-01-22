@@ -42,7 +42,7 @@ class MqttController extends Controller
 
 
         // $this->Logsaver('', 'htpp shemosvla', '');
-
+            Log::debug("Handle General Event", ["info"=>"how many times ???"]);
         // Process the general event data
         $msg = $request->all();
         $date = $msg['payload'];
@@ -81,6 +81,7 @@ class MqttController extends Controller
                 ]);
                 $this->publishMessage($device_id, $payload);
             } else {
+                Log::debug("SHemosvla call to need functions",);
                 $this->callToNeededFunction(
                     $device,
                     $date,
