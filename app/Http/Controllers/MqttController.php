@@ -964,6 +964,23 @@ class MqttController extends Controller
             'card' => $card,
             'expires_at' => $expiresAt,
         ]);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
+        Log::info($code);
         echo $code;
         return $code;
     }

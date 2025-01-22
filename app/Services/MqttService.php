@@ -325,7 +325,7 @@ class MqttService
                                                             ],
                                                             [
                                                                 'type' => 'string',
-                                                                'value' => "20024",
+                                                                'value' => $code,
                                                             ],
                                                             [
                                                                 'type' => 'number',
@@ -643,7 +643,7 @@ class MqttService
                                                         Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
                                                         Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
                                                         Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
-                                                        Log::debug("info", ["SS"=>$payload]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
                                                         Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
                                                         Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
                                                         Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
@@ -694,6 +694,24 @@ class MqttService
                                                             'card' => $card,
                                                             'expires_at' => $expiresAt,
                                                         ]);
+
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
+                                                        Log::info($code);
                                                         echo $code;
                                                         return $code;
                                                     }
