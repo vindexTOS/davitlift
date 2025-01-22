@@ -425,7 +425,8 @@ return  $device;
         return DeviceError::where('id',$id)->delete();
     }
     public function publishMessage($device_id,$payload)
-    {
+    { 
+        Log::debug("device", ["device controlelr"=> $payload]);
         $data = [
             'device_id' => $device_id,
             'payload' => $payload

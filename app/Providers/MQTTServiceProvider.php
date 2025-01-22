@@ -4,11 +4,15 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Log;
 
 trait  MQTTServiceProvider  
 {
     public function publishMessage($device_id, $payload)
-    {
+    {        
+        Log::debug("MQTTServiceProvider", ["MQTTServiceProvider"=> $payload]);
+
+         
         $data = [
             'device_id' => $device_id,
             'payload' => $payload,
