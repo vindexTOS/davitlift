@@ -643,10 +643,10 @@ class MqttService
                                                         $this->mqtt->publish(
                                                             'Lift/' . $device_id . '/commands/general',
                                                             $payload,
-                                                            MqttClient::QOS_AT_LEAST_ONCE
-                                                            //     ეხლა უშვებს მინიმუმ ერთხელ
-                                                            //  მეორეს შემთხვევაში გაუშვებს მაქსიმუმ ერთხელ
-                                                            // MqttClient::QOS_AT_MOST_ONCE
+                                                            // MqttClient::QOS_AT_LEAST_ONCE
+                                                            // //     ეხლა უშვებს მინიმუმ ერთხელ
+                                                            // //  მეორეს შემთხვევაში გაუშვებს მაქსიმუმ ერთხელ
+                                                            MqttClient::QOS_AT_MOST_ONCE
                                                         );
                                                     }
                                                     
