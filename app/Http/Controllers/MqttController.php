@@ -32,7 +32,7 @@ use App\Services\TransactionHandlerForOpMode;
 class MqttController extends Controller
 {
 
-    use DeviceMessages;
+   
     use  LastUserAmountUpdate;
     use TransactionHandlerForOpMode;
     
@@ -1007,9 +1007,27 @@ class MqttController extends Controller
         $this->publishMessage($device_id, $payload);
     }
 
- 
+    public function generateHexPayload($command, $payload)
+    {
+        return [
+            'command' => $command,
+            'payload' => $payload,
+        ];
+    }
 
-   
+    public function publishMessage($device_id, $payload)
+    { Log::debug("SEND OUT MESSAGE", ["info"=> $payload]);
+        $data = [
+            'device_id' => $device_id,
+            'payload' => $payload,
+        ];
+        $queryParams = http_build_query($data);
+        // $response = Http::get(
+        //     'http://localhost:3000/mqtt/general?' . $queryParams
+        // );
+        // return $response->json(['data' => ['dasd']]);
+    }
+
     //  tracking elevetors 
 
     public function trackElevetorUses(string $userId, string $deviceId, int $type, string $tariff, string $currentBalance)
