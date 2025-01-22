@@ -640,7 +640,14 @@ class MqttService
                                                     
                                                     public function publishMessage($device_id, $payload): void
                                                     {
-                                                        Log::debug("info", ["shemosvlaservishi"=>$payload]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
+                                                        Log::debug("info", ["SS"=>$payload]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
+                                                        Log::debug("info", ["SS"=>"<<<<<<<<<<<<<<<<<<<<<<<<<<<<"]);
                                                         $this->mqtt->publish(
                                                             'Lift/' . $device_id . '/commands/general',
                                                             $payload,

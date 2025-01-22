@@ -298,7 +298,7 @@ Route::post('login-with-id', [AuthController::class, 'loginWithId']);
 
 Route::post('register', [AuthController::class, 'register']);
 Route::get('/download/{file}', [FileController::class, 'download']);
-// Route::get('mqtt/general', [MqttController::class, 'handleGeneralEvent']);
+Route::get('mqtt/general', [MqttController::class, 'handleGeneralEvent']);
 Route::get('mqtt/heartbeat', [MqttController::class, 'handleHeartbeatEvent']);
 Route::post('/uploadForHttp', [FileController::class, 'uploadForHttp']);
 Route::delete('/filesForFileServer/{id}', [
