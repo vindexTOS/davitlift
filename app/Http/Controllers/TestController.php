@@ -146,34 +146,34 @@ class TestController extends   Controller
     // 
 
    public function sendTestMessageToDevice($device_id, $message){
-    // $payload = $this->generateHexPayload(6, [
-    //     [
-    //         'type' => 'string',
-    //         'value' => 'Tqveni',
-    //     ],
-    //     [
-    //         'type' => 'number',
-    //         'value' => 0,
-    //     ],
-    //     [
-    //         'type' => 'string',
-    //         'value' => 'kodia',
-    //     ],
-    //     [
-    //         'type' => 'number',
-    //         'value' => 0,
-    //     ],
-    //     [
-    //         'type' => 'string',
-    //         'value' => $message,
-    //     ],
-    //     [
-    //         'type' => 'number',
-    //         'value' => 0,
-    //     ],
-    // ]);
+    $payload = $this->generateHexPayload(6, [
+        [
+            'type' => 'string',
+            'value' => 'Tqveni',
+        ],
+        [
+            'type' => 'number',
+            'value' => 0,
+        ],
+        [
+            'type' => 'string',
+            'value' => 'kodia',
+        ],
+        [
+            'type' => 'number',
+            'value' => 0,
+        ],
+        [
+            'type' => 'string',
+            'value' => $message,
+        ],
+        [
+            'type' => 'number',
+            'value' => 0,
+        ],
+    ]);
 
-    // $this->publishMessage($device_id, $payload);
+    $this->publishMessage($device_id, $payload);
 
    }
 

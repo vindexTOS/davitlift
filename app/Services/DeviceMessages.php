@@ -86,33 +86,33 @@ trait DeviceMessages
     }
 
     public function getDeviceCode($device_id, $code){
-        // $payload = $this->generateHexPayload(6, [
-        //     [
-        //         'type' => 'string',
-        //         'value' => 'Tqveni',
-        //     ],
-        //     [
-        //         'type' => 'number',
-        //         'value' => 0,
-        //     ],
-        //     [
-        //         'type' => 'string',
-        //         'value' => 'kodia',
-        //     ],
-        //     [
-        //         'type' => 'number',
-        //         'value' => 0,
-        //     ],
-        //     [
-        //         'type' => 'string',
-        //         'value' => $code,
-        //     ],
-        //     [
-        //         'type' => 'number',
-        //         'value' => 0,
-        //     ],
-        // ]);
-        // $this->publishMessage($device_id, $payload);
+        $payload = $this->generateHexPayload(6, [
+            [
+                'type' => 'string',
+                'value' => 'Tqveni',
+            ],
+            [
+                'type' => 'number',
+                'value' => 0,
+            ],
+            [
+                'type' => 'string',
+                'value' => 'kodia',
+            ],
+            [
+                'type' => 'number',
+                'value' => 0,
+            ],
+            [
+                'type' => 'string',
+                'value' => $code,
+            ],
+            [
+                'type' => 'number',
+                'value' => 0,
+            ],
+        ]);
+        $this->publishMessage($device_id, $payload);
     }
 
 
