@@ -27,7 +27,7 @@ class TestController extends   Controller
     use FixedTarrifOpModeService;
 
     use DeviceMessages;
-    use DeviceMessages;
+    
 
 
 
