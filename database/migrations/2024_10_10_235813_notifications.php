@@ -17,8 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->boolean('isRead')->default(false);
             $table->string('message');
-            $table->string('meta-data')->default(null);
-            $table->string('message-type')->default(\App\Enums\NotificationType::general);
+            $table->string('meta_data')->default(null);
+            $table->string('meta_data')->default(\App\Enums\NotificationType::general);
             $table->unsignedBigInteger('device_id')->nullable();
             $table->timestamps();
         });
