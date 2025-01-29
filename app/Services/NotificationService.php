@@ -20,8 +20,8 @@ class NotificationsService
             Notifications::create([
                 "user_id" => $user_id,
                 'message' => $message,
-                'meta-data' => $metaData,
-                'message-type' => $messageType
+                'meta_data' => $metaData,
+                'message_type' => $messageType
             ]);
             DB::commit();
         } catch (\Throwable $th) {
@@ -40,8 +40,8 @@ class NotificationsService
             Notifications::create([
                 "user_id" => $user_id,
                 'message' => $message,
-                'meta-data' => $metaData,
-                'message-type' => $messageType,
+                'meta_data' => $metaData,
+                'message_type' => $messageType,
                 "device_id" => $device_id
             ]);
             DB::commit();
