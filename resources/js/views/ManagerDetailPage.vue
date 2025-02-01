@@ -580,9 +580,7 @@ export default {
                     Number(this.cashbackData.total),
                 ];
             }
-            console.log(this.cashbackData.total);
-            console.log(this.cashbackData);
-            console.log(this.seriesC, this.seriesB, this.seriesD);
+          
 
             // console.log(this.mtlianiCash)
         },

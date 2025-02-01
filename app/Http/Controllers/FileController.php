@@ -36,7 +36,7 @@ class FileController extends Controller
                     'Accept' => 'application/json',
                 ])->attach(
                     'file', $file, $filename
-                )->post('http://64.23.180.164/api/uploadForHttp');
+                )->post('http://147.182.164.92/api/uploadForHttp');
                 fclose($file);  // Don't forget to close the resource
 
                 $fileEntry = new File();
@@ -97,7 +97,7 @@ class FileController extends Controller
         $file = File::find($id);
 
         if ($file) {
-            $response = Http::delete('http://64.23.180.164/api/filesForFileServer/'.$file->filename);
+            $response = Http::delete('http://147.182.164.92/api/filesForFileServer/'.$file->filename);
 
             // Construct the file path
             $file_path = storage_path('app/public/uploads/' . $file->filename);
@@ -156,7 +156,7 @@ class FileController extends Controller
         $version = $file->version;
         $payloadMain =  pack('VC', time(), 250);
 
-        $payload = 'http://64.23.180.164/api/download/'.$name;
+        $payload = 'http://147.182.164.92/api/download/'.$name;
         $payload .= pack('C', 0);
         $payload .= $version;
         $payload .= pack('C', 0);
@@ -173,7 +173,7 @@ class FileController extends Controller
             $this->publishMessage( $dev_id, $this->generateHexPayload(250,[
                 [
                     'type' => 'string',
-                    'value' => 'http://64.23.180.164/api/download/'.$name
+                    'value' => 'http://147.182.164.92/api/download/'.$name
                 ],
                 [
                     'type' => 'number',
