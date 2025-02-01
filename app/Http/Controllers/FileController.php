@@ -36,7 +36,7 @@ class FileController extends Controller
                     'Accept' => 'application/json',
                 ])->attach(
                     'file', $file, $filename
-                )->post('https://lift.eideas.io/api/uploadForHttp');
+                )->post('http://143.244.190.239/api/uploadForHttp');
                 fclose($file);  // Don't forget to close the resource
 
                 $fileEntry = new File();
@@ -97,7 +97,7 @@ class FileController extends Controller
         $file = File::find($id);
 
         if ($file) {
-            $response = Http::delete('https://lift.eideas.io/api/filesForFileServer/'.$file->filename);
+            $response = Http::delete('http://143.244.190.239/api/filesForFileServer/'.$file->filename);
 
             // Construct the file path
             $file_path = storage_path('app/public/uploads/' . $file->filename);
@@ -156,7 +156,7 @@ class FileController extends Controller
         $version = $file->version;
         $payloadMain =  pack('VC', time(), 250);
 
-        $payload = 'https://lift.eideas.io/api/download/'.$name;
+        $payload = 'http://143.244.190.239/api/download/'.$name;
         $payload .= pack('C', 0);
         $payload .= $version;
         $payload .= pack('C', 0);
@@ -173,7 +173,7 @@ class FileController extends Controller
             $this->publishMessage( $dev_id, $this->generateHexPayload(250,[
                 [
                     'type' => 'string',
-                    'value' => 'https://lift.eideas.io/api/download/'.$name
+                    'value' => 'http://143.244.190.239/api/download/'.$name
                 ],
                 [
                     'type' => 'number',
