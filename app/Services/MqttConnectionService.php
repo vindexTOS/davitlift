@@ -21,7 +21,7 @@ class MqttConnectionService {
     // Constructor is private
     private function __construct() {
         
-        $this->server = '168.119.179.190';
+        $this->server = '116.202.4.252';
         $this->port = "1883";
         $this->clientId = rand(5, 15);
         $this->username = 'username';

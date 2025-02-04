@@ -1,6 +1,6 @@
 <?php
 return [
-    'server'   => '168.119.179.190',
+    'server'   => '116.202.4.252',
     'port'     => 1883,
     'username' => 'username',
     'password' => '12345678',
