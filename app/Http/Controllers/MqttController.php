@@ -47,6 +47,7 @@ class MqttController extends Controller
         $date = $msg['payload'];
         $topic = $msg['topic'];
         Log::debug("BEFORE", ["info"=> $date["payload"] ]);
+        Log::debug("PURE DATA >>>>>>>>>>>>>>>>>>>>>>>>>>>>", ["info"=> $date  ]);
         if (strlen($date["payload"]) == 8 ) {
             Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info"=>  $date["payload"]]);
              
