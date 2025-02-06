@@ -46,8 +46,8 @@ class MqttController extends Controller
         $msg = $request->all();
         $date = $msg['payload'];
         $topic = $msg['topic'];
-     
-        if (strlen($date["payload"]) === 8 && $date["command"] == 5) {
+        Log::debug("BEFORE", ["info"=>  $date["payload"]]);
+        if (strlen($date["payload"]) === 8 ) {
             Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info"=>  $date["payload"]]);
              
         }
