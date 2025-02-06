@@ -60,18 +60,17 @@ class MqttController extends Controller
             Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info" =>  $date["payload"]]);
             $card =  Card::where('card_number', $data["payload"])->first();
 
-    if ($card) {
-       
-        $user =  User::find($card->user_id);
+            if ($card) {
 
-        if ($user) {
-           
-            $this->blockedCardLogger($data["payload"],$user['id'] , $device['id']);
-        }  
-    } else {
-        Log::warning("Card not found for payload", ["payload" => $data["payload"]]);
-    }
-        
+                $user =  User::find($card->user_id);
+
+                if ($user) {
+
+                    $this->blockedCardLogger($data["payload"], $user['id'], $device['id']);
+                }
+            } else {
+                Log::warning("Card not found for payload", ["payload" => $data["payload"]]);
+            }
         }
         if (!empty($device)) {
             if ($device->isBlocked) {
@@ -1081,5 +1080,17 @@ class MqttController extends Controller
         } catch (PDOException $e) {
             throw new RuntimeException("Blocked card error: " . $e->getMessage());
         }
+    }
+
+    public function getBlockedCardInfo(Request $request)
+    {
+         $perPage = $request->query('per_page', 10);
+        
+  
+ 
+        $logs = Blockedcardlogs::orderBy('created_at', 'desc')->paginate($perPage);
+
+ 
+        return response()->json($logs);
     }
 }

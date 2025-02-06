@@ -66,6 +66,12 @@ const routes = [
           import(/* webpackChunkName: "home" */ '../views/DevicesPage.vue'),
       },
       {
+        path: 'blockedcards',
+        name: 'blockedcards',
+        component: () =>
+          import(/* webpackChunkName: "home" */ '../views/BlockedCardManagment.vue'),
+      },
+      {
         path: 'devices/:id',
         name: 'devicesDetail',
         component: () =>

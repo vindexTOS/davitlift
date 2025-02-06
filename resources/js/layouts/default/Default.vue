@@ -33,6 +33,9 @@
         <v-list-item :key="'notifications'" v-if="user.lvl >= 4" prepend-icon="mdi-bell" to="/notifications">
           ნოტიფიკაციების მენეჯერი
         </v-list-item>
+        <v-list-item :key="'blockedcards'" v-if="user.lvl >= 4" prepend-icon="mdi-block" to="/blockedcards">
+     დაბლოკილი ბარათები
+        </v-list-item>
         <v-list-item :key="'test'" v-if="user.lvl >= 4" prepend-icon="mdi-fire" to="/PageTest">
           სატესტო
         </v-list-item>
