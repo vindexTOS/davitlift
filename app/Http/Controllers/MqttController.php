@@ -46,7 +46,11 @@ class MqttController extends Controller
         $msg = $request->all();
         $date = $msg['payload'];
         $topic = $msg['topic'];
-        Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info"=>  $date]);
+     
+        if (strlen($date["payload"]) === 8 && $date["command"] === 5) {
+            Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info"=>  $date["payload"]]);
+             
+        }
         $parts = explode('/', $topic);
         $device_id = $parts[1];
         $device = Device::where('dev_id', $parts[1])->first();
