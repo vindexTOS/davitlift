@@ -45,10 +45,11 @@ class MqttController extends Controller
         // Process the general event data
         $msg = $request->all();
         $date = $msg['payload'];
+        $data = $msg["payload"];
         $topic = $msg['topic'];
-        Log::debug("BEFORE", ["info"=> $date["payload"] ]);
+        Log::debug("BEFORE", ["info"=> $data["payload"] ]);
         Log::debug("PURE DATA >>>>>>>>>>>>>>>>>>>>>>>>>>>>", ["info"=> $date  ]);
-        if (strlen($date["payload"]) == 8 ) {
+        if (strlen($data["payload"]) == 8 && $data['command'] == 5) {
             Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info"=>  $date["payload"]]);
              
         }
