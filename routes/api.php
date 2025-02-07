@@ -337,6 +337,7 @@ Route::get("/fixdevice/{device_id}", [TestController::class,'FixBalanceForNew' ]
 Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUse"]);
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
+Route::get('/blocked-card-logs', [MqttController::class, "getBlockedCardInfo"]);
 
 
 
