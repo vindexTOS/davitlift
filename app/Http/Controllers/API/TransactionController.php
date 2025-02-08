@@ -432,7 +432,7 @@ class TransactionController extends Controller
             'extra2' => $string,
             'merchantPaymentId' => $string,
             'extra' => substr($string, 0, 25),
-            'returnurl' =>  'https://116.202.4.252/',
+            'returnurl' =>  'http://116.202.4.252/',
             'installmentProducts' => [
                 [
                     'Price' => $amount,
@@ -440,7 +440,7 @@ class TransactionController extends Controller
                 ],
             ],
             'callbackUrl' =>
-            "https://116.202.4.252/api/bank/transaction/callback",
+            "http://116.202.4.252/api/bank/transaction/callback",
         ]);
         return json_decode($response->body(), true);
     }

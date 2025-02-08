@@ -53,9 +53,7 @@ class MqttController extends Controller
         $parts = explode('/', $topic);
         $device_id = $parts[1];
         $device = Device::where('dev_id', $parts[1])->first();
-
-        Log::debug("BEFORE", ["info" => $data["payload"]]);
-        Log::debug("PURE DATA >>>>>>>>>>>>>>>>>>>>>>>>>>>>", ["info" => $date]);
+ 
         if (strlen($data["payload"]) == 8 && $data['command'] == 5) {
             Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info" =>  $date["payload"]]);
             $card =  Card::where('card_number', $data["payload"])->first();
