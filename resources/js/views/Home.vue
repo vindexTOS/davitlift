@@ -12,11 +12,12 @@
               <v-btn style="width: 100%;" @click="showModal = true" small>
                 <v-icon size="small">mdi-pencil</v-icon>
                 {{ $t('Edit') }}
-              </v-btn>
-              <v-btn @click="showBalance = true" style="width: 100%;" small>
+              </v-btn>|
+              ბალანსის შევსება
+              <!-- <v-btn @click="showBalance = true" style="width: 100%;" small>
                 <v-icon size="small">mdi-cash</v-icon>
                 {{ $t('Add Balance') }}
-              </v-btn>
+              </v-btn> -->
               <v-btn @click="dialog = true" style="width: 100%;">
                 {{ $t('Change password') }}
               </v-btn>
