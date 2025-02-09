@@ -435,9 +435,9 @@
                     {{ $t("Close") }}
                 </v-btn>
                 <!--  ბალანსის შევსება -->
-                <!-- <v-btn color="blue darken-1" @click="addBalance">{{
+                <v-btn color="blue darken-1" @click="addBalance">{{
                     $t("Pay")
-                    }}</v-btn> -->
+                    }}</v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
