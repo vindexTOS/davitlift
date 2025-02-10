@@ -14,10 +14,10 @@
                 {{ $t('Edit') }}
               </v-btn>|
               ბალანსის შევსება
-              <!-- <v-btn @click="showBalance = true" style="width: 100%;" small>
+              <v-btn @click="showBalance = true" style="width: 100%;" small>
                 <v-icon size="small">mdi-cash</v-icon>
                 {{ $t('Add Balance') }}
-              </v-btn> -->
+              </v-btn>
               <v-btn @click="dialog = true" style="width: 100%;">
                 {{ $t('Change password') }}
               </v-btn>
