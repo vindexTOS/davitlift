@@ -12,8 +12,8 @@
               <v-btn style="width: 100%;" @click="showModal = true" small>
                 <v-icon size="small">mdi-pencil</v-icon>
                 {{ $t('Edit') }}
-              </v-btn>|
-              ბალანსის შევსება
+              </v-btn> 
+         
               <v-btn @click="showBalance = true" style="width: 100%;" small>
                 <v-icon size="small">mdi-cash</v-icon>
                 {{ $t('Add Balance') }}
