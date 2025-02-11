@@ -42,7 +42,66 @@ class TransactionController extends Controller
 
 
 
+     public function getAllTransactions($userId){
+  
+        // // Get transactions for the user
+        // $transactions = Transaction::where('user_id', $userId)
+        //     ->where('status', 'Succeeded')
+        //     ->get();
 
+        // // Fetch TbcTransactions for the same user
+        // $formattedTransactions = $transactions->map(function ($transaction) {
+        //     return [
+        //         'id' => $transaction->id,
+        //         'user_id' => $transaction->user_id,
+        //         'amount' => $transaction->amount,
+        //         'status' => $transaction->status,
+        //         'transaction_id' => $transaction->transaction_id,
+        //         'created_at' => $transaction->created_at,
+        //         'updated_at' => $transaction->updated_at,
+        //         'succeeded' => $transaction->status === 'Succeeded',
+        //         'type' => 'TBC ონლაინ გადახდა',
+        //     ];
+        // });
+
+        // // Fetch TbcTransactions for the same user
+        // $tbcTransactions = TbcTransaction::where('user_id', $userId)->get();
+        // if ($transactions->isEmpty() && $tbcTransactions->isEmpty()) {
+        //     return [];
+        // }
+        // // Check if TbcTransactions is empty
+        // if ($tbcTransactions->isEmpty()) {
+        //     // Return only formatted transactions for the user if there are no TbcTransactions
+        //     return $formattedTransactions->all();
+        // }
+
+        // // Format TbcTransactions and merge with formatted transactions
+        // $formattedTbcTransactions = $tbcTransactions->map(function (
+        //     $tbcTransaction
+        // ) {
+        //     return [
+        //         'id' => $tbcTransaction->id + 1000,
+        //         'user_id' => $tbcTransaction->user_id,
+        //         'amount' => $tbcTransaction->amount,
+        //         'transaction_id' => $tbcTransaction->order_id,
+        //         'created_at' => $tbcTransaction->created_at,
+        //         'updated_at' => $tbcTransaction->updated_at,
+        //         'type' =>  $tbcTransaction->type,
+        //     ];
+        // });
+        // if ($transactions->isEmpty()) {
+        //     // Return only formatted transactions for the user if there are no TbcTransactions
+        //     return $formattedTbcTransactions->all();
+        // }
+        // // Merge formatted transactions with formatted TbcTransactions
+        // $combinedTransactions = $formattedTransactions->merge(
+        //     $formattedTbcTransactions
+        // );
+
+        // return $combinedTransactions->all();
+
+     }
+    //  888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
     public function index()
     {
         $userId = Auth::id();
@@ -89,7 +148,7 @@ class TransactionController extends Controller
                 'transaction_id' => $tbcTransaction->order_id,
                 'created_at' => $tbcTransaction->created_at,
                 'updated_at' => $tbcTransaction->updated_at,
-                'type' => 'TBC',
+                'type' => $tbcTransaction->type,
             ];
         });
         if ($transactions->isEmpty()) {
@@ -213,11 +272,11 @@ class TransactionController extends Controller
             'order_id' => 'required',
             'amount' => 'required',
         ]);
-
+   
         $phone = $validatedData['phone'];
         $order_id = $validatedData['order_id'];
         $amount = $validatedData['amount'];
-
+        $amountInCents = (int) round( $amount  * 100);
         //  ვეძებნთ უსერს ტელეფონის ნომრით
         $data = $request->all();
 
@@ -234,11 +293,11 @@ class TransactionController extends Controller
             }
 
             $this->createTransactionFastPay(
-                $amount,
+                $amountInCents ,
                 $user->id,
                 $order_id,
                 $string,
-                'LB'
+                'LB-new'
             );
 
             $this->updateTransactionOrderFastPay($data, $order_id, $amount);

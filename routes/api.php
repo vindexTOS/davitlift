@@ -338,6 +338,7 @@ Route::get("/elevatoruse/{user_id}", [UserController::class, "GetUsersElevatorUs
 Route::post("/testing-fix/{device_id}", [TestController::class, 'TestFixedCard']);
 Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 Route::get('/blocked-card-logs', [MqttController::class, "getBlockedCardInfo"]);
+Route::get('/getAllTransactions/{userId}', [TransactionController::class, "getAllTransactions"]);
 
 
 

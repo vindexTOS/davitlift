@@ -617,7 +617,7 @@ export default {
           // Sort by descending order
           return dateB - dateA
         })
-        // console.log(this.transaction)
+        console.log(this.transaction)
       })
     },
     getCards() {
@@ -771,6 +771,7 @@ this.phonenumberData = res.data.data
         })
     },
     callToLift(dev_id, divice) {
+
       if (this.canGamodzaxeba) {
         this.canGamodzaxeba = false
         axios
