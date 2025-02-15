@@ -413,7 +413,7 @@ export default {
      amount: this.editedFixedCardAmount,
    })
    .then((res) => {
-     console.log(res);
+    //  console.log(res);
      this.dialogFixedCard = false;
      this.$swal.fire({
        icon: 'success',
@@ -423,7 +423,7 @@ export default {
      this.loadItems()
    })
    .catch((err) => {
-     console.log(err);
+    //  console.log(err);
      this.$swal.fire({
        icon: 'error',
        position: 'center',
@@ -437,7 +437,7 @@ export default {
             this.deviceID = id
             this.editedFixedCardAmount = item
             this.dialogFixedCard = true;
-            console.log(this.dialogFixedCard)
+            // console.log(this.dialogFixedCard)
         },
         openSingleDeviceTariffAmount(index) {
             let newBoolArr = [...this.singleLiftMapBool];
@@ -486,7 +486,7 @@ export default {
             this.eachLiftTariffAmount = this.filtredDevices
                 .map((val) => val.deviceTariffAmount)
                 .reduce((a, b) => a + b);
-            console.log(this.filtredDevices);
+            // console.log(this.filtredDevices);
         },
         getCashback() {
             axios
@@ -495,7 +495,7 @@ export default {
                 )
                 .then(({ data }) => {
                     this.cashbackData = data;
-                    console.log(data);
+                    // console.log(data);
                     // conso  le.log(this.cashbackData['transaction'])
                     this.loadItems();
                     this.getDeviceAmount();
@@ -510,7 +510,7 @@ export default {
                 });
         },
         calculateProecnt(data) {
-            console.log(data);
+            // console.log(data);
             this.companyFee = 0;
             this.mtlianiCash = 0;
             this.totalDeviceAmount = data.device.filter(
@@ -525,12 +525,12 @@ export default {
 
                 // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
                 let isProcenteMore = needToPay - cashbackAmount;
-                console.log(data.device);
+                // console.log(data.device);
                 if (isProcenteMore < totalDeviceTariff) {
                     this.mtlianiCash += needToPay - totalDeviceTariff;
                     this.companyFee += totalDeviceTariff;
                 } else {
-                    console.log(needToPay);
+                    // console.log(needToPay);
 
                     this.mtlianiCash += needToPay - isProcenteMore;
                     this.companyFee += isProcenteMore;
@@ -557,8 +557,8 @@ export default {
 
             let finalResultOfDisplayAmount =
                 this.mtlianiCash - amountAlreadyPayedNumber;
-            console.log(finalResultOfDisplayAmount);
-            console.log(amountAlreadyPayedNumber);
+            // console.log(finalResultOfDisplayAmount);
+            // console.log(amountAlreadyPayedNumber);
 
             this.seriesB = [
                 data.deviceActivity.inactive,
@@ -591,7 +591,7 @@ export default {
                     this.data = data;
 
                     this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    // console.log(data)
+                    console.log(data)
                     let lastEarning;
 
                     const sortedEarnings = Object.values(
@@ -646,7 +646,7 @@ export default {
                     //   }
                     // })
 
-                    console.log(this.totalMoney);
+                    // console.log(this.totalMoney);
                     // this.seriesB = [
                     //   this.data.deviceActivity.inactive,
                     //   this.data.deviceActivity.active,

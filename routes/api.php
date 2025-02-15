@@ -145,7 +145,10 @@ Route::post('/transaction/lbfastpay', [
 
 
 // USER ONLY OR SHARED
-
+Route::post('/companyEarnings', [
+    CompanyController::class,
+    'getCompanyEarnings',
+]);
 Route::middleware(['auth:api'])->group(function () {
     // COMPANIES
     Route::apiResource('companies', CompanyController::class);

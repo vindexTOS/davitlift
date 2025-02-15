@@ -53,9 +53,9 @@ class MqttController extends Controller
         $parts = explode('/', $topic);
         $device_id = $parts[1];
         $device = Device::where('dev_id', $parts[1])->first();
- 
+        Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info" =>  $date ]);
         if (strlen($data["payload"]) == 8 && $data['command'] == 5) {
-            Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info" =>  $date["payload"]]);
+            // Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info" =>  $date["payload"]]);
             $card =  Card::where('card_number', $data["payload"])->first();
 
             if ($card) {
@@ -67,7 +67,7 @@ class MqttController extends Controller
                     $this->blockedCardLogger($data["payload"], $user['id'], $device['id']);
                 }
             } else {
-                Log::warning("Card not found for payload", ["payload" => $data["payload"]]);
+                // Log::warning("Card not found for payload", ["payload" => $data["payload"]]);
             }
         }
         if (!empty($device)) {
@@ -100,7 +100,7 @@ class MqttController extends Controller
                 ]);
                 $this->publishMessage($device_id, $payload);
             } else {
-                Log::debug("SHemosvla call to need functions",);
+                // Log::debug("SHemosvla call to need functions",);
                 $this->callToNeededFunction(
                     $device,
                     $date,
@@ -280,10 +280,10 @@ class MqttController extends Controller
             $this->publishMessage($device_id, $payload);
         } else {
             if ($device->op_mode == 0) {
-                Log::debug("MQTT CONTROLLER shemsvla");
+                // Log::debug("MQTT CONTROLLER shemsvla");
 
                 if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                    Log::info("shemosvla", ['handle' => $user]);
+                    // Log::info("shemosvla", ['handle' => $user]);
 
                     $this->handleOpMode($device->op_mode, $user, $device, $data);
                 }
@@ -291,7 +291,7 @@ class MqttController extends Controller
                 if (
                     time() < Carbon::parse($userDevice->subscription)->timestamp
                 ) {
-                    Log::debug("Npasuxi bijo");
+                    // Log::debug("Npasuxi bijo");
 
                     $payload = $this->generateHexPayload(2, [
                         [
@@ -333,7 +333,7 @@ class MqttController extends Controller
                     $lastAmount->save();
                 }
 
-                Log::info("caUser ID Two 2222", ["info" => $user->id]);
+                // Log::info("caUser ID Two 2222", ["info" => $user->id]);
 
                 $payload = $this->generateHexPayload(1, [
                     [
@@ -416,7 +416,7 @@ class MqttController extends Controller
 
     private function accessRequestForRFIDCard($device, $data)
     {
-        Log::debug("TWICE SHEMOSVLA", ["info" => ["dont ru controller"]]);
+        // Log::debug("TWICE SHEMOSVLA", ["info" => ["dont ru controller"]]);
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
@@ -521,7 +521,7 @@ class MqttController extends Controller
                     ],
                 ]);
                 $user->save();
-                Log::info("calll twice ?v ", ["info" => "479"]);
+                // Log::info("calll twice ?v ", ["info" => "479"]);
 
                 // $this->saveOrUpdateEarnings(
                 //     $device->id,
@@ -573,7 +573,7 @@ class MqttController extends Controller
         }
         $user = User::where('id', $code->user_id)->first();
         if ($device->op_mode == 0) {
-            Log::debug("MQTT CONTROLLER shemsvla 2");
+            // Log::debug("MQTT CONTROLLER shemsvla 2");
 
             $payload = $this->generateHexPayload(1, [
                 [
@@ -980,9 +980,7 @@ class MqttController extends Controller
             'expires_at' => $expiresAt,
         ]);
 
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
+      
         echo $code;
         return $code;
     }
@@ -1035,7 +1033,7 @@ class MqttController extends Controller
 
     public function publishMessage($device_id, $payload)
     {
-        Log::debug("SEND OUT MESSAGE", ["info" => $payload]);
+     
         $data = [
             'device_id' => $device_id,
             'payload' => $payload,

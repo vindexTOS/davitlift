@@ -676,4 +676,24 @@ class CompanyController extends Controller
         $company->delete();
         return response()->json(null, 204);
     }
+
+    public function getCompanyEarnings(Request $request)
+    {
+        try {
+            // Find the user by their id
+            $user = User::findOrFail($request->id);
+    
+            // Get all device IDs associated with this user
+            $deviceIds = $user->devices()->pluck('id');
+    
+            // Query the DeviceEarn model for earnings associated with these device IDs
+            $earnings = DeviceEarn::whereIn('device_id', $deviceIds)
+                ->orderBy('created_at', 'desc')
+                ->paginate(10); // Adjust the pagination as needed
+    
+            return response()->json($earnings);
+        } catch (\Exception $e) {
+            return response()->json("server error", 500);
+        }
+    }
 }

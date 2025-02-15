@@ -258,7 +258,7 @@ export default {
 
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
-        console.log(cashbackAmount)
+        // console.log(cashbackAmount)
 
         // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
 
@@ -266,12 +266,12 @@ export default {
         isProcenteMore = needToPay - cashbackAmount
 
         if (isProcenteMore < totalDeviceTariff) {
-          console.log(needToPay)
+          // console.log(needToPay)
 
           this.mtlianiCash += needToPay - totalDeviceTariff
           this.companyFee += totalDeviceTariff
         } else {
-          console.log(needToPay)
+          // console.log(needToPay)
 
           this.mtlianiCash += needToPay - isProcenteMore
           this.companyFee += isProcenteMore
@@ -293,7 +293,7 @@ export default {
 
       let finalResultOfDisplayAmount =
         this.mtlianiCash - amountAlreadyPayedNumber
-      console.log(this.mtlianiCash, amountAlreadyPayedNumber)
+      // console.log(this.mtlianiCash, amountAlreadyPayedNumber)
       // console.log(amountAlreadyPayedNumber)
 
       this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
@@ -303,9 +303,9 @@ export default {
       ]
 
       this.seriesC = [Number(this.companyFee.toFixed(2)), 0]
-      console.log(this.seriesB, this.seriesC, this.seriesD)
+      // console.log(this.seriesB, this.seriesC, this.seriesD)
 
-      console.log(this.mtlianiCash)
+      // console.log(this.mtlianiCash)
     },
     loadItems() {
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
@@ -326,7 +326,7 @@ export default {
           this.fullAmount += x.earnings / 100
 
           const earningsIndex = new Date(x.fullTime).getMonth()
-          console.log(  x.fullTime  )
+          // console.log(  x.fullTime  )
         
           if (this.series[0].data[earningsIndex] === undefined) {
             this.series[0].data[earningsIndex] = 0
