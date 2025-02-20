@@ -21,7 +21,7 @@ class MqttConnectionService {
     // Constructor is private
     private function __construct() {
         
-        $this->server = 'lift.eideas.io';
+        $this->server = 'Testmqtt.eideas.io';
         $this->port = "1883";
         $this->clientId = rand(5, 15);
         $this->username = 'username';
