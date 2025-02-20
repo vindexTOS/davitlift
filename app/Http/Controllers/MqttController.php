@@ -47,29 +47,16 @@ class MqttController extends Controller
         // Process the general event data
         $msg = $request->all();
         $date = $msg['payload'];
-        $data = $msg["payload"];
+
         $topic = $msg['topic'];
 
         $parts = explode('/', $topic);
         $device_id = $parts[1];
         $device = Device::where('dev_id', $parts[1])->first();
- 
-        if (strlen($data["payload"]) == 8 && $data['command'] == 5) {
-            Log::debug("DATA PAYLOAD !!!!!!!!!!!!!!!", ["info" =>  $date["payload"]]);
-            $card =  Card::where('card_number', $data["payload"])->first();
-
-            if ($card) {
-
-                $user =  User::find($card->user_id);
-
-                if ($user) {
-
-                    $this->blockedCardLogger($data["payload"], $user['id'], $device['id']);
-                }
-            } else {
-                Log::warning("Card not found for payload", ["payload" => $data["payload"]]);
-            }
-        }
+        
+          
+     
+        $this->handleCardCounter($date, $device);
         if (!empty($device)) {
             if ($device->isBlocked) {
                 $payload = $this->generateHexPayload(6, [
@@ -163,6 +150,80 @@ class MqttController extends Controller
         return response()->json(['message' => 'General event processed'], 200);
     }
 
+
+    private function handleCardCounter($data,  $device)
+    {
+
+      
+        Log::info("info", ["payload"=>$data]);
+//  თუ კამანდა არის 6
+        if ( $data['command'] == 6) {
+            //  თუ ლენგთი არის 12 პეილოადის
+            if (strlen($data["payload"]) >= 12){
+           
+                $rfid = substr($data["payload"], 0, 8);
+          
+                $counterHex = substr($data["payload"], 8, 4);
+                $counter = unpack("V", $counterHex)[1];
+// ვეძებთ ბარათს დასპლიტული ფეილოადიდან
+                $card =  Card::where('card_number',   $rfid)->first();
+
+
+
+          
+                if ($card) {
+                    // ვააფდეითებთ ქაუნთერს
+                    $card->update(['counter' => $counter]);
+                    $user =  User::find($card->user_id);
+    
+                    if ($user) {
+                        // ვინახავთ ლოგებს
+                        $this->blockedCardLogger($data["payload"], $user['id'], $device['id'], $card['counter']);
+                    }
+// ვუბრუნებთ დევაის დააფდეითებულ ბარათს
+                    $this->sandCardInfoToRelatedDevices($device, $card);
+            }
+        
+            } else {
+                Log::warning("Card not found for payload", ["payload" => $data["payload"]]);
+            }
+        }
+    }
+
+private function sandCardInfoToRelatedDevices($device ,$card){
+    $managerId = $device['users_id'];
+
+ 
+    $devices = Device::where('users_id', $managerId)
+        ->get(['id', 'dev_id']);  
+    
+    $deviceIds = $devices->pluck('id')->toArray(); 
+    
+   
+    
+    foreach($devices as $dev){
+       
+            $payload = $this->generateHexPayload(6, [
+                [
+                    'type' => 'string',
+                    'value' => str_pad(substr($card['card_number'], 0, 8), 8, '0', STR_PAD_RIGHT),
+                ],
+                [
+                    'type' => 'number',  
+                    'value' => (int) $card["counter"],
+                ],
+                [
+                    'type' => 'number',
+                    'value' => 0,
+                ],
+            ]);
+            Log::info("info", ["sent out"=>   $dev->dev_id ]);
+            $this->publishMessage($dev->dev_id, $payload);
+         
+    }
+    
+
+}
     public function Logsaver($errorMessage, $line, $value)
     {
         ErrorLogs::create([
@@ -280,10 +341,10 @@ class MqttController extends Controller
             $this->publishMessage($device_id, $payload);
         } else {
             if ($device->op_mode == 0) {
-                Log::debug("MQTT CONTROLLER shemsvla");
+                // Log::debug("MQTT CONTROLLER shemsvla");
 
                 if (time()  > Carbon::parse($userDevice->subscription)->timestamp) {
-                    Log::info("shemosvla", ['handle' => $user]);
+                    // Log::info("shemosvla", ['handle' => $user]);
 
                     $this->handleOpMode($device->op_mode, $user, $device, $data);
                 }
@@ -291,7 +352,7 @@ class MqttController extends Controller
                 if (
                     time() < Carbon::parse($userDevice->subscription)->timestamp
                 ) {
-                    Log::debug("Npasuxi bijo");
+                    // Log::debug("Npasuxi bijo");
 
                     $payload = $this->generateHexPayload(2, [
                         [
@@ -333,7 +394,7 @@ class MqttController extends Controller
                     $lastAmount->save();
                 }
 
-                Log::info("caUser ID Two 2222", ["info" => $user->id]);
+                // Log::info("caUser ID Two 2222", ["info" => $user->id]);
 
                 $payload = $this->generateHexPayload(1, [
                     [
@@ -416,7 +477,7 @@ class MqttController extends Controller
 
     private function accessRequestForRFIDCard($device, $data)
     {
-        Log::debug("TWICE SHEMOSVLA", ["info" => ["dont ru controller"]]);
+        // Log::debug("TWICE SHEMOSVLA", ["info" => ["dont ru controller"]]);
         $deviceIds = Device::where('users_id', $device->users_id)
             ->pluck('id')
             ->toArray();
@@ -521,7 +582,7 @@ class MqttController extends Controller
                     ],
                 ]);
                 $user->save();
-                Log::info("calll twice ?v ", ["info" => "479"]);
+                // Log::info("calll twice ?v ", ["info" => "479"]);
 
                 // $this->saveOrUpdateEarnings(
                 //     $device->id,
@@ -573,7 +634,7 @@ class MqttController extends Controller
         }
         $user = User::where('id', $code->user_id)->first();
         if ($device->op_mode == 0) {
-            Log::debug("MQTT CONTROLLER shemsvla 2");
+            // Log::debug("MQTT CONTROLLER shemsvla 2");
 
             $payload = $this->generateHexPayload(1, [
                 [
@@ -980,9 +1041,7 @@ class MqttController extends Controller
             'expires_at' => $expiresAt,
         ]);
 
-        Log::info($code);
-        Log::info($code);
-        Log::info($code);
+      
         echo $code;
         return $code;
     }
@@ -1035,7 +1094,7 @@ class MqttController extends Controller
 
     public function publishMessage($device_id, $payload)
     {
-        Log::debug("SEND OUT MESSAGE", ["info" => $payload]);
+     
         $data = [
             'device_id' => $device_id,
             'payload' => $payload,
@@ -1066,13 +1125,14 @@ class MqttController extends Controller
     }
     //  blocked card logger
 
-    public function blockedCardLogger(string $rfid, string $userId, string $deviceId)
+    public function blockedCardLogger(string $rfid, string $userId, string $deviceId, string $metaData)
     {
         try {
             Blockedcardlogs::create([
                 'rfid' => $rfid,
                 "user_id" => $userId,
                 "device_id" => $deviceId,
+                "meta_data" => $metaData,
                 'created_at' => Carbon::now('Asia/Tbilisi')->addHours(4),
             ]);
         } catch (PDOException $e) {

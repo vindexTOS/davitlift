@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Blockedcardlogs extends Model
 {
     use HasFactory;
-    protected $fillable = ['rfid', 'user_id','device_id'];
+    protected $fillable = ['rfid', 'user_id','device_id', "meta_data"];
 }
