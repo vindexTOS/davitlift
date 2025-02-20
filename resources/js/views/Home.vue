@@ -12,7 +12,8 @@
               <v-btn style="width: 100%;" @click="showModal = true" small>
                 <v-icon size="small">mdi-pencil</v-icon>
                 {{ $t('Edit') }}
-              </v-btn>
+              </v-btn> 
+         
               <v-btn @click="showBalance = true" style="width: 100%;" small>
                 <v-icon size="small">mdi-cash</v-icon>
                 {{ $t('Add Balance') }}
@@ -616,7 +617,7 @@ export default {
           // Sort by descending order
           return dateB - dateA
         })
-        // console.log(this.transaction)
+        console.log(this.transaction)
       })
     },
     getCards() {
@@ -770,6 +771,7 @@ this.phonenumberData = res.data.data
         })
     },
     callToLift(dev_id, divice) {
+
       if (this.canGamodzaxeba) {
         this.canGamodzaxeba = false
         axios

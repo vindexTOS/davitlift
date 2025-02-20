@@ -100,7 +100,7 @@ export default {
     deleteItem() { },
     formatMyDate(date) {
       const d = new Date(date)
-      const month = (d.getMonth() + 1).toString().padStart(2, '0') // Months are zero-based
+      const month = (d.getMonth() + 1).toString().padStart(2, '0') 
       const day = d.getDate().toString().padStart(2, '0')
       const hours = d.getHours().toString().padStart(2, '0')
       const minutes = d.getMinutes().toString().padStart(2, '0')
@@ -109,37 +109,49 @@ export default {
     },
     getUntaxedAmount(amount) {
       const tax = amount * 0.02
-
-      return (amount - tax).toFixed(2)
+      let newF = (amount - tax).toFixed(2)
+ 
+      return newF
     },
-    getAmount(type, amount) {
 
-      if (amount.toString().length >= 4) {
 
-        return amount.toString().split(".").join("") / 100
+ 
+ 
+    getAmount(type, amount){
+  
+        if(type.includes("BO")){
+    
+          return amount / 100
+        }else if(type == 'LB-new'){
 
-      } else if (type.includes("BO")) {
-        return amount / 100
-      }
-
-      else if (type == 'TBC' || type == "LB") {
-        return amount
-      } else if (type == "TBC ონლაინ გადახდა") {
-        console.log("hay benson")
+          return amount / 100
+        }
+       else if(type == 'TBC' ||  type == "LB" ){
+        return amount 
+       }else if(type == "TBC ონლაინ გადახდა" ){
+   
         return this.getUntaxedAmount(amount)
-      } else {
+       }else{
+        console.log()
         return amount
-      }
+       }
     }
     ,
     getItemType(type) {
       let res = ''
       if (type == "LB") {
         res = "Liberty ჩასარიცხი აპარატი"
-      } else if (type == "TBC") {
-        res = 'TBC ჩასარიცხი აპარატი1'
+      } else if (type ==    'LB-new'){
+
+         res = "Liberty ჩარიცხვა"
+      }else if (type == "TBC") {
+        res = 'TBC ჩასარიცხი აპარატი'
       } else if (type == "BO-internet") {
         res = "საქართველოს ბანკის ონლაინ გადახდა"
+      }else if (type == "BO-mbank"){
+        res = 'საქართველოს მობაილ ბანკი'
+      }else if (type == "BO-ibank"){
+        res = 'საქართველოს ინტერნეტ ბანკი'
       }
       else {
         res = type

@@ -434,6 +434,7 @@
                 <v-btn color="blue darken-1" @click="showBalance = false">
                     {{ $t("Close") }}
                 </v-btn>
+                <!--  ბალანსის შევსება -->
                 <v-btn color="blue darken-1" @click="addBalance">{{
                     $t("Pay")
                     }}</v-btn>

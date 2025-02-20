@@ -19,7 +19,7 @@ app.listen(port, () => {
 })
 const generalTopic = 'Lift/+/events/general';
 const heartbeatTopic = 'Lift/+/events/heartbeat';
-
+// Testmqtt.eideas.io
 const client = mqtt.connect('mqtt://167.235.25.45', {
     port: 1883
 });
@@ -66,7 +66,8 @@ client.on('message', (topic, message) => {
             params:{
                 payload: msgJson,
                 topic: topic
-            }
+            } 
+            // old
         })
             .then(response => {})
             .catch(error => console.error('Error sending heartbeat event', error));
