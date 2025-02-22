@@ -620,33 +620,37 @@ class   UserController extends Controller
             $deviceId = $request['device_id'];
             foreach ($users as $user) {
                 $this->uploadMultipleUsersChecker($user);
-                if (!isset($user["email"])  ) {
+                if (!isset($user["email"])) {
 
 
-                  $u =  User::create([
+                    $u =  User::create([
                         'name' => $user['name'],
                         'id_number' => $user["id_number"],
                         "phone" => $user["phone_number"],
-                        "password" => Hash::make($user["phone_number"])
+                        "password" => Hash::make($user["phone_number"]),
+                        "role" => "user"
 
                     ]);
 
                     DeviceUser::create([
-                        "device_Id"=>$deviceId,
-                        "user_id"=> $u->id,
+                        "device_Id" => $deviceId,
+                        "user_id" => $u->id,
+                        "subscription" => "2024-12-28 00:00:00"
                     ]);
                 } else {
-                   $u = User::create([
+                    $u = User::create([
                         'name' => $user['name'],
                         'id_number' => $user["id_number"],
                         "email" => $user['email'],
                         "phone" => $user["phone_number"],
-                        "password" => Hash::make($user["phone_number"])
+                        "password" => Hash::make($user["phone_number"]),
+                        "role" => "user"
 
                     ]);
                     DeviceUser::create([
-                        "device_Id"=>$deviceId,
-                        "user_id"=> $u->id,
+                        "device_Id" => $deviceId,
+                        "user_id" => $u->id,
+                        "subscription" => "2024-12-28 00:00:00"
                     ]);
                 }
             }
