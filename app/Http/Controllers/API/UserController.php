@@ -635,7 +635,7 @@ class   UserController extends Controller
                     DeviceUser::create([
                         "device_Id" => $deviceId,
                         "user_id" => $u->id,
-                        "subscription" => "2024-12-28 00:00:00"
+                        "subscription" => "2020-12-28 00:00:00"
                     ]);
                 } else {
                     $u = User::create([
@@ -650,7 +650,7 @@ class   UserController extends Controller
                     DeviceUser::create([
                         "device_Id" => $deviceId,
                         "user_id" => $u->id,
-                        "subscription" => "2024-12-28 00:00:00"
+                        "subscription" => "2020-12-28 00:00:00"
                     ]);
                 }
             }
