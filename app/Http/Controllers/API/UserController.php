@@ -569,18 +569,36 @@ class   UserController extends Controller
 
     public function addPhoneNumber(Request $request)
     {
-        $userId = $request["user_id"];
-        $number = $request['number'];
-
-
+        $userId = $request->input("user_id");
+        $number = $request->input("number");
+    
         try {
+      
+            $numberAlreadyExists = Phonenumbers::where('number', $number)->first();
+    
+            if ($numberAlreadyExists) {
+               
+                throw new PhoneNumberException("Phone number already exists.");
+            }
+  
+
+            $userMainNumber = User::where("phone", $number)->first();
+
+            if($userMainNumber){
+                throw new PhoneNumberException("Phone number already exists.");
+            }
             Phonenumbers::create([
                 "user_id" => $userId,
-                "number" => $number,
+                "number"  => $number,
             ]);
+    
             return response()->json(["msg" => "Number has been added"], 201);
+        } catch (PhoneNumberException $e) {
+            return $e->render($request);
         } catch (\Throwable $e) {
-            return response()->json(["msg" => $e]);
+            return response()->json([
+                "msg" => $e->getMessage()
+            ], 500);
         }
     }
 
