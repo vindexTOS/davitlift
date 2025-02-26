@@ -42,6 +42,12 @@
                             <div class="text-grey">{{ user.phone }}</div>
                         </v-list-item-title>
                     </div>
+                    <div v-if="user.id_number" class="d-sm-flex justify-space-between align-center">
+            <v-list-item-title>
+              {{ $t('Personal ID number') }}:
+              <div class="text-grey">{{ user.id_number }}</div>
+            </v-list-item-title>
+          </div>
                     <div class="d-sm-flex justify-space-between align-center">
                         <v-list-item-title>
                             {{ $t("Balance") }}:

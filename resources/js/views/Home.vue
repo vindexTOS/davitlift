@@ -39,6 +39,12 @@
               <div class="text-grey">{{ user.phone }}</div>
             </v-list-item-title>
           </div>
+          <div v-if="user.id_number" class="d-sm-flex justify-space-between align-center">
+            <v-list-item-title>
+              {{ $t('Personal ID number') }}:
+              <div class="text-grey">{{ user.id_number }}</div>
+            </v-list-item-title>
+          </div>
           <div class="d-sm-flex justify-space-between align-center">
             <v-list-item-title>
               {{ $t('Balance') }}:
@@ -185,6 +191,7 @@
           <b>{{ $t('Phone') }}:</b>
           {{ Manager.phone }}
         </div>
+        
         <div>
           <b>{{ $t('Email') }}:</b>
           {{ Manager.email }}
@@ -250,6 +257,8 @@
         <v-text-field v-model="userUpdate.name" :label="$t('Name')" required></v-text-field>
         <v-text-field v-model="userUpdate.email" :label="$t('Email')" required></v-text-field>
         <v-text-field v-model="userUpdate.phone" :rules="phoneRules" :label="$t('Phone')" required></v-text-field>
+        <v-text-field v-if="user.id_number" v-model="userUpdate.id_number"   :label="$t('Personal ID number')" ></v-text-field>
+       
       </v-card-text>
 
       <v-card-actions>
@@ -460,6 +469,7 @@ export default {
         name: this.$store.state.auth.user.name,
         phone: this.$store.state.auth.user.phone,
         email: this.$store.state.auth.user.email,
+        id_number:this.$store.state.auth.user.id_number
       },
       company: {},
       Manager: {},

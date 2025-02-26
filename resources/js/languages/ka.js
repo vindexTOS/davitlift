@@ -178,6 +178,7 @@ export const ka = {
     "New Password": 'ახალი პაროლი',
     'Confirm New Password' : 'დაადასტურეთ ახალი პაროლი',
     'Add lift': 'ლიფტის დამატება',
-    'Received signal strength' : 'მიღებული სიგნალის სიძლიერე'
+    'Received signal strength' : 'მიღებული სიგნალის სიძლიერე',
+    "Personal ID number":"პირადი ნომერი"
 }
 
