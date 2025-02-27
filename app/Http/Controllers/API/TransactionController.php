@@ -681,6 +681,7 @@ class TransactionController extends Controller
             'email' => 'email|max:255',
             'balance' => 'integer',
             'phone' => 'string|min:5|max:15',
+            'id_number'=> "string",
             'role' => 'string',
             'fixed_card_amount' => 'integer',
             "fixed_phone_amount"=> "integer",

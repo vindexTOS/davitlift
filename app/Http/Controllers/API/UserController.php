@@ -23,6 +23,8 @@ use App\Models\Phonenumbers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -571,30 +573,32 @@ class   UserController extends Controller
     {
         $userId = $request->input("user_id");
         $number = $request->input("number");
-    
+
         try {
-      
+
             $numberAlreadyExists = Phonenumbers::where('number', $number)->first();
-    
+
             if ($numberAlreadyExists) {
-               
-                throw new PhoneNumberException("Phone number already exists.");
+
+                throw new ConflictHttpException("Phone number already exists.");
             }
-  
+
 
             $userMainNumber = User::where("phone", $number)->first();
 
-            if($userMainNumber){
-                throw new PhoneNumberException("Phone number already exists.");
+            if ($userMainNumber) {
+                throw new ConflictHttpException("Phone number already exists.");
             }
             Phonenumbers::create([
                 "user_id" => $userId,
                 "number"  => $number,
             ]);
-    
+
             return response()->json(["msg" => "Number has been added"], 201);
-        } catch (PhoneNumberException $e) {
-            return $e->render($request);
+        } catch (ConflictHttpException $e) {
+            return response()->json([
+                "msg" => $e->getMessage()
+            ], 400);
         } catch (\Throwable $e) {
             return response()->json([
                 "msg" => $e->getMessage()
@@ -696,6 +700,35 @@ class   UserController extends Controller
             throw new \Exception('ტელეფონის ნომერი უნდა იყოს ცხრა ციფრიანი: ' . $phoneNumber);
         }
     }
+ 
+    public function updateUserInfo(Request $request)
+    {
+        $userId = auth()->id();
+    
+        if (!$userId) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+    
+        $validatedData = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $userId,
+            'phone' => 'sometimes|string|max:20',
+            'id_number' => 'sometimes|string|max:50',
+        ]);
+    
+        User::where('id', $userId)->update($validatedData);
+        $updatedUser = User::find($userId);
+    
+        // If using JWT, generate a new token
+        $newToken = auth()->login($updatedUser); 
+    
+        return response()->json([
+            'message' => 'User info updated successfully',
+            'user' => $updatedUser,
+            'token' => $newToken // Send new token
+        ]);
+    }
+    
 }
 
     // public function setPhoneNumberTarrif(Request $request){

@@ -71,8 +71,13 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         DeviceController::class,
         'updateManyDeviceTariff',
     ]);
+
+
+
+
 });
 //  company middleware
+Route::put("update-user-info", [UserController::class, "updateUserInfo"]);
 
 Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     Route::put('/updateUser', [UserController::class, 'update']);
