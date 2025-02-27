@@ -20,7 +20,7 @@ app.listen(port, () => {
 const generalTopic = 'Lift/+/events/general';
 const heartbeatTopic = 'Lift/+/events/heartbeat';
 // lift.eideas.io
-const client = mqtt.connect('mqtt://116.202.4.252', {
+const client = mqtt.connect('mqtt://lift.eideas.io', {
     port: 1883
 });
 app.get('/mqtt/general/force',(req,res) => {
