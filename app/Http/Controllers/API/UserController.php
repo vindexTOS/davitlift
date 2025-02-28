@@ -713,14 +713,15 @@ class   UserController extends Controller
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $userId,
             'phone' => 'sometimes|string|max:20',
-            'id_number' => 'sometimes|string|max:50',
+            'id_number' => 'nullable|string|max:50',  // Make id_number nullable
         ]);
     
+        // Ensure that any missing values are set to null (Laravel will handle this automatically)
         User::where('id', $userId)->update($validatedData);
         $updatedUser = User::find($userId);
     
         // If using JWT, generate a new token
-        $newToken = auth()->login($updatedUser); 
+        $newToken = auth()->login($updatedUser);
     
         return response()->json([
             'message' => 'User info updated successfully',
