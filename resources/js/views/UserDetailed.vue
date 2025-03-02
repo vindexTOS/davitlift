@@ -275,7 +275,7 @@
                 <v-text-field v-model="user.name" :label="$t('Name')" required></v-text-field>
                 <v-text-field v-model="user.email" :label="$t('Email')" required></v-text-field>
                 <v-text-field v-model="user.phone" :rules="phoneRules" :label="$t('Phone')" required></v-text-field>
-                <v-text-field v-model="user.id_number"   :label="$t('Personal ID number')" required></v-text-field>
+                <v-text-field  v-if='user.id_number' v-model="user.id_number" type="text"   :label="$t('Personal ID number')" required></v-text-field>
                 <v-text-field v-if="isAdmin" v-model="user.balance" :label="$t('Balance')" required></v-text-field>
                 <v-select v-model="user.role" :items="roles" label="როლი" required></v-select>
                 <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_card_amount"
@@ -790,6 +790,9 @@ async getPhoneNumbers(){
             this.cardEdit.id = item.id;
         },
         updatePhone() {
+            if(!this.user.id_number){
+                this.user.id_number = 'No Id'
+            }
             axios.put(`/api/transaction/update-balance`, this.user).then(() => {
                 this.user = { ...this.user };
                 this.$swal.fire({
