@@ -1,10 +1,10 @@
 <?php
-use App\Models\Device;
+ 
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BankOfGeorgia;
-use Illuminate\Support\Facades\Request;
+ 
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\MqttController;
 use App\Http\Controllers\TestController;
@@ -13,16 +13,12 @@ use App\Http\Controllers\API\CardController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DeviceController;
 use App\Http\Controllers\API\CompanyController;
-use App\Http\Middleware\ComapnyAccsessMiddleware;
-  use App\Http\Middleware\SuperAdminMiddleware;
+ 
 use App\Http\Controllers\UpdatingDeviceController;
 use App\Http\Controllers\API\TransactionController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\UnregisteredDeviceController;
-use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
-use App\Models\Company;
-use App\Models\Tbctransaction;
-use App\Models\User;
+ 
 
 //  ADMIN ONLY
 

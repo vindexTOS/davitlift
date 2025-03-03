@@ -20,7 +20,7 @@ trait UpdateDeviceEarnings
    public function UpdateDevicEarn($device,  $combinedTarffToBepayed)
    {
       // შესაძლოა დასჭირდეს დამატება კარტების გადახდისაც   $fixedCard = $userFixedBalnce * $userCardAmount ;
-      Log::info("shemosvla 1", ['info' => $combinedTarffToBepayed]);
+
       $currentMonth = Carbon::now(4)->month;
       $currentYear = Carbon::now(4)->year;
       //  კომპანის ქეშბექის შემოწმება
@@ -38,10 +38,11 @@ trait UpdateDeviceEarnings
 
 
 
-
+      $managerId = $device['users_id'];
+      $companyId = $device["company_id"];
       if (empty($deviceEarn)) {
 
-         Log::info("shemosvla 2", ['info' => $combinedTarffToBepayed]);
+
 
 
 
@@ -58,6 +59,8 @@ trait UpdateDeviceEarnings
                   'earnings' => $combinedTarffToBepayed,
                   'cashback' =>     $companyUser->cashback,
                   'deviceTariff' => $device->deviceTariffAmount,
+                  "manager_id" =>  $managerId,
+                  "company_id" => $companyId
                ]);
             } else {
                DeviceEarn::create([
@@ -67,6 +70,8 @@ trait UpdateDeviceEarnings
                   'earnings' => $combinedTarffToBepayed,
                   'cashback' =>     $companyUser->cashback,
                   'deviceTariff' => 0,
+                  "manager_id" =>  $managerId,
+                  "company_id" => $companyId
                ]);
             }
          } else {
@@ -77,6 +82,8 @@ trait UpdateDeviceEarnings
                'month' => $currentMonth,
                'year' => $currentYear,
                'earnings' => $combinedTarffToBepayed,
+               "manager_id" =>  $managerId,
+               "company_id" => $companyId
             ]);
          }
       } else {

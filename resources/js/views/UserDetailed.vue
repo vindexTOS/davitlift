@@ -790,9 +790,7 @@ async getPhoneNumbers(){
             this.cardEdit.id = item.id;
         },
         updatePhone() {
-            if(!this.user.id_number){
-                this.user.id_number = 'No Id'
-            }
+         
             axios.put(`/api/transaction/update-balance`, this.user).then(() => {
                 this.user = { ...this.user };
                 this.$swal.fire({

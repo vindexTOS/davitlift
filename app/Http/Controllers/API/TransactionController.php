@@ -557,61 +557,6 @@ class TransactionController extends Controller
                     $this->handleOpMode($device->op_mode, $user, $device);
                 }
 
-
-
-
-
-
-                // if ($device->op_mode === '0') {
-                //     Log::debug('op_mode = 0');
-
-                //     $subscriptionDate = $device->pivot->subscription
-                //         ? Carbon::parse($device->pivot->subscription)
-                //         : null;
-                //     $currentDay = Carbon::now()->day;
-                //     if ($currentDay < $device->pay_day) {
-                //         $nextMonthPayDay = Carbon::now()
-
-                //             ->startOfMonth()
-                //             ->addDays($device->pay_day - 1);
-                //         Log::debug('შემდეგი თარიღი>>> 1' . $nextMonthPayDay);
-                //     } else {
-                //         $nextMonthPayDay = Carbon::now()
-                //             ->addMonth()
-                //             ->startOfMonth()
-                //             ->addDays($device->pay_day - 1);
-
-                //         Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
-                //     }
-                //     if (
-                //         is_null($subscriptionDate) ||
-                //         ($subscriptionDate &&
-                //             $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount  > 0)
-                //     ) {
-                //         Log::debug('is_null');
-
-                //         $cardAmount =
-                //             $userCardAmount * $user->fixed_card_amount;
-                //         if (
-                //             $user->balance - $user->freezed_balance >=
-                //             $device->tariff_amount + $cardAmount
-                //         ) {
-                //             DeviceUser::where('device_id', $device->id)
-                //                 ->where('user_id', $user->id)
-                //                 ->update(['subscription' => $nextMonthPayDay]);
-
-                //             $user->freezed_balance = $device->tariff_amount;
-                //         } elseif (
-                //             $user->balance >=
-                //             $device->tariff_amount + $cardAmount
-                //         ) {
-                //             DeviceUser::where('device_id', $device->id)
-                //                 ->where('user_id', $user->id)
-                //                 ->update(['subscription' => $nextMonthPayDay]);
-                //             $user->freezed_balance = $device->tariff_amount;
-                //         }
-                //     }
-                // }
                 $devices_ids = Device::where(
                     'users_id',
                     $device->users_id
@@ -634,7 +579,7 @@ class TransactionController extends Controller
                             ]);
                         } else {
                             $lastAmount->last_amount =
-                                $user->balance - $device->tariff_amount;
+                            $user->balance - $device->tariff_amount;
                             $lastAmount->save();
                         }
                         $payload = $this->generateHexPayload(5, [
@@ -681,7 +626,7 @@ class TransactionController extends Controller
             'email' => 'email|max:255',
             'balance' => 'integer',
             'phone' => 'string|min:5|max:15',
-            'id_number'=> "string",
+            'id_number'=> "nullable|string",
             'role' => 'string',
             'fixed_card_amount' => 'integer',
             "fixed_phone_amount"=> "integer",
