@@ -40,6 +40,8 @@ trait UpdateDeviceEarnings
 
       $managerId = $device['users_id'];
       $companyId = $device["company_id"];
+
+      Log::info("ids", ['manager' => [$managerId, $companyId]]);
       if (empty($deviceEarn)) {
 
 
