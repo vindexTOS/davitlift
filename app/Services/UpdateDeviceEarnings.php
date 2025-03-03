@@ -20,7 +20,7 @@ trait UpdateDeviceEarnings
    public function UpdateDevicEarn($device,  $combinedTarffToBepayed)
    {
       // შესაძლოა დასჭირდეს დამატება კარტების გადახდისაც   $fixedCard = $userFixedBalnce * $userCardAmount ;
-
+         Log::info("SHEMOVIDAA device earingishi .................");
       $currentMonth = Carbon::now(4)->month;
       $currentYear = Carbon::now(4)->year;
       //  კომპანის ქეშბექის შემოწმება

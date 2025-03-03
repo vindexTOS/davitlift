@@ -623,7 +623,7 @@ class TransactionController extends Controller
         $validated = $request->validate([
             'id' => 'required|exists:users,id',
             'name' => 'string|max:255',
-            'email' => 'email|max:255',
+            'email' => 'nullable|email|max:255',
             'balance' => 'integer',
             'phone' => 'string|min:5|max:15',
             'id_number'=> "nullable|string",
