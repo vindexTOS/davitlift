@@ -145,7 +145,7 @@ export default {
 
 
         this.notificationCount = data.data.filter((val) => val.isRead == 0).length;
-        console.log(data.data)
+        // console.log(data.data)
         this.notificationData = data.data;
 
         this.totalPages = data.last_page;

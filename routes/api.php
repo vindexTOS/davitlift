@@ -253,6 +253,8 @@ Route::middleware(['auth:api'])->group(function () {
     
     Route::apiResource('devices', DeviceController::class);
     Route::put('/deviceEarn/edit', [DeviceController::class, 'EditDevicEarn']);
+
+
     Route::get('/get/devices/user', [DeviceController::class, 'userDevice']);
     Route::get('/get/devices/user/{id}', [
         DeviceController::class,
@@ -342,7 +344,7 @@ Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 Route::get('/blocked-card-logs', [MqttController::class, "getBlockedCardInfo"]);
  
 
-
+Route::get("/device-earnings/{id}/{year}", [DeviceController::class, "getDeviceEarn"]);
 
 
 

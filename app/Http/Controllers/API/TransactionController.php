@@ -363,6 +363,8 @@ class TransactionController extends Controller
     public function updateTransactionOrderFastPay($data, $order_id, $amount)
     {
         try {
+            Log::info("2");
+
             $transaction = Tbctransaction::where(
                 'order_id',
                 $order_id
@@ -435,7 +437,7 @@ class TransactionController extends Controller
                 $string,
                 'TBC'
             );
-
+            Log::info("1");
             $this->updateTransactionOrderFastPay($data, $order_id, $amount);
                  // this is coming from TransactionProvider that uses NotifcationProvider trait
 
@@ -537,6 +539,7 @@ class TransactionController extends Controller
     public function updateUserData($data, $transaction, $order_id, $isFastPay)
     {
         try {
+            Log::info("3 updateUserData");
             //  es sachiroa ecomrcialistvis 
             $user = User::where('id', $transaction->user_id)
                 ->with('devices')
@@ -554,6 +557,7 @@ class TransactionController extends Controller
             $user->save();
             foreach ($user->devices as $key => $device) {
                 if ($device->op_mode == '0') {
+                    Log::info("4  device->op_mode ==");
                     $this->handleOpMode($device->op_mode, $user, $device);
                 }
 

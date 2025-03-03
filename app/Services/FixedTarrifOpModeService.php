@@ -64,16 +64,17 @@ trait FixedTarrifOpModeService
     // დატა პეილოადი მოდის დევაისიდან, ამ ფუნქციას ყოველთვის არ ჭირდება ეს პარამეტრი ამიტომაც დეფაულტად არის ნული
     public function handleOpModeZeroTransaction($user,  $device, $dataPayload =  null)
     {
+
         // მეორეჯერ ჩარიცხვის შემთხვევაში არ უნდა გაუქტიურდეს თავიდან, თუ უკვე აქტიური აქვს 
 
         Log::info("shemosvla", ['handle functiashi' => $user]);
 
         $combinedTarffToBepayed =  $this->GetCardTotalAmount($user, $device->tariff_amount);
-
+  
 
         if ($user->balance >=  $combinedTarffToBepayed &&  $combinedTarffToBepayed > 0) {
 
-
+            Log::info(message: "პირველი იფი");
 
             // ავიღოთ უსერის საბსქრიბშიენი
             $deviceUser = DeviceUser::where('user_id', $user->id)
@@ -93,7 +94,7 @@ trait FixedTarrifOpModeService
 
             //  ვამოწმებთ თუ უსერს უკვე აქვს გააქტიურებული თუ არა 12
             if (Carbon::parse($deviceUser->subscription)->lte($today)) {
-
+                
                 //  ვაჭრით თანხას უსერს 
                 $user->balance =  $user->balance -  $combinedTarffToBepayed;
                 //  es im shemtxvevashi tu devices gawerili aqvs rom yovel tve erti da imave dros iyos gadaxda

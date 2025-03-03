@@ -32,9 +32,18 @@
 
   <v-card class="pa-2">
     <v-row class="justify-space-between">
+      <!-- year and months chart -->
       <v-col v-if="fullAmount" style="min-height: 100%;" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
+          <v-select
+          :key="chartKey" 
+  v-model="selectedYear"
+  :items="yearOptions"
+  label="Select an option"
+  dense
+  style="max-width: 200px;"
+></v-select>
           <apexchart
             width="400"
             type="bar"
@@ -161,6 +170,9 @@ export default {
       sortedEarnings: [],
       mtlianiCash: 0,
       cashbackData: {},
+      selectedYear: new Date().getFullYear(), 
+      yearOptions: this.generateYears(2022, new Date().getFullYear()).reverse()  ,
+      chartKey: 0
     }
   },
   created() {
@@ -206,49 +218,17 @@ export default {
       }
     },
   },
+watch:{
+selectedYear(newYear){
+  this.getEarnings(this.$route.params.id, newYear);
+}
+   
+},
+
   methods: {
-    // getCashBackData(data, deviceEarning) {
-    //   // this.totalDevices = data.managers.map.deviceTariffAmounts.length
-
-    //   let deviceTariffCombined = data.managers
-    //     .map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
-    //     .reduce((a, b) => a + b)
-    //   this.totalDeviceTariff = deviceTariffCombined
-
-    //   let cashback = data.company.cashback
-    //   // let needToPay = Object.values(data.earnings)[0].earnings / 100
-    //   let needToPay = deviceEarning
-
-    //   let cashbackAmount = (needToPay * cashback) / 100
-    //   if (cashbackAmount > needToPay - deviceTariffCombined) {
-    //     // this.companyFee = deviceTariffCombined
-    //     let result = needToPay - deviceTariffCombined
-
-    //     return result
-    //   } else {
-    //     let result = cashbackAmount
-
-    //     // this.companyFee = needToPay - cashbackAmount
-    //     return result
-    //   }
-    // },
-    // getCompanyFee(data) {
-    //   // console.log(data)
-
-    //   let deviceTariffCombined = data.managers
-    //     ?.map((val) => val.deviceTariffAmounts.reduce((a, b) => a + b))
-    //     .reduce((a, b) => a + b)
-    //   let cashback = data.company.cashback
-    //   let needToPay = Object.values(data.earnings)[0].earnings / 100
-
-    //   let cashbackAmount = (needToPay * cashback) / 100
-    //   // console.log(cashbackAmount)
-    //   if (cashbackAmount > needToPay - deviceTariffCombined) {
-    //     this.companyFee = deviceTariffCombined
-    //   } else {
-    //     this.companyFee = needToPay - cashbackAmount
-    //   }
-    // },
+    generateYears(startYear, endYear) {
+    return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
+  },
     calculateProecnt(data) {
       this.companyFee = 0
       this.mtlianiCash = 0
@@ -258,7 +238,7 @@ export default {
 
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
-        console.log(cashbackAmount)
+ 
 
         // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
 
@@ -266,12 +246,12 @@ export default {
         isProcenteMore = needToPay - cashbackAmount
 
         if (isProcenteMore < totalDeviceTariff) {
-          console.log(needToPay)
+         
 
           this.mtlianiCash += needToPay - totalDeviceTariff
           this.companyFee += totalDeviceTariff
         } else {
-          console.log(needToPay)
+        
 
           this.mtlianiCash += needToPay - isProcenteMore
           this.companyFee += isProcenteMore
@@ -293,7 +273,7 @@ export default {
 
       let finalResultOfDisplayAmount =
         this.mtlianiCash - amountAlreadyPayedNumber
-      console.log(this.mtlianiCash, amountAlreadyPayedNumber)
+      // console.log(this.mtlianiCash, amountAlreadyPayedNumber)
       // console.log(amountAlreadyPayedNumber)
 
       this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
@@ -303,42 +283,54 @@ export default {
       ]
 
       this.seriesC = [Number(this.companyFee.toFixed(2)), 0]
-      console.log(this.seriesB, this.seriesC, this.seriesD)
-
-      console.log(this.mtlianiCash)
+ 
     },
     loadItems() {
+  
+      this.getEarnings(this.$route.params.id, new Date().getFullYear())
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
-        this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        this.data = data
-        console.log(data)
+       
+ 
         this.getCashback()
-
-        let lastEarning
-
-        const sortedEarnings = [...Object.values(this.data.earnings)].sort(
-          (a, b) => new Date(a.fullTime) - new Date(b.fullTime),
-        )
-
-        this.sortedEarnings = sortedEarnings
-        this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        sortedEarnings.forEach((x) => {
-          this.fullAmount += x.earnings / 100
-
-          const earningsIndex = new Date(x.fullTime).getMonth()
-          console.log(  x.fullTime  )
-        
-          if (this.series[0].data[earningsIndex] === undefined) {
-            this.series[0].data[earningsIndex] = 0
-          }
-          this.series[0].data[earningsIndex] += x.earnings / 100
-        })
-
+  
      
         this.totalDeviceAmount = data.device.length
         this.calculateProecnt(data)
       })
     },
+
+    getEarnings(id, year) {  
+  axios.get(`/api/device-earnings/${id}/${year}`)
+    .then(({ data }) => {
+      const sortedEarnings = [...Object.values(data)].sort(
+        (a, b) => new Date(a.fullTime) - new Date(b.fullTime)
+      );
+
+ 
+      this.sortedEarnings = sortedEarnings;
+ 
+       let newSeriesData = Array(12).fill(0); 
+
+      sortedEarnings.forEach((x) => {
+        this.fullAmount += x.earnings / 100;
+        const earningsIndex = new Date(x.created_at).getMonth(); 
+
+        newSeriesData[earningsIndex] += x.earnings / 100;
+      });
+
+       this.series = [{ name: 'Earnings', data: newSeriesData }];
+
+    
+      this.chartKey += 1; 
+      
+ 
+    })
+    .catch((err) => {  
+      console.log(err);
+    });
+}
+
+    ,
     generateData(baseval, count, yrange) {
       var i = 0
       var series = []

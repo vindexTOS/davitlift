@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Models\User;
 use App\Models\Device;
 use App\Models\Company;
- 
+
 use App\Models\DeviceEarn;
 use App\Models\DeviceUser;
 use App\Models\DeviceError;
@@ -22,20 +22,21 @@ use App\Exceptions\MqttNodeException;
 use App\Services\MqttConnectionService;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\CreateDeviceRequest;
+use App\Models\earnings;
 
 use function PHPUnit\Framework\isEmpty;
 
 class DeviceController extends Controller
 {
 
-    
+
     public function index()
     {
         $userId = Auth::user()->id;
-     
+
         // Fetch all companies where the current user is the admin
         $companyUser = Company::where("admin_id", $userId)->first();
-     
+
         // Check if the user is super admin
         if (Auth::user()->email == config('app.super_admin_email')) {
             // If user is super admin, fetch all devices with related data
@@ -45,25 +46,26 @@ class DeviceController extends Controller
                 ->with('errors')
                 ->get();
         }
-    
+
         // Check if the user is assigned to any company
         if (!empty($companyUser)) {
             $companyId = $companyUser->id;
-            Log::info("userid",["user_id"=> $companyId]);
+            Log::info("userid", ["user_id" => $companyId]);
             // Fetch all devices belonging to the company or the current user
             return Device::with('user')
                 ->withTrashed()
                 ->with('earnings')
                 ->with('errors')
                 ->where('company_id', $companyId)
-                
+
                 ->get();
         }
-    
+
         // Default empty result if no company is found
         return response()->json(['message' => 'No devices found'], 404);
     }
-    public function userDeviceUser($id) {
+    public function userDeviceUser($id)
+    {
         $deviceIds = DeviceUser::where('user_id', $id)->pluck('device_id')->toArray();
 
         // Get the admin IDs associated with those devices
@@ -80,13 +82,13 @@ class DeviceController extends Controller
         $currentTimestamp = time();
 
         foreach ($data['device'] as $key => $device) {
-            if(count($device['earnings']) !== 0) {
+            if (count($device['earnings']) !== 0) {
                 $earnings = [...$earnings, ...$device['earnings']];
                 unset($device['earnings']);
             }
             $manager = $device['user'];
             unset($device['user']);
-            if(strtotime($device['lastBeat']) > $currentTimestamp) {
+            if (strtotime($device['lastBeat']) > $currentTimestamp) {
                 $devicesActivity['active'] += 1;
             } else {
                 $devicesActivity['inactive'] += 1;
@@ -95,11 +97,11 @@ class DeviceController extends Controller
         $data['deviceActivity'] = $devicesActivity;
         $data['earnings'] = $this->getEarnings($earnings);
         $data['manager'] = $manager;
-         
-        if(empty($manager)){
+
+        if (empty($manager)) {
             $data['payedCashback'] = 0;
         } else {
-            $data['payedCashback'] = CompanyTransaction::where('manager_id',$manager->id)->sum('amount');
+            $data['payedCashback'] = CompanyTransaction::where('manager_id', $manager->id)->sum('amount');
         }
         return $data;
     }
@@ -121,13 +123,13 @@ class DeviceController extends Controller
         $currentTimestamp = time();
 
         foreach ($data['device'] as $key => $device) {
-            if(count($device['earnings']) !== 0) {
+            if (count($device['earnings']) !== 0) {
                 $earnings = [...$earnings, ...$device['earnings']];
                 unset($device['earnings']);
             }
             $manager = $device['user'];
             unset($device['user']);
-            if(strtotime($device['lastBeat']) > $currentTimestamp) {
+            if (strtotime($device['lastBeat']) > $currentTimestamp) {
                 $devicesActivity['active'] += 1;
             } else {
                 $devicesActivity['inactive'] += 1;
@@ -136,14 +138,15 @@ class DeviceController extends Controller
         $data['deviceActivity'] = $devicesActivity;
         $data['earnings'] = $this->getEarnings($earnings);
         $data['manager'] = $manager;
-        if(empty($manager)){
+        if (empty($manager)) {
             $data['payedCashback'] = 0;
         } else {
-            $data['payedCashback'] = CompanyTransaction::where('manager_id',$manager->id)->where('type',3)->sum('amount');
+            $data['payedCashback'] = CompanyTransaction::where('manager_id', $manager->id)->where('type', 3)->sum('amount');
         }
         return $data;
     }
-    public function getEarnings($allEarnings) {
+    public function getEarnings($allEarnings)
+    {
         $groupedEarnings = [];
         foreach ($allEarnings as $earning) {
             $month = $earning->month;
@@ -166,30 +169,35 @@ class DeviceController extends Controller
     public function store(CreateDeviceRequest $request)
     {
         $data = $request->all();
-        if($request->pay_day < 1 || $request->pay_day > 28 ){
+        if ($request->pay_day < 1 || $request->pay_day > 28) {
             return response()->json(['message' => 'არასწორი გადახდის თარიღია მითითებული'], 422);
         }
-        $UnregisteredDevice = UnregisteredDevice::where('dev_id',$data['dev_id'])->first();
-        if(empty($UnregisteredDevice)) return response()->json(['message' => 'ასეთი დივაისის აიდი არაა უცხო დივაისთა სიაში'],422);
+        $UnregisteredDevice = UnregisteredDevice::where('dev_id', $data['dev_id'])->first();
+        if (empty($UnregisteredDevice)) return response()->json(['message' => 'ასეთი დივაისის აიდი არაა უცხო დივაისთა სიაში'], 422);
 
         $user = User::where('email', $data['admin_email'])->first();
-        if(empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],422);
+        if (empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'], 422);
         $user->update(['role' =>  "manager"]);
 
-        $device = Device::create(['users_id' => $user->id,...$data,
-            'soft_version' => $UnregisteredDevice->soft_version,'hardware_version' => $UnregisteredDevice->hardware_version,]);
-        if(!empty($device)) {
+        $device = Device::create([
+            'users_id' => $user->id,
+            ...$data,
+            'soft_version' => $UnregisteredDevice->soft_version,
+            'hardware_version' => $UnregisteredDevice->hardware_version,
+        ]);
+        if (!empty($device)) {
             $mqttService = app(MqttConnectionService::class);
             $mqtt = $mqttService->connect();
-            $this->publishMessage( $device->dev_id, $this->sendDeviceParameters($device));
+            $this->publishMessage($device->dev_id, $this->sendDeviceParameters($device));
             $UnregisteredDevice->delete();
         } else {
             return response()->json('something go wrong', 422);
         }
         return response()->json($device, 201);
     }
-    public function sendExtendConf($device) {
-        return $this->generateHexPayload(241,[
+    public function sendExtendConf($device)
+    {
+        return $this->generateHexPayload(241, [
             //startup
             [
                 'type' => 'number',
@@ -207,7 +215,8 @@ class DeviceController extends Controller
         ]);
     }
 
-    public function sendDeviceParameters($device) {
+    public function sendDeviceParameters($device)
+    {
         return $this->generateHexPayload(240, [
             //startup
             [
@@ -308,92 +317,92 @@ class DeviceController extends Controller
 
     public function show($device)
     {
- 
-  $device = Device::where('id', $device)
-  ->with('user')
-  ->with('users')
-  ->with('earnings')
-  ->with('errors')
-  ->with('withdrawals')
-  ->with('company')
-  ->with('lastUpdate')
-  ->first();
 
- 
-if ($device) {
-   $subscriptions =DeviceUser::where('device_id', $device->id)
-      ->pluck('subscription', 'user_id');
+        $device = Device::where('id', $device)
+            ->with('user')
+            ->with('users')
+            ->with('earnings')
+            ->with('errors')
+            ->with('withdrawals')
+            ->with('company')
+            ->with('lastUpdate')
+            ->first();
 
- 
-  foreach ($device->users as $user) {
-      $user->subscription = $subscriptions[$user->id] ?? null;
-  }
-}
 
-return  $device;  
+        if ($device) {
+            $subscriptions = DeviceUser::where('device_id', $device->id)
+                ->pluck('subscription', 'user_id');
 
-}
 
-    public function update( $request,  $device)
+            foreach ($device->users as $user) {
+                $user->subscription = $subscriptions[$user->id] ?? null;
+            }
+        }
+
+        return  $device;
+    }
+
+    public function update($request,  $device)
     {
         $data = $request->all();
-        if($request->pay_day < 1 || $request->pay_day > 28 ){
+        if ($request->pay_day < 1 || $request->pay_day > 28) {
             return response()->json(['message' => 'არასწორი გადახდის თარიღია მითითებული'], 422);
         }
         $user = User::where('email', $data['admin_email'])->first();
-        if(empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],422);
-        if(!empty($data['pay_day']) && $data['pay_day'] >= 31 )  return response()->json(['message' => 'გადახდის თარიღი დიდი რიცხვია'],422);
-        $device->update([...$request->all(),'users_id' => $user->id]);
+        if (empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'], 422);
+        if (!empty($data['pay_day']) && $data['pay_day'] >= 31)  return response()->json(['message' => 'გადახდის თარიღი დიდი რიცხვია'], 422);
+        $device->update([...$request->all(), 'users_id' => $user->id]);
 
         return response()->json($device);
     }
-    public function resetDevice (Request $request, Device $device) {
+    public function resetDevice(Request $request, Device $device)
+    {
         $data = $request->all();
         $user = User::where('email', $data['admin_email'])->first();
-        if(empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'],422);
+        if (empty($user)) return response()->json(['message' => 'მომხმარებელი აღნიშნული მაილით ვერ მოიძებნა'], 422);
 
-        if($device->update($request->all())) {
+        if ($device->update($request->all())) {
             $mqttService = app(MqttConnectionService::class);
             $mqtt = $mqttService->connect();
-            $this->publishMessage( $device->dev_id, $this->generateHexPayload(255, []));
+            $this->publishMessage($device->dev_id, $this->generateHexPayload(255, []));
             $mqtt->loop(true, true);
         } else {
             return response()->json('something go wrong', 422);
         }
         return $device;
-
     }
-    public function setAppConf(Request $request, Device $device) {
-      
+    public function setAppConf(Request $request, Device $device)
+    {
 
 
 
-        
-        $this->update($request,$device);
+
+
+        $this->update($request, $device);
         $mqttService = app(MqttConnectionService::class);
         $mqtt = $mqttService->connect();
-      
-         if($device->op_mode == 2){
+
+        if ($device->op_mode == 2) {
             $device->op_mode = 0;
-         }   
+        }
 
 
-     
-        $this->publishMessage( $device->dev_id, $this->sendDeviceParameters($device));
+
+        $this->publishMessage($device->dev_id, $this->sendDeviceParameters($device));
         $mqtt->loop(true, true);
 
         return $device;
     }
-    public function setExtConf(Request $request, Device $device) {
+    public function setExtConf(Request $request, Device $device)
+    {
         Log::info(time());
-        $this->update($request,$device);
+        $this->update($request, $device);
         $mqttService = app(MqttConnectionService::class);
         $mqtt = $mqttService->connect();
         $this->publishMessage($device->dev_id, $this->sendExtendConf($device));
         $mqtt->loop(true, true);
 
         return $device;
-
     }
 
 
@@ -403,14 +412,14 @@ return  $device;
         return response()->json(null, 204);
     }
 
-    public function generateZeropast($string,$needZero = 16): array
+    public function generateZeropast($string, $needZero = 16): array
     {
         $array = [];
-        for($i = 0; $i < $needZero - strlen($string);$i++) {
+        for ($i = 0; $i < $needZero - strlen($string); $i++) {
             $array[] = [
                 'type' => 'number',
                 'value' => 0
-            ] ;
+            ];
         }
         return $array;
     }
@@ -421,12 +430,13 @@ return  $device;
             'payload' => $payload
         ];
     }
-    public function deleteError($id) {
-        return DeviceError::where('id',$id)->delete();
+    public function deleteError($id)
+    {
+        return DeviceError::where('id', $id)->delete();
     }
-    public function publishMessage($device_id,$payload)
-    { 
-        Log::debug("device", ["device controlelr"=> $payload]);
+    public function publishMessage($device_id, $payload)
+    {
+        Log::debug("device", ["device controlelr" => $payload]);
         $data = [
             'device_id' => $device_id,
             'payload' => $payload
@@ -434,54 +444,72 @@ return  $device;
         $queryParams = http_build_query($data);
         $response = Http::get('http://localhost:3000/mqtt/general?' . $queryParams);
         return $response->json(['data' => ['dasd']]);
-
     }
-    public function updateDeviceTariff($id,  Request $request){
+    public function updateDeviceTariff($id,  Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'amount' => 'required|integer'
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
-    
+
         $device = Device::find($id);
-    
+
         if (!$device) {
             return response()->json(['error' => 'Device not found'], 404);
         }
-    
+
         $device->deviceTariffAmount = $request->input('amount');
         $device->save();
-    
-        return response()->json(["data" => $device]);
+
+        return response()->json(data: ["data" => $device]);
     }
 
-    public function updateManyDeviceTariff($managerId, Request $request){
+    public function updateManyDeviceTariff($managerId, Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'amount' => 'required|integer'
         ]);
-    
+
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
-    
+
         Device::where('users_id', $managerId)->update(['deviceTariffAmount' => $request->input('amount')]);
-    
+
         return response()->json(["message" => "Devices updated successfully"]);
     }
+    public function getDeviceEarn(string $id, string $year)
+    {
+        try {
+            $earnings = DeviceEarn::where("company_id", (int)$id)->where("year", $year)->get()->toArray();
 
-    public function EditDevicEarn (Request $request){
-    $id = $request->id;
+            if (empty($earnings)) {
+                Log::info("No earnings found for company_id, checking manager_id");
+                $earnings = DeviceEarn::where("manager_id", (int)$id)->where("year", $year)->get()->toArray();
+            }
 
-    $deviceEarn = DeviceEarn::where("id", $id);
-         
-    $deviceEarn->cashback = $request->cashback;
-     $deviceEarn->update([
-        'cashback' =>  $request->cashback ,
-        'deviceTariff' => $request->deviceTariff,
-        "earnings" => $request->earnings
-    ]);
-        return response()->json(["data"=>  "item updated" ]);
-     } 
+            return response()->json($earnings);
+        } catch (\Throwable $th) {
+
+
+            return response()->json(['error' => $th->getMessage()], 500);
+        }
+    }
+    public function EditDevicEarn(Request $request)
+    {
+        $id = $request->id;
+
+        $deviceEarn = DeviceEarn::where("id", $id);
+
+        $deviceEarn->cashback = $request->cashback;
+        $deviceEarn->update([
+            'cashback' =>  $request->cashback,
+            'deviceTariff' => $request->deviceTariff,
+            "earnings" => $request->earnings
+        ]);
+        return response()->json(["data" =>  "item updated"]);
+    }
 }
