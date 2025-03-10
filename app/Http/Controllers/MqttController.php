@@ -155,32 +155,38 @@ class MqttController extends Controller
     {
 
       
-        Log::info("info", ["payload"=>$data]);
-//  თუ კამანდა არის 6
+            //  თუ კამანდა არის 6
         if ( $data['command'] == 6) {
+       
+       
             //  თუ ლენგთი არის 12 პეილოადის
             if (strlen($data["payload"]) >= 12){
-           
+              
                 $rfid = substr($data["payload"], 0, 8);
-          
                 $counterHex = substr($data["payload"], 8, 4);
                 $counter = unpack("V", $counterHex)[1];
-// ვეძებთ ბარათს დასპლიტული ფეილოადიდან
+              
+                    // ვეძებთ ბარათს დასპლიტული ფეილოადიდან
                 $card =  Card::where('card_number',   $rfid)->first();
 
-
-
-          
+               
+                Log::info("small end", ["small endian"=>  $counter]);
+              
                 if ($card) {
+                    Log::info("counter", ['info'=>     $counter]);
+
+                    Log::info("counter", ['info'=>   $card->counter]);
                     // ვააფდეითებთ ქაუნთერს
-                    $card->update(['counter' => $counter]);
+                    $card->counter = $counter;
+                    $card->save();
                     $user =  User::find($card->user_id);
     
                     if ($user) {
+ 
                         // ვინახავთ ლოგებს
                         $this->blockedCardLogger($data["payload"], $user['id'], $device['id'], $card['counter']);
                     }
-// ვუბრუნებთ დევაის დააფდეითებულ ბარათს
+                        // ვუბრუნებთ დევაის დააფდეითებულ ბარათს
                     $this->sandCardInfoToRelatedDevices($device, $card);
             }
         
@@ -199,26 +205,30 @@ private function sandCardInfoToRelatedDevices($device ,$card){
     
     $deviceIds = $devices->pluck('id')->toArray(); 
     
-   
-    
+    $payload = $this->generateHexPayload(8, [
+        [
+            'type' => 'string',
+            'value' => str_pad(substr($card['card_number'], 0, 8), 8, '0', STR_PAD_RIGHT),
+        ],
+        [
+            'type' => 'number',
+            'value' => 0,
+        ],
+        [
+            'type' => 'number32',  
+            'value' => (int) $card['counter'],
+        ],
+    ]);
+    Log::info("dev ID", [ "main id"=>$device->dev_id]);
+
     foreach($devices as $dev){
        
-            $payload = $this->generateHexPayload(6, [
-                [
-                    'type' => 'string',
-                    'value' => str_pad(substr($card['card_number'], 0, 8), 8, '0', STR_PAD_RIGHT),
-                ],
-                [
-                    'type' => 'number',  
-                    'value' => (int) $card["counter"],
-                ],
-                [
-                    'type' => 'number',
-                    'value' => 0,
-                ],
-            ]);
-            Log::info("info", ["sent out"=>   $dev->dev_id ]);
+
+ 
+        if ($dev->dev_id !== $device->dev_id) {
+           
             $this->publishMessage($dev->dev_id, $payload);
+        }
          
     }
     
@@ -1099,6 +1109,7 @@ private function sandCardInfoToRelatedDevices($device ,$card){
             'device_id' => $device_id,
             'payload' => $payload,
         ];
+        Log::info("info", ["data"=> $data]);
         $queryParams = http_build_query($data);
         $response = Http::get(
             'http://localhost:3000/mqtt/general?' . $queryParams

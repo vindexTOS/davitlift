@@ -8,10 +8,10 @@ const port = 3000
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
-app.get('/mqtt/general',(req,res) => {
+app.get('/mqtt/general', (req, res) => {
     const data = req.query;
     console.log(data.payload)
-    publishMessage(data.device_id, generateHexPayload(data.payload.command,data.payload.payload))
+    publishMessage(data.device_id, generateHexPayload(data.payload.command, data.payload.payload))
     res.send('test')
 })
 
@@ -23,7 +23,7 @@ const heartbeatTopic = 'Lift/+/events/heartbeat';
 const client = mqtt.connect('mqtt://167.235.25.45', {
     port: 1883
 });
-app.get('/mqtt/general/force',(req,res) => {
+app.get('/mqtt/general/force', (req, res) => {
     const data = req.query;
     publishMessage(data.device_id, data.payload)
     res.send('test')
@@ -41,19 +41,19 @@ client.on('error', function (error) {
 client.on('message', (topic, message) => {
     // Convert message to string and parse if necessary
     const msgJson = parseHexPayload(message);
-
+ 
     if (topic.match(/Lift\/[^\/]+\/events\/general/)) {
-        if(msgJson.command === 1) {
+        if (msgJson.command === 1) {
 
         }
-        if(msgJson.command === 4) {
+        if (msgJson.command === 4) {
             const payload = Buffer.from(msgJson.payload, 'binary');
             msgJson.amount = payload.readUInt16BE(0)
             msgJson.card = payload.toString('utf8', 2, 10)
 
         }
         axios.get('https://testmqtt.eideas.io/api/mqtt/general', {
-            params:{
+            params: {
                 payload: msgJson,
                 topic: topic
             }
@@ -63,13 +63,13 @@ client.on('message', (topic, message) => {
             .catch(error => console.error('Error sending general event', error));
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
         axios.get('https://testmqtt.eideas.io/api/mqtt/heartbeat', {
-            params:{
+            params: {
                 payload: msgJson,
                 topic: topic
-            } 
+            }
             // old
         })
-            .then(response => {})
+            .then(response => { })
             .catch(error => console.error('Error sending heartbeat event', error));
     }
 });
@@ -119,6 +119,11 @@ function generateHexPayload(command, payload = []) {
                 num16Buffer.writeUInt16LE(item.value, 0);
                 payloadBufferList.push(num16Buffer);
                 break;
+            case 'number32':
+                const num32Buf = Buffer.alloc(4);
+                num32Buf.writeUInt32LE(item.value, 0);
+                payloadBufferList.push(num32Buf);
+                break;
 
         }
     }
@@ -133,7 +138,7 @@ function generateHexPayload(command, payload = []) {
 function publishMessage(device_id, payload) {
     const topic = `Lift/${device_id}/commands/general`;
     console.log(topic)
-
+    console.log(payload)
     client.publish(topic, payload, { qos: 1 }, (err) => {
         if (err) {
             console.log(err)
