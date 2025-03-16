@@ -330,4 +330,18 @@ trait DeviceMessages
         ]);
         $this->publishMessage($device_id, $payload);
     }
+
+    public function resetStorage($device_id, $resetType)
+{
+ 
+    $payload = $this->generateHexPayload(254, [
+        [
+            'type' => 'number',
+            'value' => $resetType,
+        ],
+    ]);
+
+    $this->publishMessage($device_id, $payload);
+}
+
 }

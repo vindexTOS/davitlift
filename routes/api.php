@@ -71,6 +71,9 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
         DeviceController::class,
         'updateManyDeviceTariff',
     ]);
+
+
+    Route::post("/reset_storage",[MqttController::class, "resetStorageRequest"]);
 });
 //  company middleware
 

@@ -57,6 +57,7 @@ class MqttController extends Controller
           
      
         $this->handleCardCounter($date, $device);
+        Log::info("gamocda hanlde counters");
         if (!empty($device)) {
             if ($device->isBlocked) {
                 $payload = $this->generateHexPayload(6, [
@@ -87,13 +88,15 @@ class MqttController extends Controller
                 ]);
                 $this->publishMessage($device_id, $payload);
             } else {
-                Log::debug("SHemosvla call to need functions",);
+           
+
                 $this->callToNeededFunction(
                     $device,
                     $date,
                     $device_id,
                     $date['command']
                 );
+                Log::info( $date['command']);
                 $device->lastBeat = Carbon::now('Asia/Tbilisi')->addMinutes(10);
                 $device->save();
             }
@@ -154,35 +157,39 @@ class MqttController extends Controller
     private function handleCardCounter($data,  $device)
     {
 
-      
+        $payload = mb_convert_encoding($data["payload"], "8bit", "UTF-8");
             //  თუ კამანდა არის 6
         if ( $data['command'] == 6) {
-       
-       
+  
+
+
             //  თუ ლენგთი არის 12 პეილოადის
-            if (strlen($data["payload"]) >= 12){
-              
+            if (strlen($data["payload"])  >= 12){
+               
                 $rfid = substr($data["payload"], 0, 8);
-                $counterHex = substr($data["payload"], 8, 4);
-                $counter = unpack("V", $counterHex)[1];
               
                     // ვეძებთ ბარათს დასპლიტული ფეილოადიდან
                 $card =  Card::where('card_number',   $rfid)->first();
 
-               
-                Log::info("small end", ["small endian"=>  $counter]);
+                $counter = (int) $data['counter'];
+            
+ 
               
-                if ($card) {
-                    Log::info("counter", ['info'=>     $counter]);
+                Log::info("card", ["card"=>  $card ]);
+                Log::info("card", ["card"=>  $rfid ]);
+                Log::info("small end", ["small endian"=>  $counter]);
 
-                    Log::info("counter", ['info'=>   $card->counter]);
+                if ($card) {
+                     
+
+          
                     // ვააფდეითებთ ქაუნთერს
                     $card->counter = $counter;
                     $card->save();
                     $user =  User::find($card->user_id);
-    
+                    Log::info("card", ["card"=>   $user ]);
                     if ($user) {
- 
+                        
                         // ვინახავთ ლოგებს
                         $this->blockedCardLogger($data["payload"], $user['id'], $device['id'], $card['counter']);
                     }
@@ -224,7 +231,7 @@ private function sandCardInfoToRelatedDevices($device ,$card){
     foreach($devices as $dev){
        
 
- 
+        Log::info("DEVICE ID", ['DEVICE ID'=>  $device->dev_id]);
         if ($dev->dev_id !== $device->dev_id) {
            
             $this->publishMessage($dev->dev_id, $payload);
@@ -920,6 +927,10 @@ private function sandCardInfoToRelatedDevices($device ,$card){
         $device->save();
     }
 
+
+
+ 
+
     private function logDeviceError($device, $data)
     {
         $errorCode = unpack('Cerror', $data['payload']);
@@ -1161,5 +1172,21 @@ private function sandCardInfoToRelatedDevices($device ,$card){
 
  
         return response()->json($logs);
+    }
+
+    public function resetStorageRequest(Request $request){
+    
+
+        try {
+            $deviceId = $request['device_id'];
+            $commandType = $request["command_type"];
+    
+            $this->resetStorage(  $deviceId  ,$commandType  );
+            return response()->json(["msg"=>"Command has been sent to broker"]);
+        } catch (\Throwable $th) {
+            throw new RuntimeException("Blocked card error: " . $e->getMessage());
+
+        }
+
     }
 }

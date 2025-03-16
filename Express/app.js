@@ -41,7 +41,10 @@ client.on('error', function (error) {
 client.on('message', (topic, message) => {
     // Convert message to string and parse if necessary
     const msgJson = parseHexPayload(message);
- 
+    console.log(">>>>")
+    console.log(message)
+    console.log(">>>>")
+
     if (topic.match(/Lift\/[^\/]+\/events\/general/)) {
         if (msgJson.command === 1) {
 
@@ -52,6 +55,24 @@ client.on('message', (topic, message) => {
             msgJson.card = payload.toString('utf8', 2, 10)
 
         }
+
+        if (msgJson.command === 6) {
+            // Convert from whatever your payload format is—here assuming raw binary
+            const payload = Buffer.from(msgJson.payload, 'binary');
+          
+            // For a 12-byte payload, the last 4 bytes (offset 8..11) are the counter.
+            // readUInt32LE(8) will interpret those 4 bytes as an unsigned 32-bit integer in little-endian.
+            const counter = payload.readUInt32LE(8);
+          
+            // If you want a signed interpretation, use readInt32LE(8) instead,
+            // or manually adjust if (counter > 0x7FFFFFFF) { counter -= 0x100000000 }
+          
+            msgJson.counter = counter;
+          
+            // Now you can forward `msgJson` with `msgJson.counter` holding the integer value.
+          }
+          
+
         axios.get('https://testmqtt.eideas.io/api/mqtt/general', {
             params: {
                 payload: msgJson,
