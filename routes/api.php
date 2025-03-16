@@ -73,8 +73,7 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
     ]);
 
 
-    Route::post("/reset_storage",[MqttController::class, "resetStorageRequest"]);
-});
+    Route::post("/reset_storage", [MqttController::class, "resetStorageRequest"]);});
 //  company middleware
 
 Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {

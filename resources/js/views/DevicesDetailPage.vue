@@ -101,6 +101,10 @@
                                     {{ $t("Extend Configuration") }}
                                 </v-btn>
                                 <v-btn style="width: 100%" v-if="$store.state.auth.user.lvl >= 4"
+                                    @click="openStorageResetDialog(data)" small>
+                                    {{ $t("Storage Reset") }}
+                                </v-btn>
+                                <v-btn style="width: 100%" v-if="$store.state.auth.user.lvl >= 4"
                                     @click="resetDevice(data)" small>
                                     <v-icon size="small">mdi-refresh</v-icon>
                                     {{ $t("Factory Reset") }}
@@ -439,6 +443,33 @@
             </v-card-text>
         </v-card>
     </v-container>
+
+
+    <v-dialog v-model="dialogStorageReset" max-width="400px">
+    <v-card>
+        <v-card-title>
+            <span class="text-h5">{{ $t("Storage Reset") }}</span>
+        </v-card-title>
+
+        <v-card-text>
+            <v-container>
+                <v-checkbox v-model="deviceResetTypes" :label="$t('Clear ID storage')" :value="1"></v-checkbox>
+                <v-checkbox v-model="deviceResetTypes" :label="$t('Clear Card counter')" :value="2"></v-checkbox>
+            </v-container>
+        </v-card-text>
+
+        <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue-darken-1" variant="text" @click="dialogStorageReset = false">
+                {{ $t("Close") }}
+            </v-btn>
+            <v-btn color="blue-darken-1" :loading="loading" variant="text" @click="confirmStorageReset">
+                {{ $t("Save") }}
+            </v-btn>
+        </v-card-actions>
+    </v-card>
+</v-dialog>
+
     <v-dialog v-model="dialog" max-width="500px">
         <v-card>
             <v-card-title>
@@ -451,25 +482,26 @@
                         <v-col v-if="dialogBussines" cols="12">
                             <v-text-field v-model="editedItem.name" class="text-capitalize" :label="$t('Name')"
                                 required></v-text-field>
-                           
+
                         </v-col>
                         <v-col v-if="dialogBussines" cols="12">
                             <div>
                                 <v-text-field v-model.number="editedItem.pay_day" class="text-capitalize"
                                     :label="$t('Payment number (from 1 to -28)')" type="number" required></v-text-field>
-                                    <v-checkbox 
-      :value="1" 
-      v-model="editedItem.isFixed" 
-      :true-value="1" 
-      :false-value="0" 
-      label="ფიქსირებული თარიღი"
-    ></v-checkbox>
-                           
+                                <v-checkbox :value="1" v-model="editedItem.isFixed" :true-value="1" :false-value="0"
+                                    label="ფიქსირებული თარიღი"></v-checkbox>
+
                             </div>
                         </v-col>
                         <v-col v-if="dialogAppConf" cols="12">
                             <v-autocomplete v-model="editedItem.dev_id" label="UUID"
                                 :items="unregistered_device"></v-autocomplete>
+                        </v-col>
+                        <v-col v-if="dialogStorageReset" cols="12">
+                            <v-checkbox v-model="deviceResetTypes" :label="$t('Clear ID storage')"
+                                :value="1"></v-checkbox>
+                            <v-checkbox v-model="deviceResetTypes" :label="$t('Clear Card counter')"
+                                :value="2"></v-checkbox>
                         </v-col>
                         <v-col v-if="dialogExtConf" cols="12">
                             <v-radio-group :label="$t('Elevator mode')" v-model="editedItem.relay1_node" :inline="true">
@@ -493,7 +525,7 @@
                             <v-text-field v-model.number="editedItem.tariff_amount" class="text-capitalize"
                                 :label="$t('Charge (in Tetri)')" required></v-text-field>
                         </v-col>
-                      
+
 
                         <v-col v-if="dialogBussines" cols="12">
                             <v-text-field v-model="editedItem.admin_email" class="text-capitalize"
@@ -589,7 +621,7 @@
                 <v-btn color="blue-darken-1" variant="text" @click="close">
                     {{ $t("Close") }}
                 </v-btn>
-                <v-btn color="blue-darken-1" variant="text" @click="save">
+                <v-btn color="blue-darken-1" :loading="loading"  variant="text" @click="save">
                     {{ $t("Save") }}
                 </v-btn>
             </v-card-actions>
@@ -646,7 +678,7 @@ export default {
     data: () => ({
         usersInfo: { userData: [], pagination: 0 },
         transactionTotalByMonth: [],
-
+        deviceResetTypes: [],
         activeSubscriptions: 0,
         combinedCardPay: 0,
         transactionTotalByMonthTotalledInOne: 0,
@@ -655,12 +687,13 @@ export default {
         isAdmin: false,
         search: "",
         dialog: false,
-        loading: true,
+        loading: false,
+        
         totalItems: 0,
         desserts: [],
         editedIndex: -1,
         editedItem: {
-          
+
             company_id: null,
             name: "",
             dev_name: "lifti:",
@@ -735,6 +768,7 @@ export default {
         dialogBussines: false,
         dialogAppConf: false,
         dialogExtConf: false,
+        dialogStorageReset: false,
         maxLengthRule6: (value) => {
             console.log(value);
             const maxLength = 6;
@@ -884,7 +918,7 @@ export default {
                     this.$nextTick(() => { });
 
                     this.data = data;
-                        console.log(data) 
+                    console.log(data)
                     this.totalUserBalance = data.users
                         .map((val) => val.balance)
                         .reduce((a, b) => a + b);
@@ -920,6 +954,50 @@ export default {
                 });
             });
         },
+
+        openStorageResetDialog(device) {
+        this.selectedDevice = device;  // Store the selected device
+        this.deviceResetTypes = [];  // Reset the selection
+        this.dialogStorageReset = true;  // Open dialog
+    },
+
+    async confirmStorageReset() {
+        if (this.deviceResetTypes.length === 0) {
+            this.$swal.fire({
+                title: "Please select at least one option!",
+                icon: "warning",
+            });
+            return;
+        }
+
+        // Convert selected checkboxes into bitmask value
+        const resetType = this.deviceResetTypes.reduce((acc, val) => acc | val, 0);
+
+        try {
+         
+            this.loading = true
+            await axios.post("/api/reset_storage", {
+                device_id: this.selectedDevice.dev_id,
+                command_type: resetType,
+            });
+
+            this.$swal.fire({
+                title: "Storage Reset Command Sent!",
+                icon: "success",
+            });
+
+            this.dialogStorageReset = false; // Close dialog
+            this.loading = false
+        } catch (error) {
+            this.$swal.fire({
+                title: "Error sending reset command!",
+                text: error.response?.data?.message || error.message,
+                icon: "error",
+            });
+            this.loading = false
+
+        }
+    },
         resetDevice(item) {
             this.$swal
                 .fire({
@@ -988,6 +1066,7 @@ export default {
             this.dialogBussines = false;
             this.dialogAppConf = false;
             this.dialogExtConf = false;
+            this.dialogStorageReset = false
             this.dialog = false;
         },
         getTransactionData() {
@@ -1050,7 +1129,7 @@ export default {
             this.editedItem.can_search = !!this.editedItem.can_search;
             this.editedItem.storage_disable = !!this.editedItem.storage_disable;
             this.editedItem.op_mode = Number(this.editedItem.op_mode);
- 
+
             this.dialogBussines = type === "bussines";
             this.dialogAppConf = type === "appConf";
             this.dialogExtConf = type === "extConf";
@@ -1065,7 +1144,7 @@ export default {
             if (this.dialogExtConf) {
                 route = route + "/extconf";
             }
-            delete this.editedItem.deviceTariffAmount ;
+            delete this.editedItem.deviceTariffAmount;
             delete this.editedItem.fixed_card_amount;
             axios.put(route, this.editedItem).then(() => {
                 this.loadItems();
@@ -1078,7 +1157,7 @@ export default {
                 });
             });
 
-      
+
         },
 
         englishToGeorgian(englishText) {

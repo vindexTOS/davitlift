@@ -18,7 +18,7 @@ trait DeviceMessages
     public function publishMessage($device_id, $payload)
     {
  
-   Log::debug("info", ['info'=>"moria orks"]);
+   Log::debug("info", ['info'=> $payload , "device id"=> $device_id]);
         $data = [
             'device_id' => $device_id,
             'payload' => $payload,

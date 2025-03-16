@@ -1184,7 +1184,7 @@ private function sandCardInfoToRelatedDevices($device ,$card){
             $this->resetStorage(  $deviceId  ,$commandType  );
             return response()->json(["msg"=>"Command has been sent to broker"]);
         } catch (\Throwable $th) {
-            throw new RuntimeException("Blocked card error: " . $e->getMessage());
+            throw new RuntimeException("Blocked card error: " . $th->getMessage());
 
         }
 
