@@ -275,13 +275,13 @@ selectedYear(newYear){
         this.mtlianiCash - amountAlreadyPayedNumber
       // console.log(this.mtlianiCash, amountAlreadyPayedNumber)
       // console.log(amountAlreadyPayedNumber)
-
+      console.log(this.mtlianiCash)
       this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
       this.seriesD = [
         Number(finalResultOfDisplayAmount.toFixed(2)),
         Number(amountAlreadyPayedNumber),
       ]
-
+  
       this.seriesC = [Number(this.companyFee.toFixed(2)), 0]
  
     },

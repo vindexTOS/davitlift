@@ -226,8 +226,7 @@ private function sandCardInfoToRelatedDevices($device ,$card){
             'value' => (int) $card['counter'],
         ],
     ]);
-    Log::info("dev ID", [ "main id"=>$device->dev_id]);
-
+ 
     foreach($devices as $dev){
        
 
