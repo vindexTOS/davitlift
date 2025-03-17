@@ -15,6 +15,8 @@ class DeviceEarn extends Model
     // Define the fillable attributes
     protected $fillable = [
         'device_id',
+        "company_id",
+        "manager_id",
         'earnings',
         'month',
         'year',

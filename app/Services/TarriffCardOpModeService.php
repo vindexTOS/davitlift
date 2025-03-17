@@ -48,10 +48,10 @@ trait TarriffCardOpModeService
 
                 $lastAmount->save();
 
-                Log::info("else ", ["op" => $OP_MODE]);
+               
             }
 
-            Log::info("info", ["info" => $dataPayload]);
+ 
             $payload = $this->generateHexPayload(3, [
                 [
                     'type' => 'string',

@@ -42,6 +42,12 @@
                             <div class="text-grey">{{ user.phone }}</div>
                         </v-list-item-title>
                     </div>
+                    <div v-if="user.id_number" class="d-sm-flex justify-space-between align-center">
+            <v-list-item-title>
+              {{ $t('Personal ID number') }}:
+              <div class="text-grey">{{ user.id_number }}</div>
+            </v-list-item-title>
+          </div>
                     <div class="d-sm-flex justify-space-between align-center">
                         <v-list-item-title>
                             {{ $t("Balance") }}:
@@ -263,12 +269,13 @@
         <v-card>
             <v-card-title class="headline">{{
                 $t("Edit profile")
-                }}</v-card-title>
+                }}</v-card-title> 
             <!--  უსერის დასააფდეითებელი ინფორმაცია  -->
             <v-card-text class="pl-3">
                 <v-text-field v-model="user.name" :label="$t('Name')" required></v-text-field>
                 <v-text-field v-model="user.email" :label="$t('Email')" required></v-text-field>
                 <v-text-field v-model="user.phone" :rules="phoneRules" :label="$t('Phone')" required></v-text-field>
+                <v-text-field   v-model="user.id_number" type="text"   :label="$t('Personal ID number')" required></v-text-field>
                 <v-text-field v-if="isAdmin" v-model="user.balance" :label="$t('Balance')" required></v-text-field>
                 <v-select v-model="user.role" :items="roles" label="როლი" required></v-select>
                 <v-text-field v-if="isAdmin || role == 'company'" v-model="user.fixed_card_amount"
@@ -783,6 +790,7 @@ async getPhoneNumbers(){
             this.cardEdit.id = item.id;
         },
         updatePhone() {
+         
             axios.put(`/api/transaction/update-balance`, this.user).then(() => {
                 this.user = { ...this.user };
                 this.$swal.fire({

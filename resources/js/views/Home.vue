@@ -39,6 +39,13 @@
               <div class="text-grey">{{ user.phone }}</div>
             </v-list-item-title>
           </div>
+          <div v-if="user.id_number" class="d-sm-flex justify-space-between align-center">
+            <v-list-item-title>
+              {{ $t('Personal ID number') }}:
+              <div class="text-grey">{{ user.id_number }}</div>
+            </v-list-item-title>
+          </div>
+       
           <div class="d-sm-flex justify-space-between align-center">
             <v-list-item-title>
               {{ $t('Balance') }}:
@@ -185,6 +192,7 @@
           <b>{{ $t('Phone') }}:</b>
           {{ Manager.phone }}
         </div>
+        
         <div>
           <b>{{ $t('Email') }}:</b>
           {{ Manager.email }}
@@ -250,13 +258,15 @@
         <v-text-field v-model="userUpdate.name" :label="$t('Name')" required></v-text-field>
         <v-text-field v-model="userUpdate.email" :label="$t('Email')" required></v-text-field>
         <v-text-field v-model="userUpdate.phone" :rules="phoneRules" :label="$t('Phone')" required></v-text-field>
+        <v-text-field v-if="user.id_number" v-model="userUpdate.id_number"   :label="$t('Personal ID number')" ></v-text-field>
+       
       </v-card-text>
 
       <v-card-actions>
         <v-btn color="primary" @click="showModal = false">
           {{ $t('Close') }}
         </v-btn>
-        <v-btn color="green darken-1" @click="updatePhone">
+        <v-btn color="green darken-1" @click="updateUserInfo()">
           {{ $t('Save') }}
         </v-btn>
         <v-spacer></v-spacer>
@@ -460,6 +470,7 @@ export default {
         name: this.$store.state.auth.user.name,
         phone: this.$store.state.auth.user.phone,
         email: this.$store.state.auth.user.email,
+        id_number:this.$store.state.auth.user.id_number
       },
       company: {},
       Manager: {},
@@ -757,6 +768,53 @@ this.phonenumberData = res.data.data
       })
       this.showModal = false
     },
+    updateUserInfo() {
+  const token = localStorage.getItem("token");
+
+  axios
+    .put(`/api/update-user-info`, {
+      name: this.userUpdate.name,
+      email: this.userUpdate.email,
+      phone: this.userUpdate.phone,
+      id_number: this.userUpdate.id_number,
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      }
+    })
+    .then(({ data }) => {
+      if (data && data.user) {
+      
+        this.user =  data.user
+        // ✅ Correct way to commit mutation for a namespaced Vuex module
+        this.$store.commit("auth/SET_USER", data.user); 
+        
+        // ✅ Show a success message
+        this.$swal.fire({
+      icon: "success",
+      position: "center",
+      allowOutsideClick: true,
+    });
+ 
+      } else {
+        console.error("Invalid response format:", data);
+      }
+    })
+    .catch((error) => {
+      this.$swal.fire({
+          icon: 'error',
+          position: 'center',
+          allowOutsideClick: false,
+          text:error.response?.data,
+        })
+      
+      console.error("Update failed:", error.response?.data || error);
+    });
+}
+
+
+    ,
     generateCode(card, divice) {
       axios
         .get(`/api/cards/generate/code`, {

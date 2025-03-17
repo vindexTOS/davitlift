@@ -1,10 +1,10 @@
 <?php
-use App\Models\Device;
+ 
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BankOfGeorgia;
-use Illuminate\Support\Facades\Request;
+ 
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\MqttController;
 use App\Http\Controllers\TestController;
@@ -13,16 +13,12 @@ use App\Http\Controllers\API\CardController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\DeviceController;
 use App\Http\Controllers\API\CompanyController;
-use App\Http\Middleware\ComapnyAccsessMiddleware;
-  use App\Http\Middleware\SuperAdminMiddleware;
+ 
 use App\Http\Controllers\UpdatingDeviceController;
 use App\Http\Controllers\API\TransactionController;
 use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\UnregisteredDeviceController;
-use App\Http\Middleware\ComapnyAndManagerAccsessMiddleware;
-use App\Models\Company;
-use App\Models\Tbctransaction;
-use App\Models\User;
+ 
 
 //  ADMIN ONLY
 
@@ -75,6 +71,7 @@ Route::middleware(['auth:api', 'SuperAdminMiddleware'])->group(function () {
 
     Route::post("/reset_storage", [MqttController::class, "resetStorageRequest"]);});
 //  company middleware
+Route::put("update-user-info", [UserController::class, "updateUserInfo"]);
 
 Route::middleware(['auth:api', 'ComapnyAccsessMiddleware'])->group(function () {
     Route::put('/updateUser', [UserController::class, 'update']);
@@ -254,6 +251,8 @@ Route::middleware(['auth:api'])->group(function () {
     
     Route::apiResource('devices', DeviceController::class);
     Route::put('/deviceEarn/edit', [DeviceController::class, 'EditDevicEarn']);
+
+
     Route::get('/get/devices/user', [DeviceController::class, 'userDevice']);
     Route::get('/get/devices/user/{id}', [
         DeviceController::class,
@@ -343,7 +342,7 @@ Route::get("/test-time-zone", [TestController::class, "TestTimeZone"]);
 Route::get('/blocked-card-logs', [MqttController::class, "getBlockedCardInfo"]);
  
 
-
+Route::get("/device-earnings/{id}/{year}", [DeviceController::class, "getDeviceEarn"]);
 
 
 

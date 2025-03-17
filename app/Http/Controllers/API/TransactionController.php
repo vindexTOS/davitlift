@@ -363,6 +363,8 @@ class TransactionController extends Controller
     public function updateTransactionOrderFastPay($data, $order_id, $amount)
     {
         try {
+            Log::info("2");
+
             $transaction = Tbctransaction::where(
                 'order_id',
                 $order_id
@@ -435,7 +437,7 @@ class TransactionController extends Controller
                 $string,
                 'TBC'
             );
-
+            Log::info("1");
             $this->updateTransactionOrderFastPay($data, $order_id, $amount);
                  // this is coming from TransactionProvider that uses NotifcationProvider trait
 
@@ -537,6 +539,7 @@ class TransactionController extends Controller
     public function updateUserData($data, $transaction, $order_id, $isFastPay)
     {
         try {
+            Log::info("3 updateUserData");
             //  es sachiroa ecomrcialistvis 
             $user = User::where('id', $transaction->user_id)
                 ->with('devices')
@@ -554,64 +557,10 @@ class TransactionController extends Controller
             $user->save();
             foreach ($user->devices as $key => $device) {
                 if ($device->op_mode == '0') {
+                    Log::info("4  device->op_mode ==");
                     $this->handleOpMode($device->op_mode, $user, $device);
                 }
 
-
-
-
-
-
-                // if ($device->op_mode === '0') {
-                //     Log::debug('op_mode = 0');
-
-                //     $subscriptionDate = $device->pivot->subscription
-                //         ? Carbon::parse($device->pivot->subscription)
-                //         : null;
-                //     $currentDay = Carbon::now()->day;
-                //     if ($currentDay < $device->pay_day) {
-                //         $nextMonthPayDay = Carbon::now()
-
-                //             ->startOfMonth()
-                //             ->addDays($device->pay_day - 1);
-                //         Log::debug('შემდეგი თარიღი>>> 1' . $nextMonthPayDay);
-                //     } else {
-                //         $nextMonthPayDay = Carbon::now()
-                //             ->addMonth()
-                //             ->startOfMonth()
-                //             ->addDays($device->pay_day - 1);
-
-                //         Log::debug('შემდეგი თარიღი>>> 2' . $nextMonthPayDay);
-                //     }
-                //     if (
-                //         is_null($subscriptionDate) ||
-                //         ($subscriptionDate &&
-                //             $subscriptionDate->lt($nextMonthPayDay) && $userCardAmount  > 0)
-                //     ) {
-                //         Log::debug('is_null');
-
-                //         $cardAmount =
-                //             $userCardAmount * $user->fixed_card_amount;
-                //         if (
-                //             $user->balance - $user->freezed_balance >=
-                //             $device->tariff_amount + $cardAmount
-                //         ) {
-                //             DeviceUser::where('device_id', $device->id)
-                //                 ->where('user_id', $user->id)
-                //                 ->update(['subscription' => $nextMonthPayDay]);
-
-                //             $user->freezed_balance = $device->tariff_amount;
-                //         } elseif (
-                //             $user->balance >=
-                //             $device->tariff_amount + $cardAmount
-                //         ) {
-                //             DeviceUser::where('device_id', $device->id)
-                //                 ->where('user_id', $user->id)
-                //                 ->update(['subscription' => $nextMonthPayDay]);
-                //             $user->freezed_balance = $device->tariff_amount;
-                //         }
-                //     }
-                // }
                 $devices_ids = Device::where(
                     'users_id',
                     $device->users_id
@@ -634,7 +583,7 @@ class TransactionController extends Controller
                             ]);
                         } else {
                             $lastAmount->last_amount =
-                                $user->balance - $device->tariff_amount;
+                            $user->balance - $device->tariff_amount;
                             $lastAmount->save();
                         }
                         $payload = $this->generateHexPayload(5, [
@@ -678,9 +627,10 @@ class TransactionController extends Controller
         $validated = $request->validate([
             'id' => 'required|exists:users,id',
             'name' => 'string|max:255',
-            'email' => 'email|max:255',
+            'email' => 'nullable|email|max:255',
             'balance' => 'integer',
             'phone' => 'string|min:5|max:15',
+            'id_number'=> "nullable|string",
             'role' => 'string',
             'fixed_card_amount' => 'integer',
             "fixed_phone_amount"=> "integer",
