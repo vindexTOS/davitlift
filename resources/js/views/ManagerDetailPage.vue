@@ -17,7 +17,7 @@
             </div>
             <div>
                 <b>{{ $t("Cashback") }}:</b>
-                {{ data.manager.cashback }}%                   
+                {{ data.manager.cashback }}%
             </div>
             <!-- <div v-if="isAdmin">
         <b>სრული ტარიფი:</b>
@@ -63,22 +63,11 @@
         <v-row class="justify-space-between">
             <v-col style="min-height: 100%" cols="12" md="6">
                 <v-card style="height: 100%;" class="overflow-auto pa-2">
-          <h3>{{ $t('Amounts deposited in months') }}</h3>
-          <v-select
-          :key="chartKey" 
-  v-model="selectedYear"
-  :items="yearOptions"
-  label="Select an option"
-  dense
-  style="max-width: 200px;"
-></v-select>
-          <apexchart
-            width="400"
-            type="bar"
-            :options="chartOptions"
-            :series="series"
-          ></apexchart>
-        </v-card>
+                    <h3>{{ $t('Amounts deposited in months') }}</h3>
+                    <v-select :key="chartKey" v-model="selectedYear" :items="yearOptions" label="Select an option" dense
+                        style="max-width: 200px;"></v-select>
+                    <apexchart width="400" type="bar" :options="chartOptions" :series="series"></apexchart>
+                </v-card>
             </v-col>
             <v-col cols="12" md="6">
                 <v-card style="height: 100%" class="overflow-auto pa-2">
@@ -128,7 +117,7 @@
                     <v-col style="min-width: fit-content" v-for="(item, index) in filtredDevices" cols="12" sm="6"
                         md="4" lg="3" :key="item.id">
                         <!-- @click="detailDevice(item.id)" -->
-                        <v-card >
+                        <v-card>
                             <template v-slot:title>
                                 <div class="d-flex justify-space-between">
                                     <span>
@@ -178,7 +167,7 @@
                                 </b>
 
                                 <hr />
-                                <div v-if="isCompany" >
+                                <div v-if="isCompany">
                                     <b>
                                         ბარათის ტარიფი(თეთრებში)
                                         {{ item.fixed_card_amount }} ₾
@@ -190,20 +179,20 @@
                                 </div>
 
                                 <v-dialog v-model="dialogFixedCard" persistent :style="{ background: 'transparent' }"
-                      class="transparent-dialog">
-                      <v-card style="background-color: rgba(255, 255, 255, 0.8);">
-                        <v-card-title> Edit Fixed Card Amount </v-card-title>
-                        <v-card-text>
-                          <v-text-field v-model="editedFixedCardAmount" label="ბარათის ტარიფი" type="number"
-                            required></v-text-field>
-                        </v-card-text>
-                        <v-card-actions>
-                          <v-spacer></v-spacer>
-                          <v-btn @click="dialogFixedCard = false">{{ $t('Close') }}</v-btn>
-                          <v-btn @click="saveFixedCardAmount()">{{ $t('Save') }}</v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                                    class="transparent-dialog">
+                                    <v-card style="background-color: rgba(255, 255, 255, 0.8);">
+                                        <v-card-title> Edit Fixed Card Amount </v-card-title>
+                                        <v-card-text>
+                                            <v-text-field v-model="editedFixedCardAmount" label="ბარათის ტარიფი"
+                                                type="number" required></v-text-field>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn @click="dialogFixedCard = false">{{ $t('Close') }}</v-btn>
+                                            <v-btn @click="saveFixedCardAmount()">{{ $t('Save') }}</v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </v-dialog>
 
                                 <div v-if="isAdmin">
                                     <div>
@@ -248,7 +237,7 @@
                                     </div>
                                 </div>
                                 <hr />
- <v-btn @click="detailDevice(item.id)"   >დეტალურად</v-btn>
+                                <v-btn @click="detailDevice(item.id)">დეტალურად</v-btn>
                                 <!-- <div v-if="isAdmin" @click="detailDevice(item.id)">
                   <v-btn class="my-styled-btn">ლიფტის ინფომრაცია ვრცლად</v-btn>
                 </div> -->
@@ -262,8 +251,8 @@
         </v-card>
         <div class="mt-3">
             <CashbackTable @getCashback="getCashback" :serverItems="cashbackData['transaction']" :availableCashback="cashbackData['total'] - cashbackData['totalWithdrow'] <= 0
-                    ? 0
-                    : cashbackData['total'] - cashbackData['totalWithdrow']
+                ? 0
+                : cashbackData['total'] - cashbackData['totalWithdrow']
                 " :maxCashback="seriesC[0].toFixed(2) + 200"></CashbackTable>
         </div>
     </div>
@@ -303,7 +292,7 @@ export default {
             eachLiftTariffAmount: 0,
             cashBackAmount: 0,
             shouldCashBackOnManager: false,
-            isCompany:false,
+            isCompany: false,
             series: [
                 {
                     name: "",
@@ -321,8 +310,9 @@ export default {
             sortedEarnings: [],
             companyFee: 0,
             mtlianiCash: 0,
-            selectedYear: new Date().getFullYear(), 
-            yearOptions: this.generateYears(2022, new Date().getFullYear()).reverse()  ,
+            selectedYear: new Date().getFullYear(),
+            yearOptions: this.generateYears(2022, new Date().getFullYear()).reverse(),
+            chartKey:0
         };
     },
     created() {
@@ -405,48 +395,49 @@ export default {
                 }
             }
         },
-    
+
     },
-    watch:{
-selectedYear(newYear){
-  this.getEarnings(this.$route.params.id, newYear);
-}
-   
-},
+    watch: {
+        selectedYear(newYear) {
+            this.getEarnings(this.$route.params.id, newYear);
+        }
+
+    },
 
     methods: {
         generateYears(startYear, endYear) {
-    return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
-  },
+            return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
+        },
         saveFixedCardAmount() {
- 
-   
- axios
-   .put("/api/update-fixed-card-amount", {
-     device_id: this.deviceID,
-     amount: this.editedFixedCardAmount,
-   })
-   .then((res) => {
-     console.log(res);
-     this.dialogFixedCard = false;
-     this.$swal.fire({
-       icon: 'success',
-       position: 'center',
-       allowOutsideClick: false,
-     })
-     this.loadItems()
-   })
-   .catch((err) => {
-     console.log(err);
-     this.$swal.fire({
-       icon: 'error',
-       position: 'center',
-       allowOutsideClick: false,
-       message: err
-     })
-     this.dialogFixedCard = false;
-   });}
-,
+
+
+            axios
+                .put("/api/update-fixed-card-amount", {
+                    device_id: this.deviceID,
+                    amount: this.editedFixedCardAmount,
+                })
+                .then((res) => {
+                    console.log(res);
+                    this.dialogFixedCard = false;
+                    this.$swal.fire({
+                        icon: 'success',
+                        position: 'center',
+                        allowOutsideClick: false,
+                    })
+                    this.loadItems()
+                })
+                .catch((err) => {
+                    console.log(err);
+                    this.$swal.fire({
+                        icon: 'error',
+                        position: 'center',
+                        allowOutsideClick: false,
+                        message: err
+                    })
+                    this.dialogFixedCard = false;
+                });
+        }
+        ,
         openFixedCardDialog(item, id) {
             this.deviceID = id
             this.editedFixedCardAmount = item
@@ -464,7 +455,7 @@ selectedYear(newYear){
             let email = JSON.parse(token).auth.user.email;
             let role = JSON.parse(token).auth.user.role
             this.isAdmin = email === "info@eideas.io";
-            if(role == "company"){
+            if (role == "company") {
                 this.isCompany = true
             }
         },
@@ -594,20 +585,20 @@ selectedYear(newYear){
                     Number(this.cashbackData.total),
                 ];
             }
-          
+
 
             // console.log(this.mtlianiCash)
         },
         loadItems() {
-          
+
             this.getEarnings(this.$route.params.id, new Date().getFullYear())
             axios
                 .get("/api/companies/manager/" + this.$route.params.id)
                 .then(({ data }) => {
                     this.data = data;
 
-                
-             
+
+
                     const sortedEarnings = Object.values(
                         this.data.earnings
                     ).sort((a, b) => {
@@ -615,8 +606,8 @@ selectedYear(newYear){
                     });
                     this.sortedEarnings = sortedEarnings;
 
-                  
-               
+
+
                     this.calculateProecnt(data);
                 });
 
@@ -625,36 +616,36 @@ selectedYear(newYear){
                 .reduce((a, b) => a + b);
         },
 
-        getEarnings(id, year) {  
-  axios.get(`/api/device-earnings/${id}/${year}`)
-    .then(({ data }) => {
-      const sortedEarnings = [...Object.values(data)].sort(
-        (a, b) => new Date(a.fullTime) - new Date(b.fullTime)
-      );
+        getEarnings(id, year) {
+            axios.get(`/api/device-earnings/${id}/${year}`)
+                .then(({ data }) => {
+                    const sortedEarnings = [...Object.values(data)].sort(
+                        (a, b) => new Date(a.fullTime) - new Date(b.fullTime)
+                    );
 
- 
-      this.sortedEarnings = sortedEarnings;
- 
-       let newSeriesData = Array(12).fill(0); 
 
-      sortedEarnings.forEach((x) => {
-        this.fullAmount += x.earnings / 100;
-        const earningsIndex = new Date(x.created_at).getMonth(); 
+                    this.sortedEarnings = sortedEarnings;
 
-        newSeriesData[earningsIndex] += x.earnings / 100;
-      });
+                    let newSeriesData = Array(12).fill(0);
 
-       this.series = [{ name: 'Earnings', data: newSeriesData }];
+                    sortedEarnings.forEach((x) => {
+                        this.fullAmount += x.earnings / 100;
+                        const earningsIndex = new Date(x.created_at).getMonth();
 
-    
-      this.chartKey += 1; 
-      
- 
-    })
-    .catch((err) => {  
-      console.log(err);
-    });
-},
+                        newSeriesData[earningsIndex] += x.earnings / 100;
+                    });
+
+                    this.series = [{ name: 'Earnings', data: newSeriesData }];
+
+
+                    this.chartKey += 1;
+
+
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        },
         changeSingleLiftAmount(id, index) {
             axios
                 .put(`/api/device/tariff/${id}`, {
@@ -693,7 +684,7 @@ selectedYear(newYear){
 </script>
 <style scoped>
 .transparent-dialog .v-overlay {
-  background-color: rgba(0, 0, 0, 0);
-  /* Transparent backdrop */
+    background-color: rgba(0, 0, 0, 0);
+    /* Transparent backdrop */
 }
 </style>
