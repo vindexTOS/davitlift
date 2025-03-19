@@ -17,7 +17,7 @@
             </div>
             <div>
                 <b>{{ $t("Cashback") }}:</b>
-                {{ data.manager.cashback }}%
+                {{ data.manager.cashback }}%                   
             </div>
             <!-- <div v-if="isAdmin">
         <b>სრული ტარიფი:</b>
@@ -62,14 +62,23 @@
     <v-card class="pa-2">
         <v-row class="justify-space-between">
             <v-col style="min-height: 100%" cols="12" md="6">
-                <v-card style="height: 100%" class="overflow-auto pa-2">
-                    <h3>{{ $t("Amounts deposited in months") }}</h3>
-                    <h4>
-                        {{ $t("Total amount earned") }}: {{ fullAmount }}
-                        {{ $t("Lari") }}
-                    </h4>
-                    <apexchart width="400" type="bar" :options="chartOptions" :series="series"></apexchart>
-                </v-card>
+                <v-card style="height: 100%;" class="overflow-auto pa-2">
+          <h3>{{ $t('Amounts deposited in months') }}</h3>
+          <v-select
+          :key="chartKey" 
+  v-model="selectedYear"
+  :items="yearOptions"
+  label="Select an option"
+  dense
+  style="max-width: 200px;"
+></v-select>
+          <apexchart
+            width="400"
+            type="bar"
+            :options="chartOptions"
+            :series="series"
+          ></apexchart>
+        </v-card>
             </v-col>
             <v-col cols="12" md="6">
                 <v-card style="height: 100%" class="overflow-auto pa-2">
@@ -312,6 +321,8 @@ export default {
             sortedEarnings: [],
             companyFee: 0,
             mtlianiCash: 0,
+            selectedYear: new Date().getFullYear(), 
+            yearOptions: this.generateYears(2022, new Date().getFullYear()).reverse()  ,
         };
     },
     created() {
@@ -394,16 +405,19 @@ export default {
                 }
             }
         },
-        //   seriesC() {
-        //     if (this.cashbackData.total > -1) {
-        //       this.shouldCashBackOnManager =
-        //         Number(this.cashbackData.total) > this.displayCashBack
-        //       return [this.displayCashBack, Number(this.cashbackData.total)]
-        //     }
-        //     return [0, 0]
-        //   },
+    
     },
+    watch:{
+selectedYear(newYear){
+  this.getEarnings(this.$route.params.id, newYear);
+}
+   
+},
+
     methods: {
+        generateYears(startYear, endYear) {
+    return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
+  },
         saveFixedCardAmount() {
  
    
@@ -585,15 +599,15 @@ export default {
             // console.log(this.mtlianiCash)
         },
         loadItems() {
+          
+            this.getEarnings(this.$route.params.id, new Date().getFullYear())
             axios
                 .get("/api/companies/manager/" + this.$route.params.id)
                 .then(({ data }) => {
                     this.data = data;
 
-                    this.series[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    // console.log(data)
-                    let lastEarning;
-
+                
+             
                     const sortedEarnings = Object.values(
                         this.data.earnings
                     ).sort((a, b) => {
@@ -601,56 +615,8 @@ export default {
                     });
                     this.sortedEarnings = sortedEarnings;
 
-                    sortedEarnings.forEach((x) => {
-                        this.fullAmount += x.earnings / 100;
-                        const earningsIndex = new Date(x.fullTime).getMonth();
-                        if (this.series[0].data[earningsIndex] === undefined) {
-                            this.series[0].data[earningsIndex] = 0;
-                        }
-                        this.series[0].data[earningsIndex] += x.earnings / 100;
-                    });
-                    //
-                    // this.deviceEarningByMonth = Array.from(
-                    //   Object.values(this.data.earnings),
-                    // )
-                    //   .map((x) => {
-                    //     if (this.getCashBackData(data, x.earnings / 100) < 0) {
-                    //       return 0
-                    //     } else {
-                    //       return this.getCashBackData(data, x.earnings / 100)
-                    //     }
-                    //   })
-                    //   .reduce((a, b) => a + b)
-                    // let amountAlreadyPayed =
-                    //   Object.values(this.cashbackData['transaction']).length <= 0
-                    //     ? [
-                    //         { amount: '0', type: 1 },
-                    //         { amount: '0', type: 1 },
-                    //       ]
-                    //     : Object.values(this.cashbackData['transaction'])
-
-                    // let amountAlreadyPayedNumber = amountAlreadyPayed
-                    //   ?.filter((val) => val.type === 1)
-                    //   ?.map((val) => Number(val.amount))
-                    //   .reduce((a, b) => a + b)
-                    // let finalResultOfDisplayAmount =
-                    //   this.deviceEarningByMonth - amountAlreadyPayedNumber
-                    // this.displayCashBack = finalResultOfDisplayAmount
-                    // Object.values(this.data.earnings).forEach((x) => {
-                    //   if (
-                    //     !lastEarning ||
-                    //     new Date(x.fullTime) > new Date(lastEarning.fullTime)
-                    //   ) {
-                    //     lastEarning = x
-                    //     this.totalMoney = lastEarning.earnings / 100
-                    //   }
-                    // })
-
-                    console.log(this.totalMoney);
-                    // this.seriesB = [
-                    //   this.data.deviceActivity.inactive,
-                    //   this.data.deviceActivity.active,
-                    // ]
+                  
+               
                     this.calculateProecnt(data);
                 });
 
@@ -658,6 +624,37 @@ export default {
                 .map((val) => val.deviceTariffAmount)
                 .reduce((a, b) => a + b);
         },
+
+        getEarnings(id, year) {  
+  axios.get(`/api/device-earnings/${id}/${year}`)
+    .then(({ data }) => {
+      const sortedEarnings = [...Object.values(data)].sort(
+        (a, b) => new Date(a.fullTime) - new Date(b.fullTime)
+      );
+
+ 
+      this.sortedEarnings = sortedEarnings;
+ 
+       let newSeriesData = Array(12).fill(0); 
+
+      sortedEarnings.forEach((x) => {
+        this.fullAmount += x.earnings / 100;
+        const earningsIndex = new Date(x.created_at).getMonth(); 
+
+        newSeriesData[earningsIndex] += x.earnings / 100;
+      });
+
+       this.series = [{ name: 'Earnings', data: newSeriesData }];
+
+    
+      this.chartKey += 1; 
+      
+ 
+    })
+    .catch((err) => {  
+      console.log(err);
+    });
+},
         changeSingleLiftAmount(id, index) {
             axios
                 .put(`/api/device/tariff/${id}`, {

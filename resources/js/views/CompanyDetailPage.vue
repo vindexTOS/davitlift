@@ -292,7 +292,7 @@ selectedYear(newYear){
        
  
         this.getCashback()
-  
+        this.data = data
      
         this.totalDeviceAmount = data.device.length
         this.calculateProecnt(data)
