@@ -651,7 +651,7 @@ class   UserController extends Controller
                         "phone" => $user["phone_number"],
                         "password" => Hash::make($user["phone_number"]),
                         "role" => "user",
-                        "email" => $user["id_number"] + "@gmail.com",
+                  "email" => $user["id_number"] . "@gmail.com",
 
                     ]);
 

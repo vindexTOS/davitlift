@@ -36,20 +36,9 @@
       <v-col v-if="fullAmount" style="min-height: 100%;" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Amounts deposited in months') }}</h3>
-          <v-select
-          :key="chartKey" 
-  v-model="selectedYear"
-  :items="yearOptions"
-  label="Select an option"
-  dense
-  style="max-width: 200px;"
-></v-select>
-          <apexchart
-            width="400"
-            type="bar"
-            :options="chartOptions"
-            :series="series"
-          ></apexchart>
+          <v-select :key="chartKey" v-model="selectedYear" :items="yearOptions" label="Select an option" dense
+            style="max-width: 200px;"></v-select>
+          <apexchart width="400" type="bar" :options="chartOptions" :series="series"></apexchart>
         </v-card>
       </v-col>
       <v-col v-if="seriesB[0] + seriesB[1]" cols="12" md="6">
@@ -58,77 +47,40 @@
           <h4>
             {{ $t('Total number of elevators') }}:{{ seriesB[0] + seriesB[1] }}
           </h4>
-          <apexchart
-            width="400"
-            height="350"
-            type="donut"
-            :options="chartOptionsB"
-            :series="seriesB"
-          ></apexchart>
+          <apexchart width="400" height="350" type="donut" :options="chartOptionsB" :series="seriesB"></apexchart>
         </v-card>
       </v-col>
     </v-row>
     <v-row class="justify-space-between">
-      <v-col
-        v-if="seriesD[0] + seriesD[1] > 0"
-        style="min-height: 100%;"
-        cols="12"
-        md="6"
-      >
+      <v-col v-if="seriesD[0] + seriesD[1] > 0" style="min-height: 100%;" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Cashback') }}</h3>
           <h4>
-            {{ $t('Total Cashback') }}:{{ seriesD[0] <= 0 ? 0 : seriesD[0] }}
-          </h4>
-          <apexchart
-            width="400"
-            height="350"
-            type="donut"
-            :options="chartOptionsD"
-            :series="seriesD"
-          ></apexchart>
+            {{ $t('Total Cashback') }}:{{ seriesD[0] <= 0 ? 0 : seriesD[0] }} </h4>
+              <apexchart width="400" height="350" type="donut" :options="chartOptionsD" :series="seriesD"></apexchart>
         </v-card>
       </v-col>
       <v-col v-if="seriesC[0] + seriesC[1]" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Service fee') }}</h3>
           <h4>{{ $t('Total service fee') }}:{{ seriesC[0] }}</h4>
-          <apexchart
-            width="400"
-            height="350"
-            type="donut"
-            :options="chartOptionsC"
-            :series="seriesC"
-          ></apexchart>
+          <apexchart width="400" height="350" type="donut" :options="chartOptionsC" :series="seriesC"></apexchart>
         </v-card>
       </v-col>
     </v-row>
   </v-card>
   <v-card class="pa-4 mt-2"></v-card>
   <div class="mt-3">
-    <ManagersTable
-      :companyId="$route.params.id"
-      @reload="loadItems"
-      :server-items="data['managers']"
-    ></ManagersTable>
+    <ManagersTable :companyId="$route.params.id" @reload="loadItems" :server-items="data['managers']"></ManagersTable>
   </div>
   <div class="mt-3">
-    <CashbackTable
-      :companyId="$route.params.id"
-      @getCashback="loadItems"
-      :max-cashback="
-        (
-          seriesD[0]
-        ) 
-      "
-      :isCompanyPage="true"
-      :server-items="data['companyTransaction']"
-      :availableCashback="
-        this.cashbackData['total'] - this.cashbackData['totalWithdrow'] < 0
-          ? 0
-          : this.cashbackData['total'] - this.cashbackData['totalWithdrow']
-      "
-    ></CashbackTable>
+    <CashbackTable :companyId="$route.params.id" @getCashback="loadItems" :max-cashback="(
+      seriesD[0]
+    )
+      " :isCompanyPage="true" :server-items="transactionHistory" :availableCashback="this.cashbackData['total'] - this.cashbackData['totalWithdrow'] < 0
+        ? 0
+        : this.cashbackData['total'] - this.cashbackData['totalWithdrow']
+        "></CashbackTable>
   </div>
 </template>
 <script>
@@ -162,6 +114,7 @@ export default {
         },
       ],
       deviceEarningByMonth: [],
+      transactionHistory: [],
       totalMoney: 0,
       fullAmount: 0,
       totalTransfers: 0,
@@ -170,8 +123,8 @@ export default {
       sortedEarnings: [],
       mtlianiCash: 0,
       cashbackData: {},
-      selectedYear: new Date().getFullYear(), 
-      yearOptions: this.generateYears(2022, new Date().getFullYear()).reverse()  ,
+      selectedYear: new Date().getFullYear(),
+      yearOptions: this.generateYears(2022, new Date().getFullYear()).reverse(),
       chartKey: 0
     }
   },
@@ -218,17 +171,17 @@ export default {
       }
     },
   },
-watch:{
-selectedYear(newYear){
-  this.getEarnings(this.$route.params.id, newYear);
-}
-   
-},
+  watch: {
+    selectedYear(newYear) {
+      this.getEarnings(this.$route.params.id, newYear);
+    }
+
+  },
 
   methods: {
     generateYears(startYear, endYear) {
-    return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
-  },
+      return Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
+    },
     calculateProecnt(data) {
       this.companyFee = 0
       this.mtlianiCash = 0
@@ -238,7 +191,7 @@ selectedYear(newYear){
 
         let totalDeviceTariff = x.devicetariff * this.totalDeviceAmount
         let cashbackAmount = (x.cashback * needToPay) / 100
- 
+
 
         // ვამოწმებ თუ პროცენტით მოგება მეტია ტარიფზე
 
@@ -246,17 +199,34 @@ selectedYear(newYear){
         isProcenteMore = needToPay - cashbackAmount
 
         if (isProcenteMore < totalDeviceTariff) {
-         
+
 
           this.mtlianiCash += needToPay - totalDeviceTariff
           this.companyFee += totalDeviceTariff
         } else {
-        
+
 
           this.mtlianiCash += needToPay - isProcenteMore
           this.companyFee += isProcenteMore
         }
       })
+
+      let sortedArr = data['companyTransaction'].map((val) => { return { ...val, transaction_date: val.transaction_date.slice(0, 10), amount: Number(val.amount) }} ).reverse()
+      let companyTransactionHashMap = {}
+
+      for (let i = 0; i < sortedArr.length; i++) {
+ if (!companyTransactionHashMap[`${sortedArr[i].transaction_date}-${sortedArr[i].type}`]) {
+          companyTransactionHashMap[`${sortedArr[i].transaction_date}-${sortedArr[i].type}`] = sortedArr[i]
+        }
+        if (Object.keys(companyTransactionHashMap) == `${sortedArr[i].transaction_date}-${sortedArr[i].type}`) {
+          console.log(sortedArr[i].amount)
+          companyTransactionHashMap[`${sortedArr[i].transaction_date}-${sortedArr[i].type}`].amount += sortedArr[i].amount
+        }
+ }
+ this.transactionHistory =Object.values(companyTransactionHashMap)
+
+   
+     
       let amountAlreadyPayed =
         data['companyTransaction'].length <= 0
           ? [{ amount: '0' }, { amount: '0' }]
@@ -275,60 +245,60 @@ selectedYear(newYear){
         this.mtlianiCash - amountAlreadyPayedNumber
       // console.log(this.mtlianiCash, amountAlreadyPayedNumber)
       // console.log(amountAlreadyPayedNumber)
-      console.log(this.mtlianiCash)
+      // console.log(this.mtlianiCash)
       this.seriesB = [data.deviceActivity.inactive, data.deviceActivity.active]
       this.seriesD = [
         Number(finalResultOfDisplayAmount.toFixed(2)),
         Number(amountAlreadyPayedNumber),
       ]
-  
+
       this.seriesC = [Number(this.companyFee.toFixed(2)), 0]
- 
+
     },
     loadItems() {
-  
+
       this.getEarnings(this.$route.params.id, new Date().getFullYear())
       axios.get('/api/companies/' + this.$route.params.id).then(({ data }) => {
-       
- 
+
+
         this.getCashback()
         this.data = data
-     
+
         this.totalDeviceAmount = data.device.length
         this.calculateProecnt(data)
       })
     },
 
-    getEarnings(id, year) {  
-  axios.get(`/api/device-earnings/${id}/${year}`)
-    .then(({ data }) => {
-      const sortedEarnings = [...Object.values(data)].sort(
-        (a, b) => new Date(a.fullTime) - new Date(b.fullTime)
-      );
+    getEarnings(id, year) {
+      axios.get(`/api/device-earnings/${id}/${year}`)
+        .then(({ data }) => {
+          const sortedEarnings = [...Object.values(data)].sort(
+            (a, b) => new Date(a.fullTime) - new Date(b.fullTime)
+          );
 
- 
-      this.sortedEarnings = sortedEarnings;
- 
-       let newSeriesData = Array(12).fill(0); 
 
-      sortedEarnings.forEach((x) => {
-        this.fullAmount += x.earnings / 100;
-        const earningsIndex = new Date(x.created_at).getMonth(); 
+          this.sortedEarnings = sortedEarnings;
 
-        newSeriesData[earningsIndex] += x.earnings / 100;
-      });
+          let newSeriesData = Array(12).fill(0);
 
-       this.series = [{ name: 'Earnings', data: newSeriesData }];
+          sortedEarnings.forEach((x) => {
+            this.fullAmount += x.earnings / 100;
+            const earningsIndex = new Date(x.created_at).getMonth();
 
-    
-      this.chartKey += 1; 
-      
- 
-    })
-    .catch((err) => {  
-      console.log(err);
-    });
-}
+            newSeriesData[earningsIndex] += x.earnings / 100;
+          });
+
+          this.series = [{ name: 'Earnings', data: newSeriesData }];
+
+
+          this.chartKey += 1;
+
+
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
 
     ,
     generateData(baseval, count, yrange) {
