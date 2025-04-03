@@ -18,6 +18,12 @@
             ქეშბექი
           </th>
           <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+            მენეჯერის Id
+          </th>
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+          კომპანის Id
+          </th>
+          <th v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
             რედაქტ
           </th>
         </tr>
@@ -38,7 +44,7 @@
             <p v-if="!boolMapper[index]">{{ item.earnings / 100 }}₾</p>
             <input
               @input="changeInput($event, 'earnings')"
-              style="width: 50px; background-color: greenyellow;"
+              style="width: 50px; background-color: green;"
               v-if="boolMapper[index]"
               :value="item.earnings"
             />
@@ -47,7 +53,7 @@
             <p v-if="!boolMapper[index]">{{ item.deviceTariff }}</p>
             <input
               @input="changeInput($event, 'deviceTariff')"
-              style="width: 50px; background-color: greenyellow;"
+              style="width: 50px; background-color: green;"
               v-if="boolMapper[index]"
               :value="item.deviceTariff"
             />
@@ -56,9 +62,27 @@
             <p v-if="!boolMapper[index]">{{ item.cashback }}</p>
             <input
               @input="changeInput($event, 'cashback')"
-              style="width: 50px; background-color: greenyellow;"
+              style="width: 50px; background-color: green;"
               v-if="boolMapper[index]"
               :value="item.cashback"
+            />
+          </td>
+          <td v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+            <p v-if="!boolMapper[index]">{{ item.manager_id }}</p>
+            <input
+              @input="changeInput($event, 'manager_id')"
+              style="width: 50px; background-color: green;"
+              v-if="boolMapper[index]"
+              :value="item.manager_id"
+            />
+          </td>
+          <td v-if="isAdmin" style="padding: 8px; border: 1px solid #ddd;">
+            <p v-if="!boolMapper[index]">{{ item.company_id }}</p>
+            <input
+              @input="changeInput($event, 'company_id')"
+              style="width: 50px; background-color: green;"
+              v-if="boolMapper[index]"
+              :value="item.company_id"
             />
           </td>
           <td v-if="isFixed" style="padding: 8px; border: 1px solid #ddd;"></td>
@@ -158,6 +182,8 @@ export default {
     deviceTariff: 0,
     earnings: 0,
     isAdmin: false,
+    company_id:null,
+    manager_id:null,
     editedItem: {
       name: '',
       phone: 0,
@@ -194,6 +220,8 @@ export default {
         { title: this.$t('Amount'), key: 'earnings', align: 'start' },
         { title: 'ტარიფი', key: 'deviceTariff', align: 'start' },
         { title: 'ქეშბექი', key: 'cashback', align: 'start' },
+        { title: 'მენეჯერის ID', key: 'manager_id', align: 'start' },
+        { title: 'კომპანის ID', key: 'company_id', align: 'start' },
       ]
       if (this.isFixed) {
         header.push({ title: this.$t('has paid'), key: 'paid', align: 'start' })
@@ -228,20 +256,29 @@ export default {
       this.isAdmin = email === 'info@eideas.io'
     },
     changeInput(event, type) {
-      if (type == 'cashback') {
-        this.cashback = event.target.value
-      } else if (type == 'deviceTariff') {
-        this.deviceTariff = event.target.value
-      } else if (type == 'earnings') {
-        this.earnings = event.target.value
-      }
-    },
+  const value = event.target.value
+  if (type === 'cashback') {
+    this.cashback = value
+  } else if (type === 'deviceTariff') {
+    this.deviceTariff = value
+  } else if (type === 'earnings') {
+    this.earnings = value
+  } else if (type === 'company_id') {
+    this.company_id = value
+  } else if (type === 'manager_id') {
+    this.manager_id = value
+  }
+},
     updateEarning(body, index) {
       this.toogleEedit(index)
       body.cashback = Number(this.cashback)
       body.deviceTariff = Number(this.deviceTariff)
       body.earnings = Number(this.earnings)
+      body.manager_id = Number(this.manager_id)
+      body.company_id = Number(this.company_id)
       console.log(body)
+ 
+
       axios
         .put('/api/deviceEarn/edit/', body)
         .then(({ data }) => {

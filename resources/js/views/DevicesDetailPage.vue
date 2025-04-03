@@ -918,7 +918,7 @@ export default {
                     this.$nextTick(() => { });
 
                     this.data = data;
-                    console.log(data)
+                    
                     this.totalUserBalance = data.users
                         .map((val) => val.balance)
                         .reduce((a, b) => a + b);

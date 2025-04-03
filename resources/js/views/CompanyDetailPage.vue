@@ -41,6 +41,15 @@
           <apexchart width="400" type="bar" :options="chartOptions" :series="series"></apexchart>
         </v-card>
       </v-col>
+      <!--  with cash back -->
+      <v-col v-if="fullAmount" style="min-height: 100%;" cols="12" md="6">
+        <v-card style="height: 100%;" class="overflow-auto pa-2">
+          <h3>{{ $t('Amounts deposited in months with cashback') }}</h3>
+          <v-select :key="chartKey" v-model="selectedYear" :items="yearOptions" label="Select an option" dense
+            style="max-width: 200px;"></v-select>
+          <apexchart width="400" type="bar" :options="chartOptions" :series="seriesCashBacked"></apexchart>
+        </v-card>
+      </v-col>
       <v-col v-if="seriesB[0] + seriesB[1]" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
           <h3>{{ $t('Condition of elevators') }}</h3>
@@ -54,9 +63,11 @@
     <v-row class="justify-space-between">
       <v-col v-if="seriesD[0] + seriesD[1] > 0" style="min-height: 100%;" cols="12" md="6">
         <v-card style="height: 100%;" class="overflow-auto pa-2">
-          <h3>{{ $t('Cashback') }}</h3>
+          <!-- <h3>{{ $t('Cashback') }}</h3> -->
           <h4>
-            {{ $t('Total Cashback') }}:{{ seriesD[0] <= 0 ? 0 : seriesD[0] }} </h4>
+            {{ $t('Total Cashback') }}: {{ seriesD[0] + seriesD[1] <= 0 ? 0 : seriesD[0] + seriesD[1] }} </h4>
+              <h5>{{ $t('ჩასარიცხი') }}: {{ seriesD[0] }}</h5>
+              <h5>{{ $t('ჩარიცხული') }}: {{ seriesD[1] }}</h5>
               <apexchart width="400" height="350" type="donut" :options="chartOptionsD" :series="seriesD"></apexchart>
         </v-card>
       </v-col>
@@ -113,6 +124,10 @@ export default {
           data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         },
       ],
+      seriesCashBacked: [{
+        name: 'გამომუშავება',
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      },],
       deviceEarningByMonth: [],
       transactionHistory: [],
       totalMoney: 0,
@@ -211,22 +226,28 @@ export default {
         }
       })
 
-      let sortedArr = data['companyTransaction'].map((val) => { return { ...val, transaction_date: val.transaction_date.slice(0, 10), amount: Number(val.amount) }} ).reverse()
+      let sortedArr = data['companyTransaction'].map((val) => { return { ...val, transaction_date: val.transaction_date.slice(0, 10), amount: Number(val.amount) } }).reverse()
       let companyTransactionHashMap = {}
 
       for (let i = 0; i < sortedArr.length; i++) {
- if (!companyTransactionHashMap[`${sortedArr[i].transaction_date}-${sortedArr[i].type}`]) {
-          companyTransactionHashMap[`${sortedArr[i].transaction_date}-${sortedArr[i].type}`] = sortedArr[i]
-        }
-        if (Object.keys(companyTransactionHashMap) == `${sortedArr[i].transaction_date}-${sortedArr[i].type}`) {
-          console.log(sortedArr[i].amount)
-          companyTransactionHashMap[`${sortedArr[i].transaction_date}-${sortedArr[i].type}`].amount += sortedArr[i].amount
-        }
- }
- this.transactionHistory =Object.values(companyTransactionHashMap)
+  const item = sortedArr[i];
+  const key = `${item.transaction_date}-${item.type}`;
 
-   
-     
+  if (!companyTransactionHashMap[key]) {
+    
+    companyTransactionHashMap[key] = { ...item };
+    companyTransactionHashMap[key].amount = Number(item.amount); 
+    companyTransactionHashMap[key].idList = [item.id];
+  } else {
+    companyTransactionHashMap[key].amount += Number(item.amount);
+    companyTransactionHashMap[key].idList.push(item.id);
+  }
+}
+      this.transactionHistory = Object.values(companyTransactionHashMap)
+      console.log(this.transactionHistory)
+      console.log( data['companyTransaction'])
+
+
       let amountAlreadyPayed =
         data['companyTransaction'].length <= 0
           ? [{ amount: '0' }, { amount: '0' }]
@@ -280,16 +301,29 @@ export default {
           this.sortedEarnings = sortedEarnings;
 
           let newSeriesData = Array(12).fill(0);
+          let newSeriesForCashBackEarnings = Array(12).fill(0);
 
           sortedEarnings.forEach((x) => {
             this.fullAmount += x.earnings / 100;
             const earningsIndex = new Date(x.created_at).getMonth();
 
             newSeriesData[earningsIndex] += x.earnings / 100;
+
+            const earningsInGel = Number(x.earnings) / 100;
+            const cashbackPercent = Number(x.cashback);
+            const remainingPercent = 100 - cashbackPercent;
+
+            const cashbackToSubtract = earningsInGel * (remainingPercent / 100);
+            const earningsAfterSubtractingCashback = Number((earningsInGel - cashbackToSubtract.toFixed(0)));
+
+            newSeriesForCashBackEarnings[earningsIndex] += Number(earningsAfterSubtractingCashback);
+
           });
 
           this.series = [{ name: 'Earnings', data: newSeriesData }];
 
+
+          this.seriesCashBacked = [{ name: "Earnings", data: newSeriesForCashBackEarnings }]
 
           this.chartKey += 1;
 

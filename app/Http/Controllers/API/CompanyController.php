@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Models\Company;
-use App\Models\CompanyTransaction;
-use App\Models\Device;
-use App\Models\DeviceEarn;
 use App\Models\User;
+use App\Models\Device;
+use App\Models\Company;
+use App\Models\DeviceEarn;
 use Illuminate\Http\Request;
+use App\Models\CompanyTransaction;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use function PHPUnit\Framework\isEmpty;
-use Illuminate\Support\Facades\DB;
+
 class CompanyController extends Controller
 {
     public function index()
@@ -349,6 +351,11 @@ class CompanyController extends Controller
                     $data['company']['cashback']) /
                 100 /
                 100;
+
+
+
+                Log::info("pay", ['info'=> $data['companyFee'], $data['totalEarnings'] ,  $data['needToPay']  ,
+                $data['company']['cashback']]);
             if (
                 $data['companyFee'] - $data['payedCompanyFee'] <
                 $valid['amount']

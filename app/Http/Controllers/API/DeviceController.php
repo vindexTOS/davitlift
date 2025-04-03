@@ -500,6 +500,7 @@ class DeviceController extends Controller
     }
     public function EditDevicEarn(Request $request)
     {
+        Log::info("WROONG SIDE", [ "info"=> $request]);
         $id = $request->id;
 
         $deviceEarn = DeviceEarn::where("id", $id);
@@ -508,7 +509,9 @@ class DeviceController extends Controller
         $deviceEarn->update([
             'cashback' =>  $request->cashback,
             'deviceTariff' => $request->deviceTariff,
-            "earnings" => $request->earnings
+            "earnings" => $request->earnings,
+            "company_id" => $request->company_id,
+            "manager_id"=>  $request->manager_id
         ]);
         return response()->json(["data" =>  "item updated"]);
     }

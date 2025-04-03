@@ -174,7 +174,7 @@
           v-if="$store.state.auth.user.lvl >= 3"
           size="small"
           color="red"
-          @click="deleteItem(item.raw.id)"
+          @click="deleteItem(item.raw.idList)"
         >
           mdi-delete
         </v-icon>
@@ -248,30 +248,29 @@ export default {
       let email = JSON.parse(token).auth.user.email
       this.isAdmin = email === 'info@eideas.io'
     },
-    deleteItem(id) {
-      this.$swal
-        .fire({
-          title: this.$t('Are you sure you want to delete the transaction?'),
-          showCancelButton: false,
-          showDenyButton: true,
-          confirmButtonText: this.$t('Yes'),
-          denyButtonText: this.$t('Close'),
-        })
-        .then((result) => {
-          /* Read more about isConfirmed, isDenied below */
-          if (result.isConfirmed) {
-            axios.delete('/api/cashback/' + id).then(() => {
-              this.$swal.fire({
-                icon: 'success',
-                position: 'center',
-                allowOutsideClick: false,
-              })
-              this.$emit('getCashback')
-            })
-          } else if (result.isDenied) {
-          }
-        })
-    },
+    async deleteItem(idList) {
+  console.log(idList);
+
+  for (const id of idList) {
+    console.log('Deleting ID:', id);
+
+    try {
+      await axios.delete('/api/cashback/' + id);
+    } catch (error) {
+      console.error(`Failed to delete ID ${id}:`, error);
+    }
+  }
+
+  // Optional: Show success message once all are deleted
+  this.$swal.fire({
+    icon: 'success',
+    title: this.$t('All selected transactions deleted successfully!'),
+    position: 'center',
+    allowOutsideClick: false,
+  });
+
+  this.$emit('getCashback');
+},
     getText(type) {
       return type == 1
         ? this.$t('Deposit cashback')
