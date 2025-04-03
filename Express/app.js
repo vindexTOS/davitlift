@@ -20,7 +20,7 @@ app.listen(port, () => {
 const generalTopic = 'Lift/+/events/general';
 const heartbeatTopic = 'Lift/+/events/heartbeat';
 // Testmqtt.eideas.io
-const client = mqtt.connect('mqtt://167.235.25.45', {
+const client = mqtt.connect('mqtt://116.202.4.252', {
     port: 1883
 });
 app.get('/mqtt/general/force', (req, res) => {
@@ -73,7 +73,7 @@ client.on('message', (topic, message) => {
           }
           
 
-        axios.get('https://testmqtt.eideas.io/api/mqtt/general', {
+        axios.get('https://lift.eideas.io/api/mqtt/general', {
             params: {
                 payload: msgJson,
                 topic: topic
@@ -83,7 +83,7 @@ client.on('message', (topic, message) => {
             })
             .catch(error => console.error('Error sending general event', error));
     } else if (topic.match(/Lift\/[^\/]+\/events\/heartbeat/)) {
-        axios.get('https://testmqtt.eideas.io/api/mqtt/heartbeat', {
+        axios.get('https://lift.eideas.io/api/mqtt/heartbeat', {
             params: {
                 payload: msgJson,
                 topic: topic

@@ -493,7 +493,7 @@ class TransactionController extends Controller
             'extra2' => $string,
             'merchantPaymentId' => $string,
             'extra' => substr($string, 0, 25),
-            'returnurl' =>  'https://Testmqtt.eideas.io/',
+            'returnurl' =>  'https://lift.eideas.io/',
             'installmentProducts' => [
                 [
                     'Price' => $amount,
@@ -501,7 +501,7 @@ class TransactionController extends Controller
                 ],
             ],
             'callbackUrl' =>
-            "https://Testmqtt.eideas.io/api/bank/transaction/callback",
+            "https://lift.eideas.io/api/bank/transaction/callback",
         ]);
         return json_decode($response->body(), true);
     }
